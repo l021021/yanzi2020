@@ -18,12 +18,14 @@ const locationId = '229349' // fangtang
     // const locationId = '581669' // 36
     // const locationId = '399621' // 4u
     // const locationId = '521209' // wafer shanghai
+    //const locationId = '797296' // novah
 
-const startDate = '2019/11/11/00:00:00'
-const endDate = '2019/11/20/23:59:59'
+
+const startDate = '2019/10/31/00:00:00'
+const endDate = '2019/12/1/13:59:59'
 var c = console.log
 
-const dataFile = fs.createWriteStream('./log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
+const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
 
 // var username = "653498331@qq.com";
 // var password = "000000";
@@ -32,11 +34,14 @@ const dataFile = fs.createWriteStream('./log/' + locationId + '_' + startDate.re
 
 // For log use only
 var _Counter = 0 // message counter
+var _requestCount = 0;
+var _responseCount = 0;
+
 
 var _Units = []
 
 // const _24Hour = 86400000
-const _12Hour = 43200000
+const _12Hour = 86400000
 var TimeoutId = setTimeout(doReport, 50000)
     // Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
@@ -67,7 +72,7 @@ client.on('connect', function(connection) {
     // Handle messages
     connection.on('message', function(message) {
         clearTimeout(TimeoutId)
-        TimeoutId = setTimeout(doReport, 20000) // exit after 10 seconds idle
+        TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
             // c('timer reset  ')
 
         if (message.type === 'utf8') {
@@ -101,15 +106,16 @@ client.on('connect', function(connection) {
 
                     break
                 case 'GetSamplesResponse':
+                    //_responseCount++;
                     if (json.responseCode.name === 'success' && json.sampleListDto.list) {
-                        c('receiving ' + json.sampleListDto.list.length + ' lists for ' + json.sampleListDto.dataSourceAddress.did)
+                        c('receiving ' + json.sampleListDto.list.length + ' lists for ' + json.sampleListDto.dataSourceAddress.did + ' # ' + ++_responseCount)
                             // json.sampleListDto.list.length json.sampleListDto.dataSourceAddress.variableName.name
 
                         dataFile.write(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleAsset/g, json.sampleListDto.dataSourceAddress.did))
 
                         // Process records
                     } else {
-                        c('0 list')
+                        c('0 list # ' + ++_responseCount)
                     }
 
                     break
@@ -199,7 +205,8 @@ client.on('connect', function(connection) {
                 }
             }
             sendMessage(request)
-            c('requesting : ' + request.timeSerieSelection.timeStart)
+                //_requestCount++
+            c('requesting : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendGetSamplesRequest(
                 deviceID,
                 timeStart_mili + _12Hour,
@@ -207,19 +214,20 @@ client.on('connect', function(connection) {
             )
         } else {
             var request = {
-                messageType: 'GetSamplesRequest',
-                dataSourceAddress: {
-                    resourceType: 'DataSourceAddress',
-                    did: deviceID,
-                    locationId: locationId
-                },
-                timeSerieSelection: {
-                    resourceType: 'TimeSerieSelection',
-                    timeStart: timeStart_mili,
-                    timeEnd: timeEnd_mili
+                    messageType: 'GetSamplesRequest',
+                    dataSourceAddress: {
+                        resourceType: 'DataSourceAddress',
+                        did: deviceID,
+                        locationId: locationId
+                    },
+                    timeSerieSelection: {
+                        resourceType: 'TimeSerieSelection',
+                        timeStart: timeStart_mili,
+                        timeEnd: timeEnd_mili
+                    }
                 }
-            }
-            c('requesting : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart)
+                // _requestCount++
+            c('requesting : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendMessage(request)
         }
     }
@@ -278,7 +286,7 @@ function doReport() {
     var t = new Date().getTime()
     var timestamp = new Date()
     timestamp.setTime(t)
-    c('Reporting：')
+    c('Reporting：send ' + _requestCount + ' recvd ' + _responseCount)
     c(timestamp.toLocaleTimeString() + '')
         // sorting
 
