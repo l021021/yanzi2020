@@ -18,9 +18,7 @@ const locationId = '229349' // fangtang
 // const locationId = '581669' // 36
 // const locationId = '399621' // 4u
 // const locationId = '521209' // wafer shanghai
-//const locationId = '797296' // novah
-
-
+// const locationId = '797296' // novah
 const startDate = '2019/10/31/00:00:00'
 const endDate = '2019/12/1/13:59:59'
 var c = console.log
@@ -36,12 +34,53 @@ const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.r
 var _Counter = 0 // message counter
 var _requestCount = 0
 var _responseCount = 0
+var _windowSize = 0
 
 var _Units = []
+
+function Queue() {
+    this.dataStore = []
+    this.enqueue = enqueue
+    this.dequeue = dequeue
+    this.front = head
+    this.back = tail
+    this.toString = toString
+    this.empty = empty
+    this.length = dataStore.length
+}
+function enqueue(element) {
+    this.dataStore.push(element)
+}
+function dequeue() {
+    return this.dataStore.shift()
+}
+function head() {
+    return this.dataStore[0]
+}
+function tail() {
+    return this.dataStore[this.dataStore.length - 1]
+}
+function toString() {
+    var retStr = ''
+    for (var i = 0; i < this.dataStore.length; ++i) {
+        retStr += this.dataStore[i] + '\n'
+    }
+    return retStr
+}
+function empty() {
+    if (this.dataStore.length == 0) {
+        return true
+    } else {
+        return false
+    }
+}
+var messageQueue = new Queue()
 
 // const _24Hour = 86400000
 const _12Hour = 10800000
 var TimeoutId = setTimeout(doReport, 50000)
+// var TimeoutId2 = setTimeout(sendMessagetoQue, 500)
+
 // Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
 
@@ -71,7 +110,7 @@ client.on('connect', function (connection) {
     // Handle messages
     connection.on('message', function (message) {
         clearTimeout(TimeoutId)
-        TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
+        //  TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
         // c('timer reset  ')
 
         if (message.type === 'utf8') {
@@ -105,7 +144,7 @@ client.on('connect', function (connection) {
 
                     break
                 case 'GetSamplesResponse':
-                    //_responseCount++;
+                    sendMessagetoQue()
                     if (json.responseCode.name === 'success' && json.sampleListDto.list) {
                         c('receiving ' + json.sampleListDto.list.length + ' lists for ' + json.sampleListDto.dataSourceAddress.did + ' # ' + ++_responseCount)
                         // json.sampleListDto.list.length json.sampleListDto.dataSourceAddress.variableName.name
@@ -124,10 +163,10 @@ client.on('connect', function (connection) {
 
                         var _tempunitObj
 
-                        c('seeing ' + json.list.length + ' in  ' + json.locationAddress.locationId)
+                        c('seeing ' + json.list.length + ' sensors in  ' + json.locationAddress.locationId)
                         for (let index = 0; index < json.list.length; index++) { // process each response packet
                             if (json.list[index].unitTypeFixed.name == 'gateway' || json.list[index].unitAddress.did.indexOf('AP') != -1) { // c(json.list[index].unitAddress.did);
-                                c('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
+                                // c('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
                             } else {
                                 // record all sensors
                                 unitObj.did = json.list[index].unitAddress.did //
@@ -141,15 +180,10 @@ client.on('connect', function (connection) {
 
                                 unitObj.type = json.list[index].unitTypeFixed.name
 
-                                // c(json.list[index].unitTypeFixed.name + '\n\n');
-
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                 _Units.push(_tempunitObj)
+                                // request history record
                                 if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
-                                // _UnitsCounter++;
-                                // if (json.list[index].lifeCycleState.name == 'present') {
-                                //     _OnlineUnitsCounter++
-                                // }
                             };
                         }
 
@@ -203,8 +237,11 @@ client.on('connect', function (connection) {
                     timeEnd: timeStart_mili + _12Hour
                 }
             }
-            sendMessage(request)
-            //_requestCount++
+            // push message in que
+            sendMessagetoQue(request)
+            // if messageQueue.length<10,
+            // messageQueue.enqueue(request)
+            // _requestCount++
             c('requesting : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendGetSamplesRequest(
                 deviceID,
@@ -227,8 +264,30 @@ client.on('connect', function (connection) {
             }
             // _requestCount++
             c('requesting : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
-            sendMessage(request)
+
+            // push message in que
+            sendMessagetoQue(request)
+            // messageQueue.enqueue(request)
         }
+    }
+
+    function sendMessagetoQue(mes) {
+        // 空的mes,马上从队列发-由接收报文触发
+        // 非空mes,windowsize<20,马上从队列发,-发前20个
+        // 非空mes,windowSize>=20,不发,打入队列
+        //
+
+        if (mes === null && messageQueue.length > 0) {
+            sendMessage(messageQueue.dequeue())
+
+        } else if (mes !== null && _windowSize < 20) {
+            messageQueue.enqueue(mes)
+            _windowSize++
+            sendMessage(messageQueue.dequeue())
+        } else if (mes !== null && _windowSize >= 20) {
+            messageQueue.enqueue(mes)
+        }
+        c(' sending in queue , now have ' + messageQueue.length)
     }
 
     function sendMessage(message) {

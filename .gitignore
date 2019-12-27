@@ -1,9 +1,6 @@
 node_modules
-<<<<<<< HEAD
 package-lock.json
-=======
 log
 
 API.code-workspace
->>>>>>> 8fb0694c186240f21967d428d4d6752778732117
 .gitignore
