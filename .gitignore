@@ -4,3 +4,5 @@ log
 
 API.code-workspace
 .gitignore
+.vscode/launch.json
+.gitignore

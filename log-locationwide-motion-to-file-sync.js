@@ -14,13 +14,13 @@ var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Internetofthing'
-const locationId = '229349' // fangtang
+// const locationId = '229349' // fangtang
 // const locationId = '581669' // 36
-// const locationId = '399621' // 4u
+const locationId = '399621' // 4u
 // const locationId = '521209' // wafer shanghai
 // const locationId = '797296' // novah
-const startDate = '2019/10/31/00:00:00'
-const endDate = '2019/12/1/13:59:59'
+const startDate = '2019/12/11/00:00:00'
+const endDate = '2019/12/19/23:59:59'
 var c = console.log
 
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
@@ -46,7 +46,7 @@ function Queue() {
     this.back = tail
     this.toString = toString
     this.empty = empty
-    this.length = dataStore.length
+    this.length = this.dataStore.length
 }
 function enqueue(element) {
     this.dataStore.push(element)
@@ -77,7 +77,7 @@ function empty() {
 var messageQueue = new Queue()
 
 // const _24Hour = 86400000
-const _12Hour = 10800000
+const _12Hour = 86400000
 var TimeoutId = setTimeout(doReport, 50000)
 // var TimeoutId2 = setTimeout(sendMessagetoQue, 500)
 
@@ -110,7 +110,7 @@ client.on('connect', function (connection) {
     // Handle messages
     connection.on('message', function (message) {
         clearTimeout(TimeoutId)
-        //  TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
+        TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
         // c('timer reset  ')
 
         if (message.type === 'utf8') {
@@ -275,19 +275,20 @@ client.on('connect', function (connection) {
         // 空的mes,马上从队列发-由接收报文触发
         // 非空mes,windowsize<20,马上从队列发,-发前20个
         // 非空mes,windowSize>=20,不发,打入队列
-        //
+        // 也即是说,服务器最多积压20个请求
 
-        if (mes === null && messageQueue.length > 0) {
+        if (mes === undefined && messageQueue.dataStore.length > 0) {
             sendMessage(messageQueue.dequeue())
-
-        } else if (mes !== null && _windowSize < 20) {
+            c('1  sending in queue , now have ' + messageQueue.dataStore.length)
+        } else if (mes !== undefined && _windowSize < 20) {
             messageQueue.enqueue(mes)
             _windowSize++
             sendMessage(messageQueue.dequeue())
-        } else if (mes !== null && _windowSize >= 20) {
+            c('2  sending in queue , now have ' + messageQueue.dataStore.length)
+        } else if (mes !== undefined && _windowSize >= 20) {
             messageQueue.enqueue(mes)
+            c('3  sending in queue , now have ' + messageQueue.dataStore.length)
         }
-        c(' sending in queue , now have ' + messageQueue.length)
     }
 
     function sendMessage(message) {
