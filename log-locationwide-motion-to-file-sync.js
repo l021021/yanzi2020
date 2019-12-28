@@ -9,21 +9,24 @@
 
 var WebSocketClient = require('websocket').client
 const fs = require('fs')
-
 var cirrusAPIendpoint = 'cirrus11.yanzi.se'
+var c = console.log
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Internetofthing'
-// const locationId = '229349' // fangtang
+const locationId = '229349' // fangtang
 // const locationId = '581669' // 36
-const locationId = '399621' // 4u
+// const locationId = '399621' // 4u
 // const locationId = '521209' // wafer shanghai
 // const locationId = '797296' // novah
-const startDate = '2019/12/11/00:00:00'
-const endDate = '2019/12/19/23:59:59'
-var c = console.log
-
+const startDate = '2019/11/11/00:00:00'
+const endDate = '2019/11/21/23:59:59'
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
+
+// const _24Hour = 86400000
+const reportPeriod = 86400000
+var TimeoutId = setTimeout(doReport, 300000)
+// var TimeoutId2 = setTimeout(sendMessagetoQue, 500)
 
 // var username = "653498331@qq.com";
 // var password = "000000";
@@ -76,11 +79,6 @@ function empty() {
 }
 var messageQueue = new Queue()
 
-// const _24Hour = 86400000
-const _12Hour = 86400000
-var TimeoutId = setTimeout(doReport, 50000)
-// var TimeoutId2 = setTimeout(sendMessagetoQue, 500)
-
 // Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
 
@@ -110,7 +108,7 @@ client.on('connect', function (connection) {
     // Handle messages
     connection.on('message', function (message) {
         clearTimeout(TimeoutId)
-        TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
+        // TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
         // c('timer reset  ')
 
         if (message.type === 'utf8') {
@@ -153,9 +151,10 @@ client.on('connect', function (connection) {
 
                         // Process records
                     } else {
-                        c('0 list # ' + ++_responseCount)
+                        c('empty list # ' + ++_responseCount)
                     }
 
+                    if (_requestCount === _responseCount) { doReport() }
                     break
                 case 'GetUnitsResponse':
                     if (json.responseCode.name == 'success') {
@@ -223,7 +222,7 @@ client.on('connect', function (connection) {
             c('Wrong Date.')
             return null
         }
-        if (timeEnd_mili - timeStart_mili >= _12Hour) {
+        if (timeEnd_mili - timeStart_mili >= reportPeriod) {
             var request = {
                 messageType: 'GetSamplesRequest',
                 dataSourceAddress: {
@@ -234,7 +233,7 @@ client.on('connect', function (connection) {
                 timeSerieSelection: {
                     resourceType: 'TimeSerieSelection',
                     timeStart: timeStart_mili,
-                    timeEnd: timeStart_mili + _12Hour
+                    timeEnd: timeStart_mili + reportPeriod
                 }
             }
             // push message in que
@@ -245,7 +244,7 @@ client.on('connect', function (connection) {
             c('requesting : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendGetSamplesRequest(
                 deviceID,
-                timeStart_mili + _12Hour,
+                timeStart_mili + reportPeriod,
                 timeEnd_mili
             )
         } else {
@@ -279,16 +278,16 @@ client.on('connect', function (connection) {
 
         if (mes === undefined && messageQueue.dataStore.length > 0) {
             sendMessage(messageQueue.dequeue())
-            c('1  sending in queue , now have ' + messageQueue.dataStore.length)
-        } else if (mes !== undefined && _windowSize < 20) {
+            // c('sending to queue . leaving ' + messageQueue.dataStore.length)
+        } else if (mes !== undefined && _windowSize < 5) {
             messageQueue.enqueue(mes)
             _windowSize++
             sendMessage(messageQueue.dequeue())
-            c('2  sending in queue , now have ' + messageQueue.dataStore.length)
-        } else if (mes !== undefined && _windowSize >= 20) {
+            // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
+        } else if (mes !== undefined && _windowSize >= 5) {
             messageQueue.enqueue(mes)
-            c('3  sending in queue , now have ' + messageQueue.dataStore.length)
         }
+        c('    sending request, still  ' + messageQueue.dataStore.length + ' in queue.')
     }
 
     function sendMessage(message) {
@@ -345,6 +344,7 @@ function doReport() {
     var t = new Date().getTime()
     var timestamp = new Date()
     timestamp.setTime(t)
+    dataFile.end()
     c('Reporting：send ' + _requestCount + ' recvd ' + _responseCount)
     c(timestamp.toLocaleTimeString() + '')
     // sorting
