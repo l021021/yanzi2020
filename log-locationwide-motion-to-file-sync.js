@@ -14,17 +14,22 @@ var c = console.log
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Internetofthing'
-const locationId = '229349' // fangtang
+// const locationId = '229349' // fangtang
 // const locationId = '581669' // 36
 // const locationId = '399621' // 4u
-// const locationId = '521209' // wafer shanghai
+const locationId = '521209' // wafer shanghai
 // const locationId = '797296' // novah
-const startDate = '2019/11/11/00:00:00'
-const endDate = '2019/11/21/23:59:59'
+const startDate = '2019/12/11/00:00:00'
+const endDate = '2019/12/12/23:59:59'
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
 
+dataFile.on('finish',
+    function () { process.exit() })
+
 // const _24Hour = 86400000
-const reportPeriod = 86400000
+const reportPeriod = 3600000 * 8 * 3
+const window_limit = 3
+
 var TimeoutId = setTimeout(doReport, 300000)
 // var TimeoutId2 = setTimeout(sendMessagetoQue, 500)
 
@@ -98,7 +103,7 @@ var unitObj = {
 // Program body
 client.on('connectFailed', function (error) {
     c('Connect Error: reconnect' + error.toString())
-    beginPOLL()
+    start()
 })
 
 client.on('connect', function (connection) {
@@ -210,7 +215,7 @@ client.on('connect', function (connection) {
 
     connection.on('error', function (error) {
         c('Connection Error: reconnect' + error.toString())
-        beginPOLL()
+        start()
     })
 
     connection.on('close', function () {
@@ -279,12 +284,12 @@ client.on('connect', function (connection) {
         if (mes === undefined && messageQueue.dataStore.length > 0) {
             sendMessage(messageQueue.dequeue())
             // c('sending to queue . leaving ' + messageQueue.dataStore.length)
-        } else if (mes !== undefined && _windowSize < 5) {
+        } else if (mes !== undefined && _windowSize < window_limit) {
             messageQueue.enqueue(mes)
             _windowSize++
             sendMessage(messageQueue.dequeue())
             // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
-        } else if (mes !== undefined && _windowSize >= 5) {
+        } else if (mes !== undefined && _windowSize >= window_limit) {
             messageQueue.enqueue(mes)
         }
         c('    sending request, still  ' + messageQueue.dataStore.length + ' in queue.')
@@ -335,9 +340,9 @@ client.on('connect', function (connection) {
     }
 })
 
-function beginPOLL() {
+function start() {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-    // c("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
+    c('Connecting to wss://' + cirrusAPIendpoint + '/cirrusAPI using username ' + username)
 }
 
 function doReport() {
@@ -347,22 +352,8 @@ function doReport() {
     dataFile.end()
     c('Reporting：send ' + _requestCount + ' recvd ' + _responseCount)
     c(timestamp.toLocaleTimeString() + '')
-    // sorting
 
-    _Units.sort(function (a, b) {
-        var x = a.locationId
-        var y = b.locationId
-        if (x > y) return 1
-        if (x < y) return -1
-        return 0
-    })
-
-    t = new Date().getTime()
-    timestamp = new Date()
-    timestamp.setTime(t)
-    // c(timestamp.toLocaleTimeString() + 'ok!')
-    // clearTimeout(TimeoutId)
-    process.exit()
+    // process.exit()
 }
 
-beginPOLL()
+start()
