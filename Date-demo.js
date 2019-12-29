@@ -1,3 +1,4 @@
+
 // This is a test for Date
 
 var myDate = new Date() // freezed at that moment
