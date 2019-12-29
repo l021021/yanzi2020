@@ -7,6 +7,8 @@ console.log(JSON.parse(JSON.stringify(myDate.toJSON()))) // Tue Nov 12 2019 11:4
 console.log(Date.parse('2019/01/01')) // to  mili
 console.log(myDate.toLocaleDateString()) // 2019-11-12
 console.log(myDate.toLocaleTimeString()) // 12:01:11
+console.log(myDate.toLocaleString()) // 12:01:11
+
 // setTimeout(function() { console.log(myDate.toLocaleTimeString()) }, 10000)
 console.log(myDate.getDate()) // 12
 console.log(myDate.getTime()) // 1573531087679
@@ -18,10 +20,10 @@ myDate.setMinutes(0)
 myDate.setSeconds(0)
 myDate.setMilliseconds(0)
 
-// string to date
+// string to dater
 
-myDate.setTime(Date.parse('2019/01/01/12:00:00'))
+myDate.setTime(Date.parse('2019/01/01/02:00:00'))
 
-console.log(myDate.toLocaleString()) // get the even clock 8:00:00
+console.log(myDate.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })) // get the even clock 8:00:00
 
 console.log(Date.parse('2019/11/12/' + '10:00:00'))

@@ -52,14 +52,12 @@ CSVFile.on('error', (err) => {
     console.log('发生异常:', err)
 })
 // 已打开要写入的文件事件
-CSVFile.on('open', (fd) => {
-    console.log('文件已打开:', fd)
-})
+// CSVFile.on('open', (fd) => {
+//     console.log('文件已打开:', fd)
+// })
 // 文件已经就写入完成事件
 CSVFile.on('finish', () => {
     console.log('写入已完成..')
-    // console.log('读取文件内容:', fs.readFileSync('./file-test.js', 'utf8')) // 打印写入的内容
-    // console.log(CSVFile)
 })
 
 // 文件关闭事件
@@ -85,9 +83,9 @@ for (let i1 = 0; i1 < locationJson.length; i1++) {
 
 c('总的传感器数: ' + unitsArray.length)
 
-// 将不同传感器的数据分开放入数组
-
 CSVFile.write('ID,Time,Pct\n') // 文件头
+
+// 将不同传感器的数据分开放入数组
 
 for (let i1 = 0; i1 < locationJson.length; i1++) {
     json[locationJson[i1].DID].push(JSON.parse(JSON.stringify(locationJson[i1])))
@@ -98,8 +96,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
 
     // Process records (asset or motion) and write into motiontimestamps
     var tempObj
-    c('sorting sensor array ')
-    // scan_array(json[unitsArray[i1]])
+    c('  sorting sensor array ')
 
     json[unitsArray[i1]].sort(function (a, b) { // 按照时间排序,但是id是乱的
         if (a.sampleTime > b.sampleTime) {
@@ -108,8 +105,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
             return -1
         };
     })
-    c('sorted sensor array ')
-    // scan_array(json[unitsArray[i1]])
+    c('  finished sorting sensor array ')
 
     // c(JSON.stringify(json[unitsArray[i1]]))
 
@@ -119,7 +115,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
     // 从motion vlaue/free/occupy 到 in-ot 记录
 
     if (json[unitsArray[i1]][0].DID.indexOf('UU') >= 0) {
-        c('  calculating io-ot 记录' + json[unitsArray[i1]].length + ' lists')
+        c('    calculating io-ot records ' + json[unitsArray[i1]].length + ' lists')
         for (let i2 = 0; i2 < json[unitsArray[i1]].length; i2++) {
             recordObj.timeStamp = json[unitsArray[i1]][i2].sampleTime
             if (json[unitsArray[i1]][i2].assetState.name === 'occupied') {
@@ -137,7 +133,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
             };
         }
     } else if (json[unitsArray[i1]][0].DID.indexOf('EU') >= 0) { // json[1].value json[1].sampleTime
-        c('  calculating in-ot 记录' + json[unitsArray[i1]].length + ' lists')
+        c('    calculating in-ot records ' + json[unitsArray[i1]].length + ' lists')
 
         // first record always 'ot'
         recordObj.timeStamp = json[unitsArray[i1]][0].sampleTime
@@ -163,12 +159,12 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
         }
     }
 
-    c('  Total motion records for this DID ' + motionTimeStamps.length)
+    c('    Total motion records for this DID ' + motionTimeStamps.length)
 
-    c('  processing all samplemotion records:')
+    c('    processing all samplemotion records:')
 
     timeArray.length = 0 // 清零
-    c('    processing time Array ' + timeArray.length)
+    c('      processing time Array(zero) ' + timeArray.length)
     for (let i2 = 1; i2 < motionTimeStamps.length; i2++) { // start from second record
         t1.setTime(motionTimeStamps[i2 - 1].timeStamp) // 前一个事件时间
         t1.setMilliseconds(0) // 得到整秒
@@ -210,7 +206,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
             // process head
             if (timeArray.length > 1) {
                 for (let k = timeArray.length - 1; k > Math.max(timeArray.length - 9, 0); k--) { // 检查是否存在这个分钟纪录
-                    if (timeArray[k].timeStamp === t0.toLocaleString()) {
+                    if (timeArray[k].timeStamp === t0.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })) {
                         //      c(k + '        头部记录存在！增加头部的数值' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
                         _RecordExist = true
                         timeArray[k].value += t1ToNext / 60 // 增加新的占用
@@ -218,7 +214,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
                 }
             }
             if (!_RecordExist) { // 这一分不存在
-                timeObj.timeStamp = t0.toLocaleString()
+                timeObj.timeStamp = t0.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
                 timeObj.value = t1ToNext / 60
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
                 timeArray.push(_timeObj) // 增加记录
@@ -229,7 +225,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
             // c('      准备加入中部记录');
             while (j < minDiff) {
                 t0.setTime(t1m.getTime() + j * 60 * 1000) // 下一分
-                timeObj.timeStamp = t0.toLocaleString()
+                timeObj.timeStamp = t0.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
                 timeObj.value = 1
 
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
@@ -245,7 +241,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
                 //       for (let k = timeArray.length - 1; k > 0; k--) {
                 if (timeArray.length > 1) {
                     for (let k = timeArray.length - 1; k > Math.max(timeArray.length - 9, 0); k--) { // 检查是否存在这个分钟纪录
-                        if (timeArray[k].timeStamp === t0.toLocaleString()) {
+                        if (timeArray[k].timeStamp === t0.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })) {
                             _RecordExist = true
                             //        c(k + '     尾部记录存在！尾部数值增加  ' + JSON.stringify(timeArray[k]) + ' + ' + PrevTot2)
                             timeArray[k].value += PrevTot2 / 60
@@ -255,7 +251,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
                 }
 
                 if (!_RecordExist) {
-                    timeObj.timeStamp = t2m.toLocaleString()
+                    timeObj.timeStamp = t2m.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
                     timeObj.value = PrevTot2 / 60
                     var _timeObj = JSON.parse(JSON.stringify(timeObj))
                     timeArray.push(_timeObj)
@@ -274,7 +270,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
 
             if (timeArray.length > 1) {
                 for (let k = timeArray.length - 1; k > Math.max(timeArray.length - 9, 0); k--) { // 检查是否存在这个分钟纪录
-                    if (timeArray[k].timeStamp === t0.toLocaleString()) {
+                    if (timeArray[k].timeStamp === t0.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })) {
                         //         c(k + '      头部记录存在！头部原值+0不变 ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
                         _RecordExist = true
                         //  _ExistValue = timeArray[k].value
@@ -282,8 +278,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
                 }
             }
             if (!_RecordExist) { // 这一分不存在
-                timeObj.timeStamp = t0.toLocaleString()
-                timeObj.value = 0
+                timeObj.timeStamp = t0.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
                 timeArray.push(_timeObj) // 增加记录
@@ -295,7 +290,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
             // c('      准备加入中部记录：');
             while (j < minDiff) {
                 t0.setTime(t1m.getTime() + j * 60 * 1000)
-                timeObj.timeStamp = t0.toLocaleString()
+                timeObj.timeStamp = t0.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
                 timeObj.value = 0
 
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
@@ -310,7 +305,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
             // for (let k = timeArray.length - 1; k > 0; k--) {
             if (timeArray.length > 1) {
                 for (let k = timeArray.length - 1; k > Math.max(timeArray.length - 9, 0); k--) { // 检查是否存在这个分钟纪录
-                    if (timeArray[k].timeStamp === t0.toLocaleString()) {
+                    if (timeArray[k].timeStamp === t0.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })) {
                         //         c(k + '                  尾部记录存在！尾部原值不变 ' + '   ' + JSON.stringify(timeArray[k]))
                         _RecordExist = true
                         // _ExistValue = timeArray[k].value;
@@ -319,7 +314,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
             }
             // do nothing
             if (!_RecordExist) {
-                timeObj.timeStamp = t2m.toLocaleString()
+                timeObj.timeStamp = t2m.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
                 timeObj.value = 0
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
                 timeArray.push(_timeObj)
@@ -336,7 +331,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
             return -1
         };
     })
-    c('  writing  for this sensor ' + timeArray.length)
+    c('    Writing  CSV records for this sensor: ' + timeArray.length + '\n')
 
     for (let i3 = 0; i3 < timeArray.length; i3++) {
         var e = timeArray[i3]
