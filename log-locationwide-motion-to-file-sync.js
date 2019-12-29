@@ -329,10 +329,10 @@ function start() {
 }
 
 function doReport() {
-    if () _requestCount > _responseCount) {
+    if (_requestCount > _responseCount) {
         c('Failed')
         dataFile.destroy()
-        //process.exit()
+        // process.exit()
     }
     var t = new Date().getTime()
     var timestamp = new Date()
