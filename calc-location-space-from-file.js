@@ -10,6 +10,8 @@
     写入文件
 4.查重算法,仅限于前五个记录
 
+TODO boundary
+
 */
 const FS = require('fs')
 var str
@@ -23,7 +25,7 @@ var recordObj = {
     value: ''
 }
 
-var filename = '..\\log\\novah-nov-assets' // 历史记录文件
+var filename = '..\\log\\UUID-F23F78EE99A648F29415AAC15F404F21_2019_10_31_00_00_00_2019_12_01_16_59_59' // 历史记录文件
 
 var t1 = new Date()
 var t2 = new Date()

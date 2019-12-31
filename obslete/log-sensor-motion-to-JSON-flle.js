@@ -14,17 +14,18 @@ var WebSocketClient = require('websocket').client
 const fs = require('fs')
 
 var cirrusAPIendpoint = 'cirrus11.yanzi.se'
-var username = '653498331@qq.com'
-var password = '000000'
+var username = 'frank.shen@pinyuaninfo.com'
+var password = 'Internetofthing'
 var client = new WebSocketClient()
 var connection
 var c = console.log
-var locationId = '229349' // fangtang
+// var locationId = '229349' // fangtang
+const locationId = '797296' // novah
 
-const startDate = '2019/11/01/15:00:00'
-const endDate = '2019/11/01/16:59:59'
-    // var deviceID = 'UUID-17B30675BC5849C2AD81F2448E772705'
-var deviceID = 'EUI64-D0CF5EFFFE792D84-3-Motion'
+const startDate = '2019/10/31/00:00:00'
+const endDate = '2019/12/01/16:59:59'
+var deviceID = 'UUID-F23F78EE99A648F29415AAC15F404F21'
+// var deviceID = 'EUI64-D0CF5EFFFE792D84-3-Motion'
 
 var TimeoutId = setTimeout(doReport, 30000)
 
@@ -37,7 +38,7 @@ var DTO1 = []
 var DTOs = []
 DTOs[0] = DTO
 DTOs[1] = DTO1
-const logStream = fs.createWriteStream('./' + deviceID + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
+const logStream = fs.createWriteStream('..//log//' + deviceID + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
 
 // 文件有关
 logStream.on('error', (err) => {
@@ -50,35 +51,35 @@ logStream.on('finish', () => {
     console.log('写入已完成..')
 })
 logStream.on('close', () => {
-        console.log('文件已关闭！')
-    })
-    // var t1 = new Date()
-    // var t2 = new Date()
-    // var t1m = new Date()
-    // var t0 = new Date()
-    // var t2m = new Date()
-    // var timeArray = []
-    //     // var _timeObj
-    // var timeObj = {
-    //     ID: '',
-    //     timeStamp: '',
-    //     value: ''
-    // }
+    console.log('文件已关闭！')
+})
+// var t1 = new Date()
+// var t2 = new Date()
+// var t1m = new Date()
+// var t0 = new Date()
+// var t2m = new Date()
+// var timeArray = []
+//     // var _timeObj
+// var timeObj = {
+//     ID: '',
+//     timeStamp: '',
+//     value: ''
+// }
 
 var minDiff, t1ToNext, PrevTot2
 
-client.on('connectFailed', function(error) {
+client.on('connectFailed', function (error) {
     c('Connect Error: ' + error.toString())
     connection.close()
 })
 
-client.on('connect', function(connection) {
+client.on('connect', function (connection) {
     c('Websocket open!')
     c('Checking API service status with ServiceRequest.')
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function(message) {
+    connection.on('message', function (message) {
         clearTimeout(TimeoutId)
         TimeoutId = setTimeout(doReport, 30000)
 
@@ -93,10 +94,10 @@ client.on('connect', function(connection) {
             if (json.responseCode.name === 'success') {
                 // now = new Date().getTime()
                 sendGetSamplesRequest(
-                        deviceID,
-                        Date.parse(startDate),
-                        Date.parse(endDate)
-                    ) // 历史数据拉回
+                    deviceID,
+                    Date.parse(startDate),
+                    Date.parse(endDate)
+                ) // 历史数据拉回
             } else {
                 c(json.responseCode.name)
                 c("Couldn't login, check your username and passoword")
@@ -118,11 +119,11 @@ client.on('connect', function(connection) {
         }
     })
 
-    connection.on('error', function(error) {
+    connection.on('error', function (error) {
         c('Connection Error: ' + error.toString())
     })
 
-    connection.on('close', function(error) {
+    connection.on('close', function (error) {
         c('Connection closed!' + error.message)
     })
 
@@ -130,7 +131,7 @@ client.on('connect', function(connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-                // c('sending' + JSON.stringify(json));
+            // c('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             c("sendMessage: Couldn't send message, the connection is not open")
