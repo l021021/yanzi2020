@@ -1,5 +1,11 @@
-
 // This is a test for Date
+
+// var a = [new Date(2012, 08), new Date(2012, 11), new Date(2012, 03)];
+// var options = { year: 'numeric', month: 'long' };
+// var dateTimeFormat = new Intl.DateTimeFormat('pt-BR', options);
+// var formatted = a.map(dateTimeFormat.format);
+// console.log(formatted.join('; '));
+// // → "setembro de 2012; dezembro de 2012; abril de 2012"
 
 var myDate = new Date() // freezed at that moment
 console.log(myDate) // Tue Nov 12 2019 11:48:51 GMT+0800 (GMT+08:00)
@@ -23,8 +29,12 @@ myDate.setMilliseconds(0)
 
 // string to dater
 
+var options = { year: 'numeric', month: '2-digit', day: '2-digit', minute: '2-digit', second: '2-digit', hour: '2-digit' };
+
 myDate.setTime(Date.parse('2019/01/01/02:00:00'))
 
-console.log(myDate.toLocaleString('Zh-cn', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })) // get the even clock 8:00:00
-
+for (let i = 0; i < 10; i++) {
+    myDate.setTime(15715316477360 + i * 100000000)
+    console.log((myDate.toLocaleString('zh-CN', options))) // get the even clock 8:00:00
+}
 console.log(Date.parse('2019/11/12/' + '10:00:00'))
