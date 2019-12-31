@@ -20,7 +20,7 @@ const window_limit = 3
 const reportPeriod = 3600000 * 8 * 3
 // const _24Hour = 86400000
 const startDate = '2019/10/31/00:00:00'
-const endDate = '2019/12/01/23:59:59'
+const endDate = '2019/11/01/23:59:59'
 var TimeoutId = setTimeout(doReport, 300000)
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
 
@@ -33,7 +33,7 @@ var _Counter = 0 // message counter
 var _requestCount = 0
 var _responseCount = 0
 var _windowSize = 0
-var _listCount
+var _listCount = 0
 var _Units = []
 
 var cirrusAPIendpoint = 'cirrus11.yanzi.se'
@@ -175,7 +175,8 @@ client.on('connect', function (connection) {
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                 _Units.push(_tempunitObj)
                                 // request history record
-                                if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
+                                // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
+                                if (unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
                             };
                         }
 

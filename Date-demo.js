@@ -29,12 +29,30 @@ myDate.setMilliseconds(0)
 
 // string to dater
 
-var options = { year: 'numeric', month: '2-digit', day: '2-digit', minute: '2-digit', second: '2-digit', hour: '2-digit' };
+var options = { year: 'numeric', month: '2-digit', day: '2-digit', minute: '2-digit', second: '2-digit', hour: '2-digit' }
 
 myDate.setTime(Date.parse('2019/01/01/02:00:00'))
 
-for (let i = 0; i < 10; i++) {
+// console.log(Date.now())
+
+console.time('x')
+for (let i = 0; i < 100; i++) {
     myDate.setTime(15715316477360 + i * 100000000)
     console.log((myDate.toLocaleString('zh-CN', options))) // get the even clock 8:00:00
 }
-console.log(Date.parse('2019/11/12/' + '10:00:00'))
+console.timeEnd('x')
+
+console.time('x')
+for (let i = 0; i < 100; i++) {
+    myDate.setTime(15715316477360 + i * 100000000)
+    console.log((myDate.toLocaleString())) // get the even clock 8:00:00
+}
+console.timeEnd('x')
+
+console.time('x')
+for (let i = 0; i < 100; i++) {
+    myDate.setTime(15715316477360 + i * 100000000)
+    console.log((myDate.toISOString())) // get the even clock 8:00:00
+}
+console.timeEnd('x')
+// console.log(Date.parse('2019/11/12/' + '10:00:00'))

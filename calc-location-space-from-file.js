@@ -23,7 +23,7 @@ var recordObj = {
     value: ''
 }
 
-var filename = '..\\log\\521209_2019_12_11_00_00_00_2019_12_12_23_59_59' // 历史记录文件
+var filename = '..\\log\\novah-nov-assets' // 历史记录文件
 
 var t1 = new Date()
 var t2 = new Date()
