@@ -27,8 +27,8 @@ var recordObj = {
     value: ''
 }
 
-var filename = '..\\log\\novah-dec-bdr' // 历史记录文件
-const startDate = '2019/11/30/00:00:00'
+var filename = '..\\log\\reduce-test-file' // 历史记录文件
+const startDate = '2019/12/31/00:00:00'
 const endDate = '2020/01/01/09:59:59'
 
 var t1 = new Date()
@@ -359,12 +359,49 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
     })
     c('  writing  for this sensor ' + timeArray.length)
 
+    // reduce
+    // var sumCallback = (acc, cur) => (acc.x + cur.x)
+
+    // var new_timeArray = [];
+
+    // new_timeArray = timeArray.map(function (el) {
+
+    //  })
+
+    var sliceContainer = [] // 针对键slice进行归类的容器
+    timeArray.forEach(item => {
+        var ts = toHourSharp(item.timeStamp)
+        sliceContainer[ts] = sliceContainer[ts] || []
+        // if (sliceContainer[ts] === []) {
+        sliceContainer[ts].push(item)
+        // } else {
+        // sliceContainer[ts].value += item.value
+        // }
+    })
+    sliceContainer.forEach(item => { // todo meiyou run
+        item.reduce(function (prev, cur) {
+            prev.value += cur.value
+            prev.timeStamp = ''
+
+            return prev
+        }, 0)
+    })
+
     for (let i3 = 0; i3 < timeArray.length; i3++) {
         var e = timeArray[i3]
         CSVFile.write(unitsArray[i1] + ',' + e.timeStamp + ',' + e.value + '\n')
-    };
+    }
 }
 // CSVFile.end()
+
+function toHourSharp(timeStamp) {
+    var t = new Date()
+    t.setTime(Date.parse(timeStamp))
+    t.setMinutes(0)
+    t.setSeconds(0)
+    t.setMilliseconds(0)
+    return t.toLocaleString()
+}
 
 CSVFile.end()
     // process.exit()
