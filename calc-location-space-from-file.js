@@ -114,11 +114,11 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
     // scan_array(json[unitsArray[i1]])
 
     // c(JSON.stringify(json[unitsArray[i1]]))
-
+a
     motionTimeStamps.length = 0 // 清零
     recordObj.Did = unitsArray[i1]
 
-    // 从motion vlaue/free/occupy 到 in-ot 记录
+    // 从motion value/free/occupy 到 in-ot 记录
 
     if (json[unitsArray[i1]][0].DID.indexOf('UU') >= 0) {
         c('  calculating io-ot 记录' + json[unitsArray[i1]].length + ' lists')
@@ -143,7 +143,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
 
         // first record always 'ot'
         recordObj.timeStamp = json[unitsArray[i1]][0].sampleTime
-        recordObj.value = 'in'
+        recordObj.value = 'ot'
         tempObj = JSON.parse(JSON.stringify(recordObj))
         motionTimeStamps.push(tempObj)
 

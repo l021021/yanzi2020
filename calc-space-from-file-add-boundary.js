@@ -21,6 +21,8 @@ var recordObj = {
 
 var filename = '..\\log\\UUID-F23F78EE99A648F29415AAC15F404F21_2019_10_31_00_00_00_2019_12_01_16_59_59'
 
+const startDate = '2019/10/31/00:00:00'
+const endDate = '2019/12/01/16:59:59'
 var t1 = new Date()
 var t2 = new Date()
 var t1m = new Date()
@@ -78,6 +80,14 @@ json.sort(function (a, b) {
 })
 if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
     c('calculating ' + json.length + ' lists')
+
+    // add boundary record - always free
+
+    recordObj.timeStamp = Date.parse(startDate)
+    recordObj.value = 'ot' // in or ot
+    tempObj = JSON.parse(JSON.stringify(recordObj))
+    motionTimeStamps.push(tempObj)
+
     for (var i = 0; i < json.length; i++) {
         recordObj.timeStamp = json[i].sampleTime
         if (json[i].assetState.name === 'occupied') {
@@ -94,12 +104,19 @@ if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
             motionTimeStamps.push(tempObj)
         };
     }
+
+    // add boundary record - always as the last one
+
+    recordObj.timeStamp = Date.parse(endDate)
+    // recordObj.value 取原值
+    tempObj = JSON.parse(JSON.stringify(recordObj))
+    motionTimeStamps.push(tempObj)
 } else if (json[0].resourceType === 'SampleMotion') { // json[1].value json[1].sampleTime
     c('calculating ' + json.length + ' lists')
 
     // first record always 'ot'
     recordObj.timeStamp = json[0].sampleTime
-    recordObj.value = 'in'
+    recordObj.value = 'ot' // in or ot
     tempObj = JSON.parse(JSON.stringify(recordObj))
     motionTimeStamps.push(tempObj)
 
