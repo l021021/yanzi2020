@@ -9,35 +9,15 @@ const fs = require('fs')
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Internetofthing'
-// var username = "653498331@qq.com";
-// var password = "000000";
-// const locationId = '229349' // fangtang
-// const locationId = '581669' // 36
-// const locationId = '399621' // 4u
-
-// const locationId = '185308' // - As'tra Zeneca P1 Floor 1 - B is online  with 6 active sensors, 29 logical
-// const locationId = '329312' // - As'tra Zeneca P1 Floor 5 - A is online  with 9 active sensors, 50 logical
-// const locationId = '434888' // - As'tra Zeneca P1 Floor 2 - C is online  with 12 active sensors, 86 logical
-// const locationId = '447224' // - As'tra Zeneca P1 Floor 3 - A is online  with 8 active sensors, 100 logical
-// const locationId = '507828' // - As'tra Zeneca P1 Floor 4 - B is online  with 4 active sensors, 30 logical
-// const locationId = '60358' // - As'tra Zeneca P1 Floor 2 - B is online  with 32 active sensors, 243 logical
-const locationId = '608739' // - As'tra Zeneca P1 Floor 5 - B is online  with 3 active sensors, 17 logical
-// const locationId = '652990' // - As'tra Zeneca P1 Floor 3 - C is online  with 4 active sensors, 30 logical
-// const locationId = '668617' // - As'tra Zeneca P1 Floor 4 - A is online  with 11 active sensors, 94 logical
-// const locationId = '83561' // - As'tra Zeneca P1 Floor 3 - B is online  with 9 active sensors, 224 logical
-// const locationId = '88252' // - As'tra Zeneca P1 Floor 2 - A is online  with 10 active sensors, 224 logical
-// const locationId = '938433' // - As'tra Zeneca P1 Floor 1 - A is online  with 22 active sensors, 260 logical
-
-// const locationId = '521209' // wafer shanghai
-// const locationId = '797296' // novah
+const locationIds = []
 const window_limit = 3
 const reportPeriod = 3600000 * 8 * 3
 // const _24Hour = 86400000
-const startDate = '2019/12/23/00:00:00'
-
-var EUorUU = 'Motion' // logical or physical
-const endDate = '2019/12/31/23:59:59'
+const startDate = '2019/12/31/00:00:00'
+const endDate = '2020/01/01/09:59:59'
 var TimeoutId = setTimeout(doReport, 300000)
+
+for (let lc = 0; lc < locationIds.length; lc++) { }
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
 
 dataFile.on('finish',
@@ -173,7 +153,7 @@ client.on('connect', function (connection) {
 
                         c('seeing ' + json.list.length + ' sensors in  ' + json.locationAddress.locationId)
                         for (let index = 0; index < json.list.length; index++) { // process each response packet
-                            if (json.list[index].unitTypeFixed.name == 'gateway' || json.list[index].unitTypeFixed.name == 'remoteGateway' || json.list[index].unitAddress.did.indexOf('AP') != -1) { // c(json.list[index].unitAddress.did);
+                            if (json.list[index].unitTypeFixed.name == 'gateway' || json.list[index].unitAddress.did.indexOf('AP') != -1) { // c(json.list[index].unitAddress.did);
                                 // c('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
                             } else {
                                 // record all sensors
@@ -192,7 +172,7 @@ client.on('connect', function (connection) {
                                 _Units.push(_tempunitObj)
                                 // request history record
                                 // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
-                                if (unitObj.did.indexOf(EUorUU) >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
+                                if (unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
                             };
                         }
 
