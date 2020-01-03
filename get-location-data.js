@@ -27,9 +27,9 @@ var password = 'Internetofthing'
 // const locationId = '608739' // - As'tra Zeneca P1 Floor 5 - B is online  with 3 active sensors, 17 logical
 // const locationId = '652990' // - As'tra Zeneca P1 Floor 3 - C is online  with 4 active sensors, 30 logical
 // const locationId = '668617' // - As'tra Zeneca P1 Floor 4 - A is online  with 11 active sensors, 94 logical
-const locationId = '83561' // - As'tra Zeneca P1 Floor 3 - B is online  with 9 active sensors, 224 logical
-    // const locationId = '88252' // - As'tra Zeneca P1 Floor 2 - A is online  with 10 active sensors, 224 logical
-    // const locationId = '938433' // - As'tra Zeneca P1 Floor 1 - A is online  with 22 active sensors, 260 logical
+// const locationId = '83561' // - As'tra Zeneca P1 Floor 3 - B is online  with 9 active sensors, 224 logical
+// const locationId = '88252' // - As'tra Zeneca P1 Floor 2 - A is online  with 10 active sensors, 224 logical
+const locationId = '938433' // - As'tra Zeneca P1 Floor 1 - A is online  with 22 active sensors, 260 logical
 
 // const locationId = '521209' // wafer shanghai
 // const locationId = '797296' // novah
@@ -40,7 +40,7 @@ const startDate = '2019/12/23/00:00:00'
 const endDate = '2019//12/31/23:59:59'
 const EUorUU = 'Motion' //何种数据
 var TimeoutId = setTimeout(doReport, 300000)
-const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + EUorUU + '_.json', { encoding: 'utf8' })
+const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
 
 dataFile.on('finish',
     function() { process.exit() })
@@ -54,7 +54,7 @@ var _windowSize = 0
 var _listCount = 0
 var _Units = []
 
-var cirrusAPIendpoint = 'cirrus11.yanzi.se'
+var cirrusAPIendpoint = 'cirrus21.yanzi.se'
 var messageQueue = new Queue()
 
 var client = new WebSocketClient()
