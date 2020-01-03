@@ -27,9 +27,9 @@ var recordObj = {
     value: ''
 }
 
-var filename = '..\\log\\4U_2019_12_31_00_00_00_2020_01_01_09_59_59' // 历史记录文件
-const startDate = '2019/12/31/00:00:00'
-const endDate = '2020/01/01/09:59:59'
+var filename = '..\\log\\938433_2019_12_23_00_00_00_2019__12_31_23_59_59_Motion' // 历史记录文件
+const startDate = '2019/12/23/00:00:00'
+const endDate = '2019/12/31/23:59:59'
 
 var t1 = new Date()
 var t2 = new Date()
@@ -51,7 +51,7 @@ var lastValue = -1
 const c = console.log
 
 str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })
-const CSVFile = FS.createWriteStream(filename + '.csv', { encoding: 'utf8' })
+const CSVFile = FS.createWriteStream(filename + '_1M.csv', { encoding: 'utf8' })
 
 // 读取文件发生错误事件
 CSVFile.on('error', (err) => {
