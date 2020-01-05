@@ -10,13 +10,14 @@ TODO:迭代有问题
 
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus11.yanzi.se'
-var username = '653498331@qq.com'
-var password = '000000'
+var username = 'frank.shen@pinyuaninfo.com'
+var password = 'Internetofthing'
+
 var client = new WebSocketClient()
 var connection
 var c = console.log
-var locationId = '229349' // fangtang
-var deviceID = 'EUI64-D0CF5EFFFE792D84-3-Motion'
+var locationId = '60358'
+var deviceID = 'EUI64-D0CF5EFFFE7B2340-3-Motion'
 // var deviceID = 'UUID-17B30675BC5849C2AD81F2448E772705'
 
 var TimeoutId = setTimeout(doReport, 30000)
@@ -24,8 +25,8 @@ var TimeoutId = setTimeout(doReport, 30000)
 // const tenDay = 8640000;
 const _24Hour = 86400000
 var motionTimeStamps = []
-const startDate = '2019/11/21/01:00:00'
-const endDate = '2019/11/21/22:59:59'
+const startDate = '2019/12/23/01:00:00'
+const endDate = '2019/12/31/22:59:59'
 var recordObj = {
   type: '',
   Did: '',
@@ -154,7 +155,7 @@ client.on('connect', function (connection) {
     c('Connection closed!' + error.message)
   })
 
-  function sendMessage (message) {
+  function sendMessage(message) {
     if (connection.connected) {
       // Create the text to be sent
       var json = JSON.stringify(message, null, 1)
@@ -165,14 +166,14 @@ client.on('connect', function (connection) {
     }
   }
 
-  function sendServiceRequest () {
+  function sendServiceRequest() {
     var request = {
       messageType: 'ServiceRequest'
     }
     sendMessage(request)
   }
 
-  function sendLoginRequest () {
+  function sendLoginRequest() {
     var request = {
       messageType: 'LoginRequest',
       username: username,
@@ -181,7 +182,7 @@ client.on('connect', function (connection) {
     sendMessage(request)
   }
 
-  function sendGetSamplesRequest (deviceID, timeStart, timeEnd) {
+  function sendGetSamplesRequest(deviceID, timeStart, timeEnd) {
     if (timeStart > timeEnd) {
       c('Wrong Date.')
       return null
@@ -221,7 +222,7 @@ client.on('connect', function (connection) {
   }
 })
 
-function beginPoll () {
+function beginPoll() {
   if (!username) {
     console.error('The username has to be set')
     return
@@ -234,7 +235,7 @@ function beginPoll () {
   c('Connecting to wss://' + cirrusAPIendpoint + '/cirrusAPI using username ' + username)
 }
 
-function doReport () {
+function doReport() {
   clearTimeout(TimeoutId)
   c('Total motion records: ' + motionTimeStamps.length)
   c('for ' + deviceID + ' from ' + startDate + ' to ' + endDate)

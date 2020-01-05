@@ -7,6 +7,10 @@
 2.装换成in、ot数组 motiontimestamps
 3.计算得到timearray
 4.查重算法,仅限于前五个记录
+5.加入边界
+6.考虑掉线因素
+        6.1 samplemotion:value跳变  //TODO
+        6.2 Asset的missinput   //TODO
 
 */
 const FS = require('fs')
@@ -78,10 +82,11 @@ json.sort(function (a, b) {
         return 1
     };
 })
+
 if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
     c('calculating ' + json.length + ' lists')
 
-    // add boundary record - always free
+    // add boundary record - always free assumed
 
     recordObj.timeStamp = Date.parse(startDate)
     recordObj.value = 'ot' // in or ot
@@ -98,7 +103,7 @@ if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
             recordObj.value = 'ot'
             tempObj = JSON.parse(JSON.stringify(recordObj))
             motionTimeStamps.push(tempObj)
-        } else {
+        } else { // TODO:后面没有处理
             recordObj.value = 'ms'
             tempObj = JSON.parse(JSON.stringify(recordObj))
             motionTimeStamps.push(tempObj)
@@ -124,17 +129,25 @@ if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
         lastValue = json[i - 1].value // update previous value
 
         recordObj.timeStamp = json[i].sampleTime
-        if (lastValue !== json[i].value) { // Value changed!
-            recordObj.value = 'in'
-            tempObj = JSON.parse(JSON.stringify(recordObj))
-            motionTimeStamps.push(tempObj)
-        } else if (lastValue === json[i].value) { // Value unchanged!
+
+        if (((json[i].sampleTime - json[i - 1].sampleTime)) < 1000 * 300) { // 间隔大于5分钟,认为是掉线数据.增加一个ot//TODO
+            if (lastValue === (json[i].value - 1)) { // Value increased by 1 //TODO check
+                recordObj.value = 'in'
+                tempObj = JSON.parse(JSON.stringify(recordObj))
+                motionTimeStamps.push(tempObj)
+            } else if (lastValue === json[i].value) { // Value unchanged!
+                recordObj.value = 'ot'
+                tempObj = JSON.parse(JSON.stringify(recordObj))
+                motionTimeStamps.push(tempObj)
+            } else { // do not write to recordarray
+                c('        Sensor first seen or down, cannot tell')
+            };
+        } else {
             recordObj.value = 'ot'
+            recordObj.timeStamp = json[i - 1].sampleTime + 10000// 增加一个一秒后的掉线数据
             tempObj = JSON.parse(JSON.stringify(recordObj))
             motionTimeStamps.push(tempObj)
-        } else { // do not write to recordarray
-            c('        Sensor first seen, cannot tell')
-        };
+        }
     }
 }
 
