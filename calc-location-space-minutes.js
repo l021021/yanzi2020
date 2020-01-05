@@ -11,8 +11,11 @@
 4.查重算法,仅限于前五个记录
 
 5.boundary
-
-6.TODO 汇集10分钟或小时数据 use reduce?
+6.考虑掉线因素
+        6.1 samplemotion:value跳变
+        6.2 Asset的missinput
+        6.3 标为 ms
+        6.4 计算占用时忽略 ms 记录
 
 */
 const FS = require('fs')
@@ -21,7 +24,6 @@ var json = []
 var locationJson = []
 var unitsArray = []
 var recordObj = {
-    // type: '',
     Did: '',
     timeStamp: '',
     value: ''
@@ -37,7 +39,6 @@ var t1m = new Date()
 var t0 = new Date()
 var t2m = new Date()
 var timeArray = []
-    // var _timeObj
 var timeObj = {
     ID: '',
     timeStamp: '',
@@ -55,17 +56,17 @@ const CSVFile = FS.createWriteStream(filename + '_1M.csv', { encoding: 'utf8' })
 
 // 读取文件发生错误事件
 CSVFile.on('error', (err) => {
-        console.log('发生异常:', err)
-    })
-    // 已打开要写入的文件事件
+    console.log('发生异常:', err)
+})
+// 已打开要写入的文件事件
 CSVFile.on('open', (fd) => {
-        console.log('文件已打开:', fd)
-    })
-    // 文件已经就写入完成事件
+    console.log('文件已打开:', fd)
+})
+// 文件已经就写入完成事件
 CSVFile.on('finish', () => {
     console.log('写入已完成..')
-        // console.log('读取文件内容:', fs.readFileSync('./file-test.js', 'utf8')) // 打印写入的内容
-        // console.log(CSVFile)
+    // console.log('读取文件内容:', fs.readFileSync('./file-test.js', 'utf8')) // 打印写入的内容
+    // console.log(CSVFile)
 })
 
 // 文件关闭事件
@@ -85,7 +86,7 @@ for (let i1 = 0; i1 < locationJson.length; i1++) {
     if (unitsArray.indexOf(locationJson[i1].DID) < 0) {
         unitsArray.push(locationJson[i1].DID)
         json[locationJson[i1].DID] = []
-        c(locationJson[i1].DID)
+        //  c(locationJson[i1].DID)
     }
 }
 
@@ -104,18 +105,18 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
 
     // Process records (asset or motion) and write into motiontimestamps
     var tempObj
-    c('  sorting sensor array ')
-        // scan_array(json[unitsArray[i1]])
+    c('  Sorting sensor array ')
+    // scan_array(json[unitsArray[i1]])
 
-    json[unitsArray[i1]].sort(function(a, b) { // 按照时间排序,但是id是乱的
+    json[unitsArray[i1]].sort(function (a, b) { // 按照时间排序,但是id是乱的
         if (a.sampleTime > b.sampleTime) {
             return 1
         } else {
             return -1
         };
     })
-    c('    finish sorting sensor array ')
-        // scan_array(json[unitsArray[i1]])
+    c('    Finished sorting sensor array ')
+    // scan_array(json[unitsArray[i1]])
 
     // c(JSON.stringify(json[unitsArray[i1]]))
 
@@ -127,7 +128,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
     if (json[unitsArray[i1]][0].DID.indexOf('UU') >= 0) {
         c('  calculating io-ot 记录' + json[unitsArray[i1]].length + ' lists')
 
-        // boundary
+        // boundary assumed free
 
         recordObj.timeStamp = Date.parse(startDate)
         recordObj.value = 'ot' // in or ot
@@ -154,7 +155,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
         // add boundary record - always as the last one
 
         recordObj.timeStamp = Date.parse(endDate)
-            // recordObj.value 取原值
+        // recordObj.value 取原值
         tempObj = JSON.parse(JSON.stringify(recordObj))
         motionTimeStamps.push(tempObj)
     } else if (json[unitsArray[i1]][0].DID.indexOf('EU') >= 0) { // json[1].value json[1].sampleTime
@@ -170,6 +171,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
             lastValue = json[unitsArray[i1]][i2 - 1].value // update previous value
 
             recordObj.timeStamp = json[unitsArray[i1]][i2].sampleTime
+
             if (lastValue !== json[unitsArray[i1]][i2].value) { // Value changed!
                 recordObj.value = 'in'
                 tempObj = JSON.parse(JSON.stringify(recordObj))
@@ -209,7 +211,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
         minDiff = Math.floor((t2m - t1m) / 60 / 1000) // 两次数据之间的整分差
         t1ToNext = 60 - t1.getSeconds() // 前面的零头秒数.例如 16:14:06, 则 = 54
         PrevTot2 = t2.getSeconds() // 后面的零头秒数 16:14:06, 则 = 06
-            // 这样, 10:01:22 in -10:03:44 ot ,应该计算01分的38秒占用,03分的44秒占用 ,02的66秒占用
+        // 这样, 10:01:22 in -10:03:44 ot ,应该计算01分的38秒占用,03分的44秒占用 ,02的66秒占用
 
         // c('     :' + t1.toLocaleString() + '(前)' + t1m.toLocaleTimeString() + '(分)' + minDiff + '(相差分)' + t1ToNext + '(前秒) ' + PrevTot2 + '(后秒)' + t2.toLocaleString() + '(后)  ' + t2m.toLocaleTimeString() + '(分)')
 
@@ -225,8 +227,8 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
             t0.setTime(t1m.getTime()) // 前一整分
 
             let _RecordExist = false // 记录不存在
-                // eslint-disable-next-line no-unused-vars
-                // var _ExistValue = 0
+            // eslint-disable-next-line no-unused-vars
+            // var _ExistValue = 0
 
             // process head
             if (timeArray.length > 1) {
@@ -243,11 +245,11 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
                 timeObj.value = t1ToNext / 60
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
                 timeArray.push(_timeObj) // 增加记录
-                    //     c('      头部记录不存在！头部加入新记录：' + JSON.stringify(_timeObj))
+                //     c('      头部记录不存在！头部加入新记录：' + JSON.stringify(_timeObj))
             }
             // process middle
             let j = 1
-                // c('      准备加入中部记录');
+            // c('      准备加入中部记录');
             while (j < minDiff) {
                 t0.setTime(t1m.getTime() + j * 60 * 1000) // 下一分
                 timeObj.timeStamp = t0.toLocaleString()
@@ -255,22 +257,22 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
 
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
                 timeArray.push(_timeObj)
-                    //     c('      加入中部记录：' + JSON.stringify(_timeObj))
+                //     c('      加入中部记录：' + JSON.stringify(_timeObj))
                 j += 1
             }
 
             { // tail会重复？
                 t0.setTime(t2m.getTime()) // tail
                 let _RecordExist = false
-                    // for (const k in timeArray) { // already exits in Array?
-                    //       for (let k = timeArray.length - 1; k > 0; k--) {
+                // for (const k in timeArray) { // already exits in Array?
+                //       for (let k = timeArray.length - 1; k > 0; k--) {
                 if (timeArray.length > 1) {
                     for (let k = timeArray.length - 1; k > Math.max(timeArray.length - 9, 0); k--) { // 检查是否存在这个分钟纪录
                         if (timeArray[k].timeStamp === t0.toLocaleString()) {
                             _RecordExist = true
-                                //        c(k + '     尾部记录存在！尾部数值增加  ' + JSON.stringify(timeArray[k]) + ' + ' + PrevTot2)
+                            //        c(k + '     尾部记录存在！尾部数值增加  ' + JSON.stringify(timeArray[k]) + ' + ' + PrevTot2)
                             timeArray[k].value += PrevTot2 / 60
-                                //         c(k + '     尾部记录存在！尾部数值增加  ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
+                            //         c(k + '     尾部记录存在！尾部数值增加  ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
                         }
                     }
                 }
@@ -280,7 +282,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
                     timeObj.value = PrevTot2 / 60
                     var _timeObj = JSON.parse(JSON.stringify(timeObj))
                     timeArray.push(_timeObj)
-                        //     c('      尾部记录不存在，加入新尾部记录：' + JSON.stringify(_timeObj))
+                    //     c('      尾部记录不存在，加入新尾部记录：' + JSON.stringify(_timeObj))
                 }
             }
         } else { // 如果前一个记录是ot,后面时间缝隙全都是0
@@ -298,7 +300,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
                     if (timeArray[k].timeStamp === t0.toLocaleString()) {
                         //         c(k + '      头部记录存在！头部原值+0不变 ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
                         _RecordExist = true
-                            //  _ExistValue = timeArray[k].value
+                        //  _ExistValue = timeArray[k].value
                     }
                 }
             }
@@ -308,12 +310,12 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
 
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
                 timeArray.push(_timeObj) // 增加记录
-                    //    c('      头部不存在！头部加入新记录 0：' + JSON.stringify(_timeObj))
+                //    c('      头部不存在！头部加入新记录 0：' + JSON.stringify(_timeObj))
             }
 
             // process middle
             let j = 1
-                // c('      准备加入中部记录：');
+            // c('      准备加入中部记录：');
             while (j < minDiff) {
                 t0.setTime(t1m.getTime() + j * 60 * 1000)
                 timeObj.timeStamp = t0.toLocaleString()
@@ -321,20 +323,20 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
 
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
                 timeArray.push(_timeObj)
-                    //    c('      加入中部记录0：' + JSON.stringify(_timeObj))
+                //    c('      加入中部记录0：' + JSON.stringify(_timeObj))
                 j++
             }
             // tail会重复？
             t0.setTime(t2m) // tail
             _RecordExist = false
-                // for (const k in timeArray) { // already exits in Array?
-                // for (let k = timeArray.length - 1; k > 0; k--) {
+            // for (const k in timeArray) { // already exits in Array?
+            // for (let k = timeArray.length - 1; k > 0; k--) {
             if (timeArray.length > 1) {
                 for (let k = timeArray.length - 1; k > Math.max(timeArray.length - 9, 0); k--) { // 检查是否存在这个分钟纪录
                     if (timeArray[k].timeStamp === t0.toLocaleString()) {
                         //         c(k + '                  尾部记录存在！尾部原值不变 ' + '   ' + JSON.stringify(timeArray[k]))
                         _RecordExist = true
-                            // _ExistValue = timeArray[k].value;
+                        // _ExistValue = timeArray[k].value;
                     }
                 }
             }
@@ -344,13 +346,13 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
                 timeObj.value = 0
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
                 timeArray.push(_timeObj)
-                    //     c('      尾部记录不存在，加入新尾部记录0：' + JSON.stringify(_timeObj))
+                //     c('      尾部记录不存在，加入新尾部记录0：' + JSON.stringify(_timeObj))
             }
         }
     }
 
     c('    timearray: sorting ')
-    timeArray.sort(function(a, b) {
+    timeArray.sort(function (a, b) {
         if (Date.parse(a.timeStamp) > Date.parse(b.timeStamp)) {
             return 1
         } else {

@@ -9,21 +9,21 @@
 4.查重算法,仅限于前五个记录
 5.加入边界
 6.考虑掉线因素
-        6.1 samplemotion:value跳变  //TODO
-        6.2 Asset的missinput   //TODO
+        6.1 samplemotion:value跳变
+        6.2 Asset的missinput
+        6.3 标为 ms
+        6.4 计算占用时忽略 ms 记录
 
 */
 const FS = require('fs')
 var str
 var json
 var recordObj = {
-    // type: '',
-    // Did: '',
     timeStamp: '',
     value: ''
 }
 
-var filename = '..\\log\\EUI64-D0CF5EFFFE7B2340-3-Motion_2019_12_25_00_00_00_2019_12_31_16_59_59'
+var filename = '..\\log\\UUID-512D3E88CBF54C0CAC76675947614138_2019_12_23_00_00_00_2019_12_31_23_59_59'
 
 const startDate = '2019/12/23/00:00:00'
 const endDate = '2019/12/31/23:59:59'
@@ -34,7 +34,6 @@ var t0 = new Date()
 var t2m = new Date()
 var timeArray = []
 var motionTimeStamps = []
-// var _timeObj
 var timeObj = {
     ID: '',
     timeStamp: '',
@@ -47,7 +46,7 @@ var lastValue = -1
 const c = console.log
 
 str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })
-const CSVFile = FS.createWriteStream(filename + '.csv', { encoding: 'utf8' })
+const CSVFile = FS.createWriteStream(filename + '_1M.csv', { encoding: 'utf8' })
 
 // 读取文件发生错误事件
 CSVFile.on('error', (err) => {
@@ -76,10 +75,10 @@ json = JSON.parse(str)
 var tempObj
 
 json.sort(function (a, b) {
-    if (Date.parse(a.sampleTime) > Date.parse(b.sampleTime)) {
-        return -1
-    } else {
+    if (a.sampleTime > b.sampleTime) {
         return 1
+    } else {
+        return -1
     };
 })
 
@@ -103,8 +102,9 @@ if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
             recordObj.value = 'ot'
             tempObj = JSON.parse(JSON.stringify(recordObj))
             motionTimeStamps.push(tempObj)
-        } else { // TODO:后面没有处理
+        } else { // missinput or other
             recordObj.value = 'ms'
+            recordObj.timeStamp = json[i - 1].sampleTime + 10000// 上一个记录后增加一个十秒后的掉线数据
             tempObj = JSON.parse(JSON.stringify(recordObj))
             motionTimeStamps.push(tempObj)
         };
@@ -130,8 +130,8 @@ if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
 
         recordObj.timeStamp = json[i].sampleTime
 
-        if (((json[i].sampleTime - json[i - 1].sampleTime)) < 1000 * 300) { // 间隔大于5分钟,认为是掉线数据.增加一个ot//TODO
-            if (lastValue === (json[i].value - 1)) { // Value increased by 1 //TODO check
+        if (((json[i].sampleTime - json[i - 1].sampleTime)) < 1000 * 300) { // 间隔大于5分钟,认为是掉线数据.增加一个ot
+            if (lastValue === (json[i].value - 1)) { // Value increased by 1
                 recordObj.value = 'in'
                 tempObj = JSON.parse(JSON.stringify(recordObj))
                 motionTimeStamps.push(tempObj)
@@ -142,9 +142,9 @@ if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
             } else { // do not write to recordarray
                 c('        Sensor first seen or down, cannot tell')
             };
-        } else {
-            recordObj.value = 'ot'
-            recordObj.timeStamp = json[i - 1].sampleTime + 10000// 增加一个一秒后的掉线数据
+        } else { // 认为是掉线后的数据,value不可靠,先设为 ot
+            recordObj.value = 'ms'
+            recordObj.timeStamp = json[i - 1].sampleTime + 10000// 上一个记录后增加一个十秒后的掉线数据
             tempObj = JSON.parse(JSON.stringify(recordObj))
             motionTimeStamps.push(tempObj)
         }
@@ -155,7 +155,7 @@ doReport()
 
 function doReport() {
     c('Total motion records: ' + motionTimeStamps.length)
-    c('processing all samplemotion records:')
+    c('processing all motion records:')
 
     for (let i = 0; i < motionTimeStamps.length; i++) {
         t1.setTime(motionTimeStamps[i].timeStamp)
@@ -183,7 +183,7 @@ function doReport() {
         PrevTot2 = t2.getSeconds() // 后面的零头秒数 16:14:06, 则 = 06
         // 这样, 10:01:22 in -10:03:44 ot ,应该计算01分的38秒占用,03分的44秒占用 ,02的66秒占用
 
-        c(' :' + t1.toLocaleString() + '(前)' + t1m.toLocaleTimeString() + '(分)' + minDiff + '(相差分)' + t1ToNext + '(前秒) ' + PrevTot2 + '(后秒)' + t2.toLocaleString() + '(后)  ' + t2m.toLocaleTimeString() + '(分)')
+        // c(' :' + t1.toLocaleString() + '(前)' + t1m.toLocaleTimeString() + '(分)' + minDiff + '(相差分)' + t1ToNext + '(前秒) ' + PrevTot2 + '(后秒)' + t2.toLocaleString() + '(后)  ' + t2m.toLocaleTimeString() + '(分)')
 
         if (motionTimeStamps[i - 1].value === 'in') { // 如果前一个是in,那么后面的时间段应该100%占用
             // c('    before ' + i + ' was a ' + motionTimeStamps[i - 1].value)
@@ -255,14 +255,9 @@ function doReport() {
                     c('      尾部记录不存在，加入新尾部记录：' + JSON.stringify(_timeObj))
                 }
             }
+        } else if ((motionTimeStamps[i - 1].value === 'ms')) { //  ms 记录 donothing
+            c('ms\n\n\n')
         } else { // 如果前一个记录是ot,后面时间缝隙全都是0
-            // c('    before ' + i + ' was a ' + motionTimeStamps[i - 1].value)
-
-            // if (t1m === t2m) {
-            //     //   c('   头尾在一分钟内!')
-            // } else { // c('   不在一分钟')
-            // };
-
             if (t1m >= t2m) {
                 // c("      头尾在相同的一分钟,计算缝隙");
                 t1ToNext = (t1ToNext + PrevTot2 - 60) /// 计算缝隙
@@ -272,8 +267,6 @@ function doReport() {
             t0.setTime(t1m) // Previous
             let _RecordExist = false
 
-            // for (const key in timeArray) { // already exits in Array?
-            //   for (let key = timeArray.length - 1; key > 0; key--) {
             if (timeArray.length > 1) {
                 for (let key = timeArray.length - 1; key > Math.max(timeArray.length - 9, 0); key--) { // 检查是否存在这个分钟纪录
                     if (timeArray[key].timeStamp === t0.toLocaleString()) {
@@ -302,7 +295,7 @@ function doReport() {
 
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
                 timeArray.push(_timeObj)
-                c('      加入中部记录0：' + JSON.stringify(_timeObj))
+                //  c('      加入中部记录0：' + JSON.stringify(_timeObj))
                 j++
             }
             // tail会重复？
@@ -348,7 +341,4 @@ function doReport() {
     };
 
     CSVFile.end()
-
-    // CSVFile.end()
-    // process.exit()
 }

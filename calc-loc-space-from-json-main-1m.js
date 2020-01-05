@@ -8,11 +8,12 @@
 对每个ID循环
     计算得到timearray
     写入文件
-4.查重算法,仅限于前五个记录
-
-5.boundary
-
-6.TODO 汇集10分钟或小时数据 use reduce?
+4.查重算法,仅限于前五个记录5.加入边界
+6.考虑掉线因素
+        6.1 samplemotion:value跳变
+        6.2 Asset的missinput
+        6.3 标为 ms
+        6.4 计算占用时忽略 ms 记录
 
 */
 const FS = require('fs')
@@ -21,13 +22,12 @@ var json = []
 var locationJson = []
 var unitsArray = []
 var recordObj = {
-    // type: '',
     Did: '',
     timeStamp: '',
     value: ''
 }
 
-var filename = '..\\log\\608739_2019_12_23_00_00_00_2019_12_31_23_59_59' // 历史记录文件
+var filename = '..\\log\\60358_2019_12_23_00_00_00_2019__12_31_23_59_59_UU' // 历史记录文件
 const startDate = '2019/12/23/00:00:00'
 const endDate = '2019/12/31/23:59:59'
 
@@ -37,7 +37,6 @@ var t1m = new Date()
 var t0 = new Date()
 var t2m = new Date()
 var timeArray = []
-// var _timeObj
 var timeObj = {
     ID: '',
     timeStamp: '',
@@ -85,11 +84,11 @@ for (let i1 = 0; i1 < locationJson.length; i1++) {
     if (unitsArray.indexOf(locationJson[i1].DID) < 0) {
         unitsArray.push(locationJson[i1].DID)
         json[locationJson[i1].DID] = []
-        c(locationJson[i1].DID)
+       // c(locationJson[i1].DID)
     }
 }
 
-c('总的传感器数: ' + unitsArray.length)
+c('All sensors sumup to: ' + unitsArray.length)
 
 // 将不同传感器的数据分开放入数组
 
@@ -100,11 +99,11 @@ for (let i1 = 0; i1 < locationJson.length; i1++) {
 }
 
 for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
-    c('computing sensor ' + unitsArray[i1])
+    c(' Computing sensor ' + unitsArray[i1])
 
     // Process records (asset or motion) and write into motiontimestamps
     var tempObj
-    c('  sorting sensor array ')
+    c('  Sorting sensor array ')
     // scan_array(json[unitsArray[i1]])
 
     json[unitsArray[i1]].sort(function (a, b) { // 按照时间排序,但是id是乱的
@@ -114,7 +113,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
             return -1
         };
     })
-    c('    finish sorting sensor array ')
+    c('    Finished sorting sensor array ')
     // scan_array(json[unitsArray[i1]])
 
     // c(JSON.stringify(json[unitsArray[i1]]))
@@ -145,9 +144,12 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
                 tempObj = JSON.parse(JSON.stringify(recordObj))
                 motionTimeStamps.push(tempObj)
             } else {
-                recordObj.value = 'ms'// TODO
+                recordObj.value = 'ms'// missinput or other
+                
+                recordObj.timeStamp =  (i2 === 0) ? Date.parse(startDate): (json[unitsArray[i1]][i2 - 1].sampleTime + 10000)// 增加一个十秒后的掉线数据
                 tempObj = JSON.parse(JSON.stringify(recordObj))
                 motionTimeStamps.push(tempObj)
+                c('\n ms  '+recordObj.Did+' '+recordObj.timeStamp+'\n')
             };
         }
 
@@ -171,8 +173,8 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
 
             recordObj.timeStamp = json[unitsArray[i1]][i2].sampleTime
 
-            if (((json[unitsArray[i1]][i2].sampleTime - json[unitsArray[i1]][i2 - 1].sampleTime)) < 1000 * 300) { // dehole
-                if (lastValue !== json[unitsArray[i1]][i2].value) { // Value changed!
+            if (((json[unitsArray[i1]][i2].sampleTime - json[unitsArray[i1]][i2 - 1].sampleTime)) < 1000 * 300) { // dehole时间差大于5分钟,不可靠
+                if (lastValue === json[unitsArray[i1]][i2].value-1) { // Value changed!
                     recordObj.value = 'in'
                     tempObj = JSON.parse(JSON.stringify(recordObj))
                     motionTimeStamps.push(tempObj)
@@ -181,13 +183,14 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
                     tempObj = JSON.parse(JSON.stringify(recordObj))
                     motionTimeStamps.push(tempObj)
                 } else { // do not write to recordarray
-                    c('        Sensor first seen, cannot tell')
+                    c('        Sensor first seen or down, cannot tell')
                 };
             } else {
-                recordObj.value = 'ms' // TODO 改为 ms
+                recordObj.value = 'ms' // 
                 recordObj.timeStamp = json[unitsArray[i1]][i2 - 1].sampleTime + 10000// 增加一个十秒后的掉线数据
                 tempObj = JSON.parse(JSON.stringify(recordObj))
                 motionTimeStamps.push(tempObj)
+                c('\n MS    ' + recordObj.Did + ' ' + recordObj.timeStamp + '\n')
             }
         }
     }
@@ -292,8 +295,8 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
                     //     c('      尾部记录不存在，加入新尾部记录：' + JSON.stringify(_timeObj))
                 }
             }
-        } else if ((motionTimeStamps[i2 - 1].value === 'ms')) { // TODO ms 记录 donothing
-            c('ms\n\n\n')
+        } else if ((motionTimeStamps[i2 - 1].value === 'ms')) { //  ms 记录 donothing
+            c(' \n ms skipped \n')
         } else { // 如果前一个记录是ot,后面时间缝隙全都是0
             if (t1m >= t2m) {
                 // c("      头尾在相同的一分钟,计算缝隙");
@@ -369,14 +372,12 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环
         };
     })
 
-    c('  writing  for this sensor ' + timeArray.length)
+    c('  Writing  for this sensor ' + timeArray.length)
 
     for (let i3 = 0; i3 < timeArray.length; i3++) {
         var e = timeArray[i3]
         CSVFile.write(unitsArray[i1] + ',' + e.timeStamp + ',' + e.value + '\n')
     };
 
-    // CSVFile.end()
 }
 CSVFile.end()
-    // process.exit()
