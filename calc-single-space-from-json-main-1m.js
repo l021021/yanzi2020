@@ -117,7 +117,7 @@ if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
     tempObj = JSON.parse(JSON.stringify(recordObj))
     motionTimeStamps.push(tempObj)
 } else if (json[0].resourceType === 'SampleMotion') { // json[1].value json[1].sampleTime
-    c('calculating ' + json.length + ' lists')
+    c('Calculating ' + json.length + ' lists')
 
     // first record always 'ot'
     recordObj.timeStamp = json[0].sampleTime
@@ -155,13 +155,13 @@ doReport()
 
 function doReport() {
     c('Total motion records: ' + motionTimeStamps.length)
-    c('processing all motion records:')
+    c(' Processing all motion records:')
 
     for (let i = 0; i < motionTimeStamps.length; i++) {
         t1.setTime(motionTimeStamps[i].timeStamp)
         c(motionTimeStamps[i].value + '  ' + t1.toLocaleString())
     }
-    c('processing: ')
+    c(' \nProcessing: \n')
     for (let i = 1; i < motionTimeStamps.length; i++) { // start from second record
         t1.setTime(motionTimeStamps[i - 1].timeStamp) // 前一个事件时间
         t1.setMilliseconds(0) // 得到整秒
@@ -201,8 +201,8 @@ function doReport() {
             // var _ExistValue = 0
 
             // process head
-            if (timeArray.length > 1) {
-                for (let key = timeArray.length - 1; key > Math.max(timeArray.length - 9, 0); key--) { // 检查是否存在这个分钟纪录
+            if (timeArray.length >= 1) {
+                for (let key = timeArray.length - 1; key >= Math.max(timeArray.length - 9, 0); key--) { // 检查是否存在这个分钟纪录
                     if (timeArray[key].timeStamp === t0.toLocaleString()) {
                         c(key + '      头部记录存在！增加头部的数值' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[key]))
                         _RecordExist = true
@@ -267,8 +267,8 @@ function doReport() {
             t0.setTime(t1m) // Previous
             let _RecordExist = false
 
-            if (timeArray.length > 1) {
-                for (let key = timeArray.length - 1; key > Math.max(timeArray.length - 9, 0); key--) { // 检查是否存在这个分钟纪录
+            if (timeArray.length >= 1) {
+                for (let key = timeArray.length - 1; key >= Math.max(timeArray.length - 9, 0); key--) { // 检查是否存在这个分钟纪录
                     if (timeArray[key].timeStamp === t0.toLocaleString()) {
                         c(key + '      头部记录存在！头部原值+0不变 ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[key]))
                         _RecordExist = true
