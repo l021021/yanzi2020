@@ -245,8 +245,8 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
             // var _ExistValue = 0
 
             // process head
-            if (timeArray.length > 1) {
-                for (let k = timeArray.length - 1; k > Math.max(timeArray.length - 5, 0); k--) { // 检查是否存在这个分钟纪录,回溯9个记录(为了减少无谓计算)
+            if (timeArray.length >= 1) {
+                for (let k = timeArray.length - 1; k >= Math.max(timeArray.length - 5, 0); k--) { // 检查是否存在这个分钟纪录,回溯9个记录(为了减少无谓计算)
                     if (timeArray[k].timeStamp === t0.toLocaleString()) {
                         c(k + '        头部记录存在！增加数值' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
                         _RecordExist = true
@@ -280,8 +280,8 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
                 let _RecordExist = false
                 // for (const k in timeArray) { // already exits in Array?
                 //       for (let k = timeArray.length - 1; k > 0; k--) {
-                if (timeArray.length > 1) {
-                    for (let k = timeArray.length - 1; k > Math.max(timeArray.length - 5, 0); k--) { // 检查是否存在这个分钟纪录
+                if (timeArray.length >= 1) {
+                    for (let k = timeArray.length - 1; k >= Math.max(timeArray.length - 5, 0); k--) { // 检查是否存在这个分钟纪录
                         if (timeArray[k].timeStamp === t0.toLocaleString()) {
                             _RecordExist = true
                             //        c(k + '     尾部记录存在！尾部数值增加  ' + JSON.stringify(timeArray[k]) + ' + ' + PrevTot2)
@@ -312,7 +312,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
             let _RecordExist = false
 
             if (timeArray.length >= 1) {
-                for (let k = timeArray.length - 1; k > Math.max(timeArray.length - 5, 0); k--) { // 检查是否存在这个小时纪录,回溯若干个记录
+                for (let k = timeArray.length - 1; k >= Math.max(timeArray.length - 5, 0); k--) { // 检查是否存在这个小时纪录,回溯若干个记录
                     if (timeArray[k].timeStamp === t0.toLocaleString()) {
                         c(k + '      头部记录存在！原值不变 ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
                         _RecordExist = true

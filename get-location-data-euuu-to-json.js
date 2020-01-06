@@ -5,8 +5,7 @@
 /* eslint-disable eqeqeq */
 // 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
 
-
-//注意需要修改,决定拉UUID还是EUI
+// 注意需要修改,决定拉UUID还是EUI
 
 var WebSocketClient = require('websocket').client
 const fs = require('fs')
@@ -23,7 +22,7 @@ var password = 'Internetofthing'
 // const locationId = '434888' // - As'tra Zeneca P1 Floor 2 - C is online  with 12 active sensors, 86 logical
 // const locationId = '447224' // - As'tra Zeneca P1 Floor 3 - A is online  with 8 active sensors, 100 logical
 // const locationId = '507828' // - As'tra Zeneca P1 Floor 4 - B is online  with 4 active sensors, 30 logical
- const locationId = '60358' // - As'tra Zeneca P1 Floor 2 - B is online  with 32 active sensors, 243 logical
+const locationId = '60358' // - As'tra Zeneca P1 Floor 2 - B is online  with 32 active sensors, 243 logical
 // const locationId = '608739' // - As'tra Zeneca P1 Floor 5 - B is online  with 3 active sensors, 17 logical
 // const locationId = '652990' // - As'tra Zeneca P1 Floor 3 - C is online  with 4 active sensors, 30 logical
 // const locationId = '668617' // - As'tra Zeneca P1 Floor 4 - A is online  with 11 active sensors, 94 logical
@@ -35,18 +34,18 @@ var password = 'Internetofthing'
 // const locationId = '797296' // novah
 const window_limit = 3
 const reportPeriod = 3600000 * 8 * 3
-    // const _24Hour = 86400000
+// const _24Hour = 86400000
 const startDate = '2019/12/23/00:00:00'
 const endDate = '2019//12/31/23:59:59'
-const EUorUU = 'UU' //何种数据:UU or Motion
+const EUorUU = 'UU' // 何种数据:UU or Motion
 var TimeoutId = setTimeout(doReport, 300000)
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
 
 dataFile.on('finish',
-    function() { process.exit() })
+    function () { process.exit() })
 dataFile.on('destroy',
-        function() { process.exit() })
-    // For log use only
+    function () { process.exit() })
+// For log use only
 var _Counter = 0 // message counter
 var _requestCount = 0
 var _responseCount = 0
@@ -117,20 +116,20 @@ function empty() {
 }
 
 // Program body
-client.on('connectFailed', function(error) {
+client.on('connectFailed', function (error) {
     c('Connect Error: reconnect' + error.toString())
     start()
 })
 
-client.on('connect', function(connection) {
+client.on('connect', function (connection) {
     // c("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function(message) {
+    connection.on('message', function (message) {
         clearTimeout(TimeoutId)
-            // TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
-            // c('timer reset  ')
+        // TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
+        // c('timer reset  ')
 
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
@@ -150,8 +149,8 @@ client.on('connect', function(connection) {
                         // sendPeriodicRequest() // as keepalive
                         // sendGetLocationsRequest() // not mandatory
                         sendGetUnitsRequest(locationId) // get units from location
-                            // sendSubscribeRequest(LocationId); //test one location
-                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
+                        // sendSubscribeRequest(LocationId); //test one location
+                        // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
                         c(json.responseCode.name)
                         c("Couldn't login, check your username and passoword")
@@ -199,9 +198,9 @@ client.on('connect', function(connection) {
 
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                 _Units.push(_tempunitObj)
-                                    // request history record
-                                    // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
-                                if (unitObj.did.indexOf(EUorUU) >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) } //请求何种数据?
+                                // request history record
+                                // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
+                                if (unitObj.did.indexOf(EUorUU) >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) } // 请求何种数据?
                             };
                         }
 
@@ -221,18 +220,18 @@ client.on('connect', function(connection) {
 
                 default:
                     c('!!!! cannot understand')
-                        // connection.close();
+                    // connection.close();
                     break
             }
         }
     })
 
-    connection.on('error', function(error) {
+    connection.on('error', function (error) {
         c('Connection Error: reconnect' + error.toString())
         start()
     })
 
-    connection.on('close', function() {
+    connection.on('close', function () {
         c('Connection closed!')
     })
 
@@ -243,19 +242,19 @@ client.on('connect', function(connection) {
         }
         if (timeEnd_mili - timeStart_mili >= reportPeriod) {
             var request = {
-                    messageType: 'GetSamplesRequest',
-                    dataSourceAddress: {
-                        resourceType: 'DataSourceAddress',
-                        did: deviceID,
-                        locationId: locationId
-                    },
-                    timeSerieSelection: {
-                        resourceType: 'TimeSerieSelection',
-                        timeStart: timeStart_mili,
-                        timeEnd: timeStart_mili + reportPeriod
-                    }
+                messageType: 'GetSamplesRequest',
+                dataSourceAddress: {
+                    resourceType: 'DataSourceAddress',
+                    did: deviceID,
+                    locationId: locationId
+                },
+                timeSerieSelection: {
+                    resourceType: 'TimeSerieSelection',
+                    timeStart: timeStart_mili,
+                    timeEnd: timeStart_mili + reportPeriod
                 }
-                // push message in que
+            }
+            // push message in que
             c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendMessagetoQue(request)
             sendGetSamplesRequest( // 递归
@@ -290,14 +289,14 @@ client.on('connect', function(connection) {
 
         if (mes === undefined && messageQueue.dataStore.length > 0) {
             sendMessage(messageQueue.dequeue())
-                // c('sending to queue . leaving ' + messageQueue.dataStore.length)
+            // c('sending to queue . leaving ' + messageQueue.dataStore.length)
             c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
         } else if (mes !== undefined && _windowSize < window_limit) {
             messageQueue.enqueue(mes)
             _windowSize++
             sendMessage(messageQueue.dequeue())
             c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
-                // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
+            // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
         } else if (mes !== undefined && _windowSize >= window_limit) {
             messageQueue.enqueue(mes)
             c('    sending request to queue, still ' + messageQueue.dataStore.length + ' left.')
@@ -308,7 +307,7 @@ client.on('connect', function(connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-                //    c('sending' + JSON.stringify(json));
+            //    c('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             c("sendMessage: Couldn't send message, the connection is not open")
@@ -358,7 +357,7 @@ function doReport() {
     if (_requestCount > _responseCount) {
         c('Failed')
         dataFile.destroy()
-            // process.exit()
+        // process.exit()
     }
     var t = new Date().getTime()
     var timestamp = new Date()
