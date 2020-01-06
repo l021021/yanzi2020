@@ -16,35 +16,34 @@ var password = 'Internetofthing'
 // const locationId = '229349' // fangtang
 // const locationId = '581669' // 36
 // const locationId = '399621' // 4u
-
 // const locationId = '185308' // - As'tra Zeneca P1 Floor 1 - B is online  with 6 active sensors, 29 logical
 // const locationId = '329312' // - As'tra Zeneca P1 Floor 5 - A is online  with 9 active sensors, 50 logical
 // const locationId = '434888' // - As'tra Zeneca P1 Floor 2 - C is online  with 12 active sensors, 86 logical
 // const locationId = '447224' // - As'tra Zeneca P1 Floor 3 - A is online  with 8 active sensors, 100 logical
 // const locationId = '507828' // - As'tra Zeneca P1 Floor 4 - B is online  with 4 active sensors, 30 logical
-const locationId = '60358' // - As'tra Zeneca P1 Floor 2 - B is online  with 32 active sensors, 243 logical
+// const locationId = '60358' // - As'tra Zeneca P1 Floor 2 - B is online  with 32 active sensors, 243 logical
 // const locationId = '608739' // - As'tra Zeneca P1 Floor 5 - B is online  with 3 active sensors, 17 logical
 // const locationId = '652990' // - As'tra Zeneca P1 Floor 3 - C is online  with 4 active sensors, 30 logical
 // const locationId = '668617' // - As'tra Zeneca P1 Floor 4 - A is online  with 11 active sensors, 94 logical
 // const locationId = '83561' // - As'tra Zeneca P1 Floor 3 - B is online  with 9 active sensors, 224 logical
 // const locationId = '88252' // - As'tra Zeneca P1 Floor 2 - A is online  with 10 active sensors, 224 logical
 // const locationId = '938433' // - As'tra Zeneca P1 Floor 1 - A is online  with 22 active sensors, 260 logical
-
 // const locationId = '521209' // wafer shanghai
 // const locationId = '797296' // novah
-const window_limit = 3
-const reportPeriod = 3600000 * 8 * 3
-// const _24Hour = 86400000
-const startDate = '2019/12/23/00:00:00'
+// const locationId = '223516' // - Ucommune - HuaMao is online  with 40 active sensors, 259 logical
+// const locationId = '229349' //- Fangtang is online  with 36 active sensors, 170 logical
+const locationId = '252208' /// /- Ucommune - WeiTuo is online  with 60 active sensors, 352 logica
+// const locationId = '783825'// - Test26(PF11)
+// const locationId = '212446'// - (PF15)
+
+const startDate = '2019/11/30/00:00:00'
 const endDate = '2019//12/31/23:59:59'
 const EUorUU = 'UU' // 何种数据:UU or Motion
-var TimeoutId = setTimeout(doReport, 300000)
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
 
-dataFile.on('finish',
-    function () { process.exit() })
-dataFile.on('destroy',
-    function () { process.exit() })
+var TimeoutId = setTimeout(doReport, 300000)
+const window_limit = 3
+const reportPeriod = 3600000 * 8 * 3
 // For log use only
 var _Counter = 0 // message counter
 var _requestCount = 0
@@ -72,6 +71,10 @@ var unitObj = {
 }
 var c = console.log
 
+dataFile.on('finish',
+    function () { process.exit() })
+dataFile.on('destroy',
+    function () { process.exit() })
 function Queue() {
     this.dataStore = []
     this.enqueue = enqueue
