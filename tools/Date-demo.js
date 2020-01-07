@@ -8,15 +8,17 @@
 // // → "setembro de 2012; dezembro de 2012; abril de 2012"
 
 var myDate = new Date() // freezed at that moment
-// console.log(myDate) // Tue Nov 12 2019 11:48:51 GMT+0800 (GMT+08:00)
-// console.log(JSON.parse(JSON.stringify(myDate.toJSON()))) // Tue Nov 12 2019 11:48:51 GMT+0800 (GMT+08:00)
+    // console.log(myDate) // Tue Nov 12 2019 11:48:51 GMT+0800 (GMT+08:00)
+    // console.log(JSON.parse(JSON.stringify(myDate.toJSON()))) // Tue Nov 12 2019 11:48:51 GMT+0800 (GMT+08:00)
 
 // console.log(Date.parse('2019/01/01')) // to  mili
 
-myDate.setTime(Date.parse('2019/01/01 01:21:21'))
+// myDate.setTime(Date.parse('2019/01/01 01:21:21'))
 
-myDate.setMinutes(0)
-myDate.setSeconds(0)
+myDate.setTime(Date.now())
+
+// myDate.setMinutes(0)
+// myDate.setSeconds(0)
 
 console.log(myDate.toLocaleDateString()) // 2019-11-12
 console.log(myDate.toLocaleTimeString()) // 12:01:11
@@ -28,10 +30,23 @@ console.log(myDate.getTime()) // 1573531087679
 console.log(Date.now()) // 1573531087679
 console.log(myDate.toDateString()) // Tue Nov 12 2019
 console.log(Date.parse(myDate.getFullYear() + '/' + myDate.getMonth() + '/' + myDate.getDate())) // to Mili
-myDate.setTime(1571531647736)
-myDate.setMinutes(0)
+    // myDate.setTime(1571531647736)
+    // myDate.setMinutes(0)
 myDate.setSeconds(0)
-myDate.setMilliseconds(0)
+    //myDate.setMilliseconds(0)
+myDate.setMinutes(10 * (Math.floor(myDate.getMinutes() / 10)))
+
+
+console.log(myDate.toLocaleDateString()) // 2019-11-12
+console.log(myDate.toLocaleTimeString()) // 12:01:11
+console.log(myDate.toLocaleString())
+
+
+
+// //t1_10m.setTime(motionTimeStamps[i2 - 1].timeStamp) // t1_10M：前一个事件的整十分钟
+// t1_10m.setMilliseconds(0)
+// t1_10m.setSeconds(0)
+// t1_10m.setMinutes(10 * (Math.round(t1.getMinutes() / 6))) //得到整数十分钟开始,如0,10,20,50 
 
 // // string to dater
 
