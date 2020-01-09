@@ -29,16 +29,16 @@ var password = 'Internetofthing'
 // const locationId = '88252' // - As'tra Zeneca P1 Floor 2 - A is online  with 10 active sensors, 224 logical
 // const locationId = '938433' // - As'tra Zeneca P1 Floor 1 - A is online  with 22 active sensors, 260 logical
 // const locationId = '521209' // wafer shanghai
-// const locationId = '797296' // novah
+const locationId = '797296' // novah
 // const locationId = '223516' // - Ucommune - HuaMao is online  with 40 active sensors, 259 logical
 // const locationId = '229349' //- Fangtang is online  with 36 active sensors, 170 logical
-const locationId = '252208' /// /- Ucommune - WeiTuo is online  with 60 active sensors, 352 logica
+// const locationId = '252208' /// /- Ucommune - WeiTuo is online  with 60 active sensors, 352 logica
 // const locationId = '783825'// - Test26(PF11)
 // const locationId = '212446'// - (PF15)
 
 const startDate = '2019/11/30/00:00:00'
-const endDate = '2019//12/31/23:59:59'
-const EUorUU = 'UU' // 何种数据:UU or Motion
+const endDate = '2020/01/01/03:59:59'
+const EUorUU = 'EU' // 何种数据:UU or Motion
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
 
 var TimeoutId = setTimeout(doReport, 300000)
@@ -149,7 +149,7 @@ client.on('connect', function (connection) {
                     break
                 case 'LoginResponse':
                     if (json.responseCode.name == 'success') {
-                        // sendPeriodicRequest() // as keepalive
+                        sendPeriodicRequest() // as keepalive
                         // sendGetLocationsRequest() // not mandatory
                         sendGetUnitsRequest(locationId) // get units from location
                         // sendSubscribeRequest(LocationId); //test one location
@@ -202,8 +202,7 @@ client.on('connect', function (connection) {
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                 _Units.push(_tempunitObj)
                                 // request history record
-                                // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
-                                if (unitObj.did.indexOf(EUorUU) >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) } // 请求何种数据?
+                                if (((unitObj.type === 'inputMotion') && EUorUU === 'Motion') || (unitObj.did.indexOf('UU') >= 0)) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) } // 请求何种数据?
                             };
                         }
 
@@ -214,7 +213,7 @@ client.on('connect', function (connection) {
 
                     break
                 case 'PeriodicResponse':
-                    // setTimeout(sendPeriodicRequest, 60000)
+                    setTimeout(sendPeriodicRequest, 60000)
                     // c(_Counter + '# ' + "periodic response-keepalive");
                     break
                 case 'SubscribeResponse':
@@ -237,7 +236,14 @@ client.on('connect', function (connection) {
     connection.on('close', function () {
         c('Connection closed!')
     })
-
+    function sendPeriodicRequest() {
+        var now = new Date().getTime()
+        var request = {
+            messageType: 'PeriodicRequest',
+            timeSent: now
+        }
+        sendMessage(request)
+    }
     function sendGetSamplesRequest(deviceID, timeStart_mili, timeEnd_mili) {
         if (timeStart_mili > timeEnd_mili) {
             c('Wrong Date.')
