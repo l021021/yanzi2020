@@ -19,16 +19,16 @@ var password = 'Internetofthing'
 var client = new WebSocketClient()
 var connection
 var c = console.log
-// var locationId = '229349' // fangtang
-// const locationId = '797296' // novah
+    // var locationId = '229349' // fangtang
+    // const locationId = '797296' // novah
 
-const startDate = '2019/12/23/00:00:00'
+const startDate = '2019/12/27/00:00:00'
 const endDate = '2019/12/31/23:59:59'
-var locationId = '60358'
-var deviceID = 'UUID-512D3E88CBF54C0CAC76675947614138'
-// var deviceID = 'EUI64-D0CF5EFFFE792D84-3-Motion'
+var locationId = '185308'
+    // var deviceID = 'UUID-512D3E88CBF54C0CAC76675947614138'
+var deviceID = 'EUI64-D0CF5EFFFE1094AE-3-Motion'
 
-var TimeoutId = setTimeout(doReport, 30000)
+var TimeoutId = setTimeout(doReport, 60000)
 
 // const tenDay = 8640000;
 const _12Hour = 86400000
@@ -52,35 +52,35 @@ logStream.on('finish', () => {
     console.log('写入已完成..')
 })
 logStream.on('close', () => {
-    console.log('文件已关闭！')
-})
-// var t1 = new Date()
-// var t2 = new Date()
-// var t1m = new Date()
-// var t0 = new Date()
-// var t2m = new Date()
-// var timeArray = []
-//     // var _timeObj
-// var timeObj = {
-//     ID: '',
-//     timeStamp: '',
-//     value: ''
-// }
+        console.log('文件已关闭！')
+    })
+    // var t1 = new Date()
+    // var t2 = new Date()
+    // var t1m = new Date()
+    // var t0 = new Date()
+    // var t2m = new Date()
+    // var timeArray = []
+    //     // var _timeObj
+    // var timeObj = {
+    //     ID: '',
+    //     timeStamp: '',
+    //     value: ''
+    // }
 
 var minDiff, t1ToNext, PrevTot2
 
-client.on('connectFailed', function (error) {
+client.on('connectFailed', function(error) {
     c('Connect Error: ' + error.toString())
     connection.close()
 })
 
-client.on('connect', function (connection) {
+client.on('connect', function(connection) {
     c('Websocket open!')
     c('Checking API service status with ServiceRequest.')
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function (message) {
+    connection.on('message', function(message) {
         clearTimeout(TimeoutId)
         TimeoutId = setTimeout(doReport, 30000)
 
@@ -95,10 +95,10 @@ client.on('connect', function (connection) {
             if (json.responseCode.name === 'success') {
                 // now = new Date().getTime()
                 sendGetSamplesRequest(
-                    deviceID,
-                    Date.parse(startDate),
-                    Date.parse(endDate)
-                ) // 历史数据拉回
+                        deviceID,
+                        Date.parse(startDate),
+                        Date.parse(endDate)
+                    ) // 历史数据拉回
             } else {
                 c(json.responseCode.name)
                 c("Couldn't login, check your username and passoword")
@@ -108,23 +108,27 @@ client.on('connect', function (connection) {
             if (json.responseCode.name === 'success' && json.sampleListDto.list) {
                 c('receiving ' + json.sampleListDto.list.length + ' lists') // json.sampleListDto.list.length json.sampleListDto.dataSourceAddress.variableName.name
 
-                logStream.write(JSON.stringify(json.sampleListDto.list)) // log very lists to file
+                logStream.write(JSON.stringify(json.sampleListDto.list)) // log  lists to file
 
                 // Process records
             } else {
                 c('no samples.')
+                c(JSON.stringify(json))
+
+
             }
         } else {
             c("Couldn't understand")
-            connection.close()
+            c(JSON.stringify(json))
+                // connection.close()
         }
     })
 
-    connection.on('error', function (error) {
+    connection.on('error', function(error) {
         c('Connection Error: ' + error.toString())
     })
 
-    connection.on('close', function (error) {
+    connection.on('close', function(error) {
         c('Connection closed!' + error.message)
     })
 
@@ -132,7 +136,7 @@ client.on('connect', function (connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-            // c('sending' + JSON.stringify(json));
+                // c('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             c("sendMessage: Couldn't send message, the connection is not open")
