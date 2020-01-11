@@ -21,7 +21,7 @@ const reportInter = 300000
 
 // For log use only
 var _Counter = 0 // message counter
-var _logLimit = 1500 // will exit when this number of messages has been logged
+var _logLimit = 5000 // will exit when this number of messages has been logged
 var _t2 = new Date()
 var _Locations = []
 var _Events = []
@@ -273,7 +273,7 @@ function doReport() {
 beginPOLL()
 
 function scan_array(arr) {
-    c('\n Listing Elements: \n')
+    c('\n Listing Stored Events: \n')
     for (var key in arr) { // 这个是关键
         if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
             scan_array(arr[key])
@@ -281,4 +281,5 @@ function scan_array(arr) {
             console.log('      ' + key + ' --- ' + arr[key])
         }
     }
+    c('\n                ------- \n')
 }

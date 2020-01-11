@@ -27,44 +27,30 @@ var recordObj = {
     value: ''
 }
 
-var filename = '..\\log\\229349_2019_12_30_00_00_00_2020_01_01_12_59_59_EU' // 历史记录文件
+var filename = '..\\log\\212446_2019_12_30_00_00_00_2020_01_01_12_59_59_EU' // 历史记录文件
 const startDate = '2019/12/30/00:00:00'
 const endDate = '2020/01/01/12:59:59'
 
-var t1 = new Date()
-var t2 = new Date()
-var t1m = new Date()
-var t0 = new Date()
-var t2m = new Date()
-var timeArray = []
-var timeObj = {
-    ID: '',
-    timeStamp: '',
-    value: ''
-}
 var motionTimeStamps = []
 
-var minDiff, t1ToNext, PrevTot2
-
-var lastValue = -1
 const c = console.log
 
 str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })
-const CSVFile = FS.createWriteStream(filename + '_1M.csv', { encoding: 'utf8' })
+const CSVFile = FS.createWriteStream(filename + '_offline.csv', { encoding: 'utf8' })
 
 // 读取文件发生错误事件
 CSVFile.on('error', (err) => {
-        console.log('发生异常:', err)
-    })
-    // 已打开要写入的文件事件
+    console.log('发生异常:', err)
+})
+// 已打开要写入的文件事件
 CSVFile.on('open', (fd) => {
-        console.log('文件已打开:', fd)
-    })
-    // 文件已经就写入完成事件
+    console.log('文件已打开:', fd)
+})
+// 文件已经就写入完成事件
 CSVFile.on('finish', () => {
     console.log('写入已完成..')
-        // console.log('读取文件内容:', fs.readFileSync('./file-test.js', 'utf8')) // 打印写入的内容
-        // console.log(CSVFile)
+    // console.log('读取文件内容:', fs.readFileSync('./file-test.js', 'utf8')) // 打印写入的内容
+    // console.log(CSVFile)
 })
 
 // 文件关闭事件
@@ -104,9 +90,9 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环,写
     // Process records (asset or motion) and write into motiontimestamps
     var tempObj
     c('  Sorting sensor array ')
-        // scan_array(json[unitsArray[i1]])
+    // scan_array(json[unitsArray[i1]])
 
-    json[unitsArray[i1]].sort(function(a, b) { // 按照时间排序,但是id是乱的
+    json[unitsArray[i1]].sort(function (a, b) { // 按照时间排序,但是id是乱的
         if (a.sampleTime > b.sampleTime) {
             return 1
         } else {
@@ -114,7 +100,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环,写
         };
     })
     c('    Finished sorting sensor array ')
-        // scan_array(json[unitsArray[i1]])
+    // scan_array(json[unitsArray[i1]])
 
     // c(JSON.stringify(json[unitsArray[i1]]))
 
@@ -125,28 +111,16 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环,写
 
     c('  Calculating io-ot records ' + json[unitsArray[i1]].length + ' lists')
 
-    // boundary
-
-    recordObj.timeStamp = Date.parse(startDate)
-    recordObj.value = 'on' // in or ot
-    tempObj = JSON.parse(JSON.stringify(recordObj))
-    motionTimeStamps.push(tempObj)
-
     for (let i2 = 0; i2 < json[unitsArray[i1]].length; i2++) {
         recordObj.timeStamp = json[unitsArray[i1]][i2].sampleTime
         recordObj.value = json[unitsArray[i1]][i2].deviceUpState.name
         tempObj = JSON.parse(JSON.stringify(recordObj))
         motionTimeStamps.push(tempObj)
+        const t1 = new Date()
+        t1.setTime(recordObj.timeStamp)
+        CSVFile.write(recordObj.Did + ',' + t1.toLocaleString() + ',' + recordObj.value + '\n')
 
-
-        // add boundary record - always as the last one
-
-        recordObj.timeStamp = Date.parse(endDate)
-            // recordObj.value 取原值
-        tempObj = JSON.parse(JSON.stringify(recordObj))
-        motionTimeStamps.push(tempObj)
-
-        scan_array(motionTimeStamps)
+        // scan_array(motionTimeStamps)
     }
 
     // c('  COMPUTING ALL  motion records for this DID (BOUNDARY ADDED) : ' + motionTimeStamps.length)
@@ -154,22 +128,19 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环,写
     // timeArray.length = 0 // 清零
     // c('    ARRAY CLEARED,  processing time Array from (zero) ' + timeArray.length)
 
-
     // c('    timearray: sorting ')
 
-
     // c('  Writing  for this sensor ' + timeArray.length)
-
-
 }
 
 function scan_array(arr) {
     c('\n Listing Elements: \n')
     for (var key in arr) { // 这个是关键
-        if (typeof(arr[key]) === 'array' || typeof(arr[key]) === 'object') { // 递归调用
+        if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
             scan_array(arr[key])
         } else {
             console.log('      ' + key + ' --- ' + arr[key])
+            CSVFile.write(arr[key] + ',')
         }
     }
 }
