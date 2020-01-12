@@ -16,12 +16,13 @@ var password = 'Internetofthing'
 // For log use only
 var _Counter = 0 // message counter
 const c = console.log
+const idleTimeout = 1000 * 30
 var _OnlineUnitsCounter = 0
 var _Locations = []
 var _Units = []
 const logTime = 86400000 * 1 // DAY
 var reportPeriod = 86400000 * 10
-var TimeoutId = setTimeout(doReport, 10000)
+var TimeoutId = setTimeout(doReport, idleTimeout)
 var _requestCount = 0
 var _responseCount = 0
 var sensorEvents = []
@@ -71,7 +72,7 @@ client.on('connect', function (connection) {
     // Handle messages
     connection.on('message', function (message) {
         clearTimeout(TimeoutId)
-        TimeoutId = setTimeout(doReport, 10000) // exit after 10 seconds idle
+        TimeoutId = setTimeout(doReport, idleTimeout) // exit after 10 seconds idle
         //    c('timer reset  ')
 
         if (message.type === 'utf8') {
@@ -376,9 +377,9 @@ function doReport() {
 
     // record all  Locations
 
-    for (const key in _Locations) {
-        output += _Locations[key].locationId + ' or ' + _Locations[key].name + '\n'
-    }
+    // for (const key in _Locations) {
+    //     output += _Locations[key].locationId + ' or ' + _Locations[key].name + '\n'
+    // }
     c('total ' + _Locations.length + ' locations: \n' + output) // print all locations with name
     c('total ' + _Units.length + ' Units: \n') // print all Units with name
 
@@ -406,22 +407,49 @@ function doReport() {
     c('total ' + _Units.length + ' logical sensors live while ' + _OnlineUnitsCounter + ' sensors online') // sum up
 
     sensorEvents.sort(function (a, b) {
-        return a - b
+        return a.key - b.key
         // sensorEvents["114190_EUI64-0090DAFFFF006900"]
     })
 
-    scan_array(sensorEvents)
+    scan_map(sensorEvents)
 
     t = new Date().getTime()
     timestamp = new Date()
     timestamp.setTime(t)
     c(timestamp.toLocaleTimeString() + 'ok!')
     clearTimeout(TimeoutId)
+    const ordered = []
+
+    // Object.keys(sensorEvents).sort().forEach(function (key) {
+    //     ordered[key] = sensorEvents[key]
+    // })
+
     process.exit()
 }
 
-function scan_array(arr) {
+function scan_map(arr) {
     c('\n Listing Stored Events: \n')
+    const orderedArr = []
+    let i = 0
+    for (var key in arr) { // 这个是关键
+        if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
+            scan_array(arr[key])
+        } else {
+            orderedArr[i] = []
+            orderedArr[i][0] = key.toString()
+            orderedArr[i][1] = arr[key]
+            i++
+        }
+    }
+    // console.log('      ' + key + ' --- ' + arr[key])
+    orderedArr.sort(function (a, b) { return b[1] - a[1] })
+    for (let index = 0; index < orderedArr.length; index++) {
+        c(orderedArr[index][0] + '---' + orderedArr[index][1])
+    }
+}
+
+function scan_array(arr) {
+    // c('\n Listing Stored Events: \n')
     for (var key in arr) { // 这个是关键
         if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
             scan_array(arr[key])
@@ -429,7 +457,5 @@ function scan_array(arr) {
             console.log('      ' + key + ' --- ' + arr[key])
         }
     }
-    c('\n                ------- \n')
 }
-
 beginPOLL()
