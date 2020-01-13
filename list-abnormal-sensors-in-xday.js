@@ -8,8 +8,8 @@ var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Internetofthing'
-// var username = "653498331@qq.com";
-// var password = "000000";
+    // var username = "653498331@qq.com";
+    // var password = "000000";
 
 // ################################################
 
@@ -42,7 +42,7 @@ var locationObj = {
     Allunits: 0,
     Onlineunits: 0,
     gwOnline: false
-    // "activityLevel": "medium"
+        // "activityLevel": "medium"
 
 }
 
@@ -60,20 +60,20 @@ var unitObj = {
 }
 
 // Program body
-client.on('connectFailed', function (error) {
+client.on('connectFailed', function(error) {
     c('Connect Error: reconnect' + error.toString())
     beginPOLL()
 })
 
-client.on('connect', function (connection) {
+client.on('connect', function(connection) {
     // c("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function (message) {
+    connection.on('message', function(message) {
         clearTimeout(TimeoutId)
         TimeoutId = setTimeout(doReport, idleTimeout) // exit after 10 seconds idle
-        //    c('timer reset  ')
+            //    c('timer reset  ')
 
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
@@ -100,8 +100,8 @@ client.on('connect', function (connection) {
                     if (json.responseCode.name == 'success') {
                         sendPeriodicRequest() // as keepalive
                         sendGetLocationsRequest() // not mandatory
-                        // sendSubscribeRequest(LocationId); //test one location
-                        // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
+                            // sendSubscribeRequest(LocationId); //test one location
+                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
                         c(json.responseCode.name)
                         c("Couldn't login, check your username and passoword")
@@ -146,7 +146,7 @@ client.on('connect', function (connection) {
                 case 'GetSamplesResponse':
                     if (json.responseCode.name === 'success' && json.sampleListDto.list) {
                         c('receiving ' + json.sampleListDto.list.length + ' lists for ' + json.sampleListDto.dataSourceAddress.did + ' # ' + ++_responseCount)
-                        // sensorEvents[json.sampleListDto.dataSourceAddress.did] = json.sampleListDto.list.length
+                            // sensorEvents[json.sampleListDto.dataSourceAddress.did] = json.sampleListDto.list.length
 
                         for (let index = 0; index < json.sampleListDto.list.length; index++) {
                             if (json.sampleListDto.list[index].deviceUpState.name.indexOf('going') >= 0) {
@@ -194,13 +194,13 @@ client.on('connect', function (connection) {
 
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                 _Units.push(_tempunitObj)
-                                // _UnitsCounter++;
+                                    // _UnitsCounter++;
                                 if (json.list[index].lifeCycleState.name == 'present') {
                                     _OnlineUnitsCounter++
                                 }
                                 if (unitObj.isChassis) {
                                     sendGetSamplesRequest(unitObj.locationId, unitObj.did, Date.now() - logTime, Date.now())
-                                    // c('checking ' + unitObj.locationId + '->' + unitObj.did + ' # ' + ++_requestCount)
+                                        // c('checking ' + unitObj.locationId + '->' + unitObj.did + ' # ' + ++_requestCount)
                                 }
                             };
                         }
@@ -213,7 +213,7 @@ client.on('connect', function (connection) {
                     break
                 case 'PeriodicResponse':
                     setTimeout(sendPeriodicRequest, 600000)
-                    // c(_Counter + '# ' + "periodic response-keepalive");
+                        // c(_Counter + '# ' + "periodic response-keepalive");
                     break
                 case 'SubscribeResponse':
 
@@ -221,18 +221,18 @@ client.on('connect', function (connection) {
 
                 default:
                     c('!!!! cannot understand')
-                    // connection.close();
+                        // connection.close();
                     break
             }
         }
     })
 
-    connection.on('error', function (error) {
+    connection.on('error', function(error) {
         c('Connection Error: reconnect' + error.toString())
         beginPOLL()
     })
 
-    connection.on('close', function () {
+    connection.on('close', function() {
         c('Connection closed!')
     })
 
@@ -240,7 +240,7 @@ client.on('connect', function (connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-            //    c('sending' + JSON.stringify(json));
+                //    c('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             c("sendMessage: Couldn't send message, the connection is not open")
@@ -263,20 +263,20 @@ client.on('connect', function (connection) {
         }
         if (timeEnd_mili - timeStart_mili >= reportPeriod) {
             var request = {
-                messageType: 'GetSamplesRequest',
-                dataSourceAddress: {
-                    resourceType: 'DataSourceAddress',
-                    did: deviceID,
-                    locationId: locationId
-                },
-                timeSerieSelection: {
-                    resourceType: 'TimeSerieSelection',
-                    timeStart: timeStart_mili,
-                    timeEnd: timeStart_mili + reportPeriod
+                    messageType: 'GetSamplesRequest',
+                    dataSourceAddress: {
+                        resourceType: 'DataSourceAddress',
+                        did: deviceID,
+                        locationId: locationId
+                    },
+                    timeSerieSelection: {
+                        resourceType: 'TimeSerieSelection',
+                        timeStart: timeStart_mili,
+                        timeEnd: timeStart_mili + reportPeriod
+                    }
                 }
-            }
-            // push message in que
-            // c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
+                // push message in que
+                // c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendMessage(request)
             sendGetSamplesRequest(
                 locationId, // 递归
@@ -286,19 +286,19 @@ client.on('connect', function (connection) {
             )
         } else {
             var request = {
-                messageType: 'GetSamplesRequest',
-                dataSourceAddress: {
-                    resourceType: 'DataSourceAddress',
-                    did: deviceID,
-                    locationId: locationId
-                },
-                timeSerieSelection: {
-                    resourceType: 'TimeSerieSelection',
-                    timeStart: timeStart_mili,
-                    timeEnd: timeEnd_mili
+                    messageType: 'GetSamplesRequest',
+                    dataSourceAddress: {
+                        resourceType: 'DataSourceAddress',
+                        did: deviceID,
+                        locationId: locationId
+                    },
+                    timeSerieSelection: {
+                        resourceType: 'TimeSerieSelection',
+                        timeStart: timeStart_mili,
+                        timeEnd: timeEnd_mili
+                    }
                 }
-            }
-            //   c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
+                //   c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendMessage(request)
         }
     }
@@ -314,7 +314,7 @@ client.on('connect', function (connection) {
 
     function sendGetLocationsRequest() {
         var now = new Date().getTime()
-        // var nowMinusOneHour = now - 60 * 60 * 1000;
+            // var nowMinusOneHour = now - 60 * 60 * 1000;
         var request = {
             messageType: 'GetLocationsRequest',
             timeSent: now
@@ -326,14 +326,14 @@ client.on('connect', function (connection) {
         var now = new Date().getTime()
         var request = {
 
-            messageType: 'GetUnitsRequest',
-            timeSent: now,
-            locationAddress: {
-                resourceType: 'LocationAddress',
-                locationId: locationID
+                messageType: 'GetUnitsRequest',
+                timeSent: now,
+                locationAddress: {
+                    resourceType: 'LocationAddress',
+                    locationId: locationID
+                }
             }
-        }
-        // c('sending request for ' + locationID)
+            // c('sending request for ' + locationID)
         sendMessage(request)
     }
 
@@ -349,7 +349,7 @@ client.on('connect', function (connection) {
 
 function beginPOLL() {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-    // c("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
+        // c("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
 function doReport() {
@@ -359,15 +359,15 @@ function doReport() {
     timestamp.setTime(t)
     c('Reporting：')
     c(timestamp.toLocaleTimeString() + '')
-    // sorting
-    _Locations.sort(function (a, b) {
+        // sorting
+    _Locations.sort(function(a, b) {
         var x = a.locationId
         var y = b.locationId
         if (x > y) return 1
         if (x < y) return -1
         return 0
     })
-    _Units.sort(function (a, b) {
+    _Units.sort(function(a, b) {
         var x = a.locationId
         var y = b.locationId
         if (x > y) return 1
@@ -388,10 +388,10 @@ function doReport() {
         for (let j = 0; j < _Locations.length; j++) { // update to its locations
             if (_Locations[j].locationId == _Units[i].locationId) { // Location match
                 _Locations[j].Allunits++
-                if (_Units[i].lifeCycleState == 'present') { // mark live gateways
-                    _Locations[j].gwOnline = true // Location Online
-                    _Locations[j].Onlineunits++ // mark online sensors
-                }
+                    if (_Units[i].lifeCycleState == 'present') { // mark live gateways
+                        _Locations[j].gwOnline = true // Location Online
+                        _Locations[j].Onlineunits++ // mark online sensors
+                    }
                 if (_Units[i].isChassis == 'true') {
                     _Locations[j].units++
                 } // mark physical sensors
@@ -406,12 +406,13 @@ function doReport() {
     }
     c('total ' + _Units.length + ' logical sensors live while ' + _OnlineUnitsCounter + ' sensors online') // sum up
 
-    sensorEvents.sort(function (a, b) {
-        return a.key - b.key
-        // sensorEvents["114190_EUI64-0090DAFFFF006900"]
-    })
 
     scan_map(sensorEvents)
+    c('Ordered by events ')
+
+    scan_map1(sensorEvents)
+    c('Ordered by location ')
+
 
     t = new Date().getTime()
     timestamp = new Date()
@@ -432,7 +433,7 @@ function scan_map(arr) {
     const orderedArr = []
     let i = 0
     for (var key in arr) { // 这个是关键
-        if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
+        if (typeof(arr[key]) === 'array' || typeof(arr[key]) === 'object') { // 递归调用
             scan_array(arr[key])
         } else {
             orderedArr[i] = []
@@ -442,7 +443,33 @@ function scan_map(arr) {
         }
     }
     // console.log('      ' + key + ' --- ' + arr[key])
-    orderedArr.sort(function (a, b) { return b[1] - a[1] })
+    orderedArr.sort(function(a, b) { return b[1] - a[1] })
+    for (let index = 0; index < orderedArr.length; index++) {
+        c(orderedArr[index][0] + '---' + orderedArr[index][1])
+    }
+}
+
+function scan_map1(arr) {
+    c('\n Listing Stored Events: \n')
+    const orderedArr = []
+    let i = 0
+    for (var key in arr) { // 这个是关键
+        if (typeof(arr[key]) === 'array' || typeof(arr[key]) === 'object') { // 递归调用
+            scan_array(arr[key])
+        } else {
+            orderedArr[i] = []
+            orderedArr[i][0] = key.toString()
+            orderedArr[i][1] = arr[key]
+            i++
+        }
+    }
+    // console.log('      ' + key + ' --- ' + arr[key])
+    orderedArr.sort(function(a, b) {
+
+        if (b[0] > a[0]) return -1
+        if (b[0] < a[0]) return 1
+
+    })
     for (let index = 0; index < orderedArr.length; index++) {
         c(orderedArr[index][0] + '---' + orderedArr[index][1])
     }
@@ -451,7 +478,7 @@ function scan_map(arr) {
 function scan_array(arr) {
     // c('\n Listing Stored Events: \n')
     for (var key in arr) { // 这个是关键
-        if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
+        if (typeof(arr[key]) === 'array' || typeof(arr[key]) === 'object') { // 递归调用
             scan_array(arr[key])
         } else {
             console.log('      ' + key + ' --- ' + arr[key])
