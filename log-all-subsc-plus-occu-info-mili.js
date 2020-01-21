@@ -12,8 +12,8 @@ var password = 'Internetofthing'
 // var LocationId = '60358' //1003
 // var LocationId = '938433' //1004
 // var LocationId = '83561' //1005
-var LocationId = '306571' // 雷诺
-
+// var LocationId = '306571' // 雷诺
+var LocationId = '897737' // 威发test
 // var LocationId = '521209' //wafer-shanghai
 // var LocationId = '503370' //wanshen
 // var LocationId = '797296' //novah
