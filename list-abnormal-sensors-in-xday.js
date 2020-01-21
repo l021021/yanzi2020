@@ -16,7 +16,7 @@ var password = 'Internetofthing'
 // For log use only
 var _Counter = 0 // message counter
 const c = console.log
-const idleTimeout = 1000 * 30
+const idleTimeout = 1000 * 60
 var _OnlineUnitsCounter = 0
 var _Locations = []
 var _Units = []

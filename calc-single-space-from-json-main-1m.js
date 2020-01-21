@@ -23,10 +23,10 @@ var recordObj = {
     value: ''
 }
 
-var filename = '..\\log\\UUID-512D3E88CBF54C0CAC76675947614138_2019_12_23_00_00_00_2019_12_31_23_59_59'
+var filename = '..\\log\\EUI64-D0CF5EFFFE59E445-3-Motion_2019_12_20_00_00_00_2020_01_11_23_59_59'
 
-const startDate = '2019/12/23/00:00:00'
-const endDate = '2019/12/31/23:59:59'
+const startDate = '2019/12/20/00:00:00'
+const endDate = '2020/01/11/23:59:59'
 var t1 = new Date()
 var t2 = new Date()
 var t1m = new Date()
@@ -50,17 +50,17 @@ const CSVFile = FS.createWriteStream(filename + '_1M.csv', { encoding: 'utf8' })
 
 // 读取文件发生错误事件
 CSVFile.on('error', (err) => {
-    console.log('发生异常:', err)
-})
-// 已打开要写入的文件事件
+        console.log('发生异常:', err)
+    })
+    // 已打开要写入的文件事件
 CSVFile.on('open', (fd) => {
-    console.log('文件已打开:', fd)
-})
-// 文件已经就写入完成事件
+        console.log('文件已打开:', fd)
+    })
+    // 文件已经就写入完成事件
 CSVFile.on('finish', () => {
     console.log('写入已完成..')
-    // console.log('读取文件内容:', fs.readFileSync('./file-test.js', 'utf8')) // 打印写入的内容
-    // console.log(CSVFile)
+        // console.log('读取文件内容:', fs.readFileSync('./file-test.js', 'utf8')) // 打印写入的内容
+        // console.log(CSVFile)
 })
 
 // 文件关闭事件
@@ -74,7 +74,7 @@ json = JSON.parse(str)
 // Process records (asset or motion) and write into motiontimestamps
 var tempObj
 
-json.sort(function (a, b) {
+json.sort(function(a, b) {
     if (a.sampleTime > b.sampleTime) {
         return 1
     } else {
@@ -104,7 +104,7 @@ if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
             motionTimeStamps.push(tempObj)
         } else { // missinput or other
             recordObj.value = 'ms'
-            recordObj.timeStamp = json[i - 1].sampleTime + 10000// 上一个记录后增加一个十秒后的掉线数据
+            recordObj.timeStamp = json[i - 1].sampleTime + 10000 // 上一个记录后增加一个十秒后的掉线数据
             tempObj = JSON.parse(JSON.stringify(recordObj))
             motionTimeStamps.push(tempObj)
         };
@@ -113,7 +113,7 @@ if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
     // add boundary record - always as the last one
 
     recordObj.timeStamp = Date.parse(endDate)
-    // recordObj.value 取原值
+        // recordObj.value 取原值
     tempObj = JSON.parse(JSON.stringify(recordObj))
     motionTimeStamps.push(tempObj)
 } else if (json[0].resourceType === 'SampleMotion') { // json[1].value json[1].sampleTime
@@ -144,7 +144,7 @@ if (json[0].assetState && json[0].assetState.resourceType === 'AssetState') {
             };
         } else { // 认为是掉线后的数据,value不可靠,先设为 ot
             recordObj.value = 'ms'
-            recordObj.timeStamp = json[i - 1].sampleTime + 10000// 上一个记录后增加一个十秒后的掉线数据
+            recordObj.timeStamp = json[i - 1].sampleTime + 10000 // 上一个记录后增加一个十秒后的掉线数据
             tempObj = JSON.parse(JSON.stringify(recordObj))
             motionTimeStamps.push(tempObj)
         }
@@ -181,7 +181,7 @@ function doReport() {
         minDiff = Math.floor((t2m - t1m) / 60 / 1000) // 两次数据之间的整分差
         t1ToNext = 60 - t1.getSeconds() // 前面的零头秒数.例如 16:14:06, 则 = 54
         PrevTot2 = t2.getSeconds() // 后面的零头秒数 16:14:06, 则 = 06
-        // 这样, 10:01:22 in -10:03:44 ot ,应该计算01分的38秒占用,03分的44秒占用 ,02的66秒占用
+            // 这样, 10:01:22 in -10:03:44 ot ,应该计算01分的38秒占用,03分的44秒占用 ,02的66秒占用
 
         // c(' :' + t1.toLocaleString() + '(前)' + t1m.toLocaleTimeString() + '(分)' + minDiff + '(相差分)' + t1ToNext + '(前秒) ' + PrevTot2 + '(后秒)' + t2.toLocaleString() + '(后)  ' + t2m.toLocaleTimeString() + '(分)')
 
@@ -197,8 +197,8 @@ function doReport() {
             t0.setTime(t1m.getTime()) // 前一整分
 
             let _RecordExist = false // 记录不存在
-            // eslint-disable-next-line no-unused-vars
-            // var _ExistValue = 0
+                // eslint-disable-next-line no-unused-vars
+                // var _ExistValue = 0
 
             // process head
             if (timeArray.length >= 1) {
@@ -219,7 +219,7 @@ function doReport() {
             }
             // process middle
             let j = 1
-            // c('      准备加入中部记录');
+                // c('      准备加入中部记录');
             while (j < minDiff) {
                 t0.setTime(t1m.getTime() + j * 60 * 1000) // 下一分
                 timeObj.timeStamp = t0.toLocaleString()
@@ -234,8 +234,8 @@ function doReport() {
             { // tail会重复？
                 t0.setTime(t2m.getTime()) // tail
                 let _RecordExist = false
-                // for (const key in timeArray) { // already exits in Array?
-                //       for (let key = timeArray.length - 1; key > 0; key--) {
+                    // for (const key in timeArray) { // already exits in Array?
+                    //       for (let key = timeArray.length - 1; key > 0; key--) {
                 if (timeArray.length > 1) {
                     for (let key = timeArray.length - 1; key > Math.max(timeArray.length - 9, 0); key--) { // 检查是否存在这个分钟纪录
                         if (timeArray[key].timeStamp === t0.toLocaleString()) {
@@ -272,7 +272,7 @@ function doReport() {
                     if (timeArray[key].timeStamp === t0.toLocaleString()) {
                         c(key + '      头部记录存在！头部原值+0不变 ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[key]))
                         _RecordExist = true
-                        //  _ExistValue = timeArray[key].value
+                            //  _ExistValue = timeArray[key].value
                     }
                 }
             }
@@ -287,7 +287,7 @@ function doReport() {
 
             // process middle
             let j = 1
-            // c('      准备加入中部记录：');
+                // c('      准备加入中部记录：');
             while (j < minDiff) {
                 t0.setTime(t1m.getTime() + j * 60 * 1000)
                 timeObj.timeStamp = t0.toLocaleString()
@@ -295,20 +295,20 @@ function doReport() {
 
                 var _timeObj = JSON.parse(JSON.stringify(timeObj))
                 timeArray.push(_timeObj)
-                //  c('      加入中部记录0：' + JSON.stringify(_timeObj))
+                    //  c('      加入中部记录0：' + JSON.stringify(_timeObj))
                 j++
             }
             // tail会重复？
             t0.setTime(t2m) // tail
             _RecordExist = false
-            // for (const key in timeArray) { // already exits in Array?
-            // for (let key = timeArray.length - 1; key > 0; key--) {
+                // for (const key in timeArray) { // already exits in Array?
+                // for (let key = timeArray.length - 1; key > 0; key--) {
             if (timeArray.length > 1) {
                 for (let key = timeArray.length - 1; key > Math.max(timeArray.length - 9, 0); key--) { // 检查是否存在这个分钟纪录
                     if (timeArray[key].timeStamp === t0.toLocaleString()) {
                         c(key + '                  尾部记录存在！尾部原值不变 ' + '   ' + JSON.stringify(timeArray[key]))
                         _RecordExist = true
-                        // _ExistValue = timeArray[key].value;
+                            // _ExistValue = timeArray[key].value;
                     }
                 }
             }
@@ -324,7 +324,7 @@ function doReport() {
     }
 
     c('timearray:sorting ')
-    timeArray.sort(function (a, b) {
+    timeArray.sort(function(a, b) {
         if (Date.parse(a.timeStamp) > Date.parse(b.timeStamp)) {
             return 1
         } else {

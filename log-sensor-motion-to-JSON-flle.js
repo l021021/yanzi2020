@@ -22,16 +22,18 @@ var c = console.log
     // var locationId = '229349' // fangtang
     // const locationId = '797296' // novah
 
-const startDate = '2019/12/27/00:00:00'
-const endDate = '2019/12/31/23:59:59'
-var locationId = '185308'
-    // var deviceID = 'UUID-512D3E88CBF54C0CAC76675947614138'
-var deviceID = 'EUI64-D0CF5EFFFE1094AE-3-Motion'
+const startDate = '2019/12/20/00:00:00'
+const endDate = '2020/01/11/23:59:59'
+    // var locationId = '185308'
+var locationId = '305026'
+
+// var deviceID = 'UUID-512D3E88CBF54C0CAC76675947614138'
+var deviceID = 'EUI64-D0CF5EFFFE59E445-3-Motion'
 
 var TimeoutId = setTimeout(doReport, 60000)
 
 // const tenDay = 8640000;
-const _12Hour = 86400000
+const _12Hour = 8640000
 var motionTimeStamps = []
 var DTO = []
 var DTO1 = []

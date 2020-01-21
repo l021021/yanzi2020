@@ -29,9 +29,9 @@ var recordObj = {
     value: ''
 }
 
-var filename = 'c:\\JLL\\797296_2019_11_30_00_00_00_2020_01_01_12_59_59_UU' // 历史记录文件
-const startDate = '2019/11/30/00:00:00'
-const endDate = '2020/01/01/12:59:59'
+var filename = 'C://JLL//783825-10-30-12-31' // 历史记录文件
+const startDate = '2019/10/30/00:00:00'
+const endDate = '2019/12/31/23:59:59'
 
 var t1 = new Date()
 var t2 = new Date()
