@@ -28,8 +28,6 @@ var recordObj = {
 }
 
 var filename = '..\\log\\252208_2019_12_29_12_00_00_2019_12_30_11_59_59_Temp' // 历史记录文件
-const startDate = '2019/12/30/00:00:00'
-const endDate = '2020/01/01/12:59:59'
 
 var motionTimeStamps = []
 
@@ -133,15 +131,15 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor循环,写
     // c('  Writing  for this sensor ' + timeArray.length)
 }
 
-function scan_array(arr) {
-    c('\n Listing Elements: \n')
-    for (var key in arr) { // 这个是关键
-        if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
-            scan_array(arr[key])
-        } else {
-            console.log('      ' + key + ' --- ' + arr[key])
-            CSVFile.write(arr[key] + ',')
-        }
-    }
-}
+// function scanArray(arr) {
+//     c('\n Listing Elements: \n')
+//     for (var key in arr) { // 这个是关键
+//         if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
+//             scanArray(arr[key])
+//         } else {
+//             console.log('      ' + key + ' --- ' + arr[key])
+//             CSVFile.write(arr[key] + ',')
+//         }
+//     }
+// }
 CSVFile.end()
