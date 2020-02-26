@@ -7,8 +7,8 @@ var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Internetofthing'
-// var username = "653498331@qq.com";
-// var password = "000000";
+    // var username = "653498331@qq.com";
+    // var password = "000000";
 
 // ################################################
 
@@ -18,7 +18,7 @@ var _OnlineUnitsCounter = 0
 var _Locations = []
 var _Units = []
 var TimeoutId = setTimeout(doReport, 60000)
-// Create a web socket client initialized with the options as above
+    // Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
 
 // All Objs definition
@@ -33,7 +33,7 @@ var locationObj = {
     Allunits: 0,
     Onlineunits: 0,
     gwOnline: false
-    // "activityLevel": "medium"
+        // "activityLevel": "medium"
 
 }
 
@@ -51,17 +51,17 @@ var unitObj = {
 }
 
 // Program body
-client.on('connectFailed', function (error) {
+client.on('connectFailed', function(error) {
     console.log('Connect Error: reconnect' + error.toString())
     beginPOLL()
 })
 
-client.on('connect', function (connection) {
+client.on('connect', function(connection) {
     // console.log("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function (message) {
+    connection.on('message', function(message) {
         clearTimeout(TimeoutId)
         TimeoutId = setTimeout(doReport, 60000) // exit after 10 seconds idle
         console.log('timer reset  ')
@@ -91,8 +91,8 @@ client.on('connect', function (connection) {
                     if (json.responseCode.name == 'success') {
                         sendPeriodicRequest() // as keepalive
                         sendGetLocationsRequest() // not mandatory
-                        // sendSubscribeRequest(LocationId); //test one location
-                        // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
+                            // sendSubscribeRequest(LocationId); //test one location
+                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
                         console.log(json.responseCode.name)
                         console.log("Couldn't login, check your username and passoword")
@@ -135,7 +135,7 @@ client.on('connect', function (connection) {
                     // sendGetUnitsRequest(537931);
                     break
                 case 'GetSamplesResponse':
-
+                    json.list[0].lifeCycleState.namejson.list[0].lifeCycleState.name
                     break
                 case 'GetUnitsResponse':
                     if (json.responseCode.name == 'success') {
@@ -164,7 +164,7 @@ client.on('connect', function (connection) {
 
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                 _Units.push(_tempunitObj)
-                                // _UnitsCounter++;
+                                    // _UnitsCounter++;
                                 if (json.list[index].lifeCycleState.name == 'present') {
                                     _OnlineUnitsCounter++
                                 }
@@ -175,11 +175,11 @@ client.on('connect', function (connection) {
                     } else {
                         console.log("Couldn't get Units")
                     }
-
+                    json.list[0].lifeCycleState.name
                     break
                 case 'PeriodicResponse':
                     setTimeout(sendPeriodicRequest, 60000)
-                    // console.log(_Counter + '# ' + "periodic response-keepalive");
+                        // console.log(_Counter + '# ' + "periodic response-keepalive");
                     break
                 case 'SubscribeResponse':
 
@@ -187,18 +187,18 @@ client.on('connect', function (connection) {
 
                 default:
                     console.log('!!!! cannot understand')
-                    // connection.close();
+                        // connection.close();
                     break
             }
         }
     })
 
-    connection.on('error', function (error) {
+    connection.on('error', function(error) {
         console.log('Connection Error: reconnect' + error.toString())
         beginPOLL()
     })
 
-    connection.on('close', function () {
+    connection.on('close', function() {
         console.log('Connection closed!')
     })
 
@@ -206,7 +206,7 @@ client.on('connect', function (connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-            //    console.log('sending' + JSON.stringify(json));
+                //    console.log('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             console.log("sendMessage: Couldn't send message, the connection is not open")
@@ -233,7 +233,7 @@ client.on('connect', function (connection) {
 
     function sendGetLocationsRequest() {
         var now = new Date().getTime()
-        // var nowMinusOneHour = now - 60 * 60 * 1000;
+            // var nowMinusOneHour = now - 60 * 60 * 1000;
         var request = {
             messageType: 'GetLocationsRequest',
             timeSent: now
@@ -268,7 +268,7 @@ client.on('connect', function (connection) {
 
 function beginPOLL() {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-    // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
+        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
 function doReport() {
@@ -278,15 +278,15 @@ function doReport() {
     timestamp.setTime(t)
     console.log('Reporting：')
     console.log(timestamp.toLocaleTimeString() + '')
-    // sorting
-    _Locations.sort(function (a, b) {
+        // sorting
+    _Locations.sort(function(a, b) {
         var x = a.locationId
         var y = b.locationId
         if (x > y) return 1
         if (x < y) return -1
         return 0
     })
-    _Units.sort(function (a, b) {
+    _Units.sort(function(a, b) {
         var x = a.locationId
         var y = b.locationId
         if (x > y) return 1
@@ -307,10 +307,10 @@ function doReport() {
         for (let j = 0; j < _Locations.length; j++) { // update to its locations
             if (_Locations[j].locationId == _Units[i].locationId) { // Location match
                 _Locations[j].Allunits++
-                if (_Units[i].lifeCycleState == 'present') { // mark live gateways
-                    _Locations[j].gwOnline = true // Location Online
-                    _Locations[j].Onlineunits++ // mark online sensors
-                }
+                    if (_Units[i].lifeCycleState == 'present') { // mark live gateways
+                        _Locations[j].gwOnline = true // Location Online
+                        _Locations[j].Onlineunits++ // mark online sensors
+                    }
                 if (_Units[i].isChassis == 'true') {
                     _Locations[j].units++
                 } // mark physical sensors

@@ -12,11 +12,11 @@ var password = 'Internetofthing'
 // var LocationId = '60358' //1003
 // var LocationId = '938433' //1004
 // var LocationId = '83561' //1005
-var LocationId = '306571' // 雷诺
-
+// var LocationId = '306571' // 雷诺
+// var LocationId = '897737' // 威发test
 // var LocationId = '521209' //wafer-shanghai
 // var LocationId = '503370' //wanshen
-// var LocationId = '797296' //novah
+var LocationId = '797296' // novah
 // var LocationId = '223516' //huamao
 // var LocationId = '783825' //浦发11
 // var LocationId = '581669' //TEST36
@@ -87,13 +87,13 @@ client.on('connect', function (connection) {
                     ' : with counters as :' +
                     output
                 )
-                console.log('Motion records calculated from counters:')
+                console.log('\nMotion records calculated from counters:')
                 console.log(JSON.stringify(motionTimeStamps))
-                console.log('Motion records calculated from motion/nomotion packets:')
+                console.log('\nMotion records calculated from motion/nomotion packets:')
                 console.log(JSON.stringify(assetTimeStamps1))
-                console.log('Motion records calculated from free/occupy packets:')
+                console.log('\nMotion records calculated from free/occupy packets:')
                 console.log(JSON.stringify(assetTimeStamps2))
-                console.log('Motion records calculated from assetUtilization packets:')
+                console.log('\nMotion records calculated from assetUtilization packets:')
                 console.log(assetTimeStamps3.toString())
                 console.log("That's all")
                 process.exit()
@@ -342,7 +342,7 @@ client.on('connect', function (connection) {
                                 case 'SampleSoundPressureLevel':
                                 case 'SampleIlluminance':
                                 case 'SampleCO2':
-                                    // console.log('     ' + _Counter + '# Sample ' + _t3.toLocaleTimeString() + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].value);
+                                    console.log('      ' + _Counter + '# ' + _t3.toLocaleTimeString() + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].value)
                                     break
                                 default:
                                     console.log(
