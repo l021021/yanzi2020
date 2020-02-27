@@ -6,7 +6,6 @@ for (i = 3; i < 1000000; i++) {
             flag = false
             break
         }
-
     }
 
     if (flag) console.log(i)
