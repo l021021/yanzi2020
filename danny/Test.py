@@ -31,7 +31,7 @@ pattern = '%Y-%m-%d %H:%M:%S'
 def pairUnits():
 
     # Read ID and its corresponding names from the csv file
-    nameList = pd.read_csv("C:\\codebase\\yanzi2020\\danny\\IdNameList.csv")
+    nameList = pd.read_csv(".\\danny\\sugar.csv")
     nl = nameList.values
     location = '_' + str(nl[0][2])
 

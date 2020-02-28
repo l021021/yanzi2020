@@ -44,7 +44,7 @@ var _Counter1 = 0; //sensor counter
 
 //var _Locations = [];
 var sensorArray = []
-    // 二维数组，0：传感器ID，1：motion计数，2：Nomotion计数
+    // 二维数组，0：传感器ID，1：motion计数，2：Nomotion计数;3:当前value
 var motionTimeStamps
 
 var _t1 = new Date()
