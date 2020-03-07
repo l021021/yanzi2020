@@ -11,8 +11,8 @@
         大约是传感器数量X70；
         */
 
-var LocationId = '88252' //1002
-var _logLimit = 50; //will exit when this number of messages has been logged
+var LocationId = '229349' //1002
+var _logLimit = 500; //will exit when this number of messages has been logged
 
 //Set up endpoint, you'll probably need to change this
 var cirrusAPIendpoint = "cirrus21.yanzi.se";
@@ -43,8 +43,11 @@ var _Counter1 = 0; //sensor counter
 
 
 //var _Locations = [];
-var sensorArray = new Array();
+var sensorArray = []
+    // 二维数组，0：传感器ID，1：motion计数，2：Nomotion计数;3:当前value
+var motionTimeStamps
 
+var _t1 = new Date()
 for (var i = 0; i < 5; i++) {
     sensorArray[i] = new Array();
 }
@@ -74,13 +77,17 @@ client.on('connect', function(connection) {
                 connection.close();
                 var output = "";    
 
-                sensorArray.forEach(element => {
-                    sensorArray[element].forEach(element1 => {
-                        console.log(sensorArray[element][element1]);
+                // sensorArray.forEach(element => {
+                //     sensorArray[element].forEach(element1 => {
+                //         console.log(sensorArray[element][element1]);
 
-                    });
+                //     });
 
-                });
+                // }
+                scan_array(sensorArray)
+
+
+
 
                 /*    for (var i = 0; i < sensorArray.length; i++) {
                     //  const element = array[index];
@@ -331,6 +338,18 @@ function beginPOLL() {
     }
     client.connect("wss://" + cirrusAPIendpoint + "/cirrusAPI");
     //console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
+}
+
+function scan_array(arr) {
+    // c('\n Listing Stored Events: \n')
+    for (var key in arr) { // 这个是关键
+        if (typeof(arr[key]) === 'array' || typeof(arr[key]) === 'object') { // 递归调用
+            scan_array(arr[key])
+        } else {
+            console.log('      ' + key + ' --- ' + arr[key])
+        }
+    }
+    console.log('\n                ------- \n')
 }
 
 beginPOLL();
