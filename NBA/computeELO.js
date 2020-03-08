@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const FS = require('fs')
 
 const csvFile = 'NBA\\NBA.csv'
@@ -64,14 +65,14 @@ const TeamElos = []
 
 function getLatestELO(t) {
     let _round = 0
-    let _index = 0
+    let _index = -1
     for (let i = 0; i < TeamElos.length; i++) {
         if ((TeamElos[i].name === t) && (TeamElos[i].round > _round)) {
             _round = TeamElos[i].round
             _index = i
         }
     }
-    if (_index === 0) { return 1000 } else { return TeamElos[_index].ELO }
+    if (_index === -1) { return 1000 } else { return TeamElos[_index].ELO }
 }
 function getLatestTeamRound(t) {
     let _round = 0
@@ -119,18 +120,26 @@ for (let index = 0; index < resultArray.length; index++) {
     const opteam = resultArray[index].TEAM2
     const result = parseInt((resultArray[index].Result))
     const _round = resultArray[index].Round
-    const _home = (resultArray[index].Home === 'HOME') ? 1 : 0
+    var _home = resultArray[index].HOME === 'HOME' ? 1 : 0
+
+    // console.log(_home + '   ' + resultArray[index].HOME)
     if (team == null) continue
     // console.log(_hometeam + '  ' + _round + '  ' + _season + '  ')
-    const o1 = getLatestELO(team) || 1000 // 初始值1000
-    const o2 = getLatestELO(opteam) || 1000 // 初始值1000
+    var o1 = getLatestELO(team) || 1000 // 初始值1000
+    var o2 = getLatestELO(opteam) || 1000 // 初始值1000
     // 计算等级分
-    const Ea = 1 / (1 + Math.pow(10, (o2 - o1) / 400))
-    const Eb = 1 / (1 + Math.pow(10, (o1 - o2) / 400))
-    const _newELO1 = parseFloat(o1) + k * (result - Ea)
-    const _newELO2 = parseFloat(o2) + k * ((1 - result) - Eb)
-    const _tr1 = parseInt(getLatestTeamRound(team))
-    const _tr2 = parseInt(getLatestTeamRound(opteam))
+    var Ea = 1 / (1 + Math.pow(10, (o2 - o1) / 400))
+    var Eb = 1 / (1 + Math.pow(10, (o1 - o2) / 400))
+    var _newELO1 = parseFloat(o1) + k * (result - Ea)
+    var _newELO2 = parseFloat(o2) + k * ((1 - result) - Eb)
+
+    Ea = Ea * (_home ? 1.3 : 1 / 1.3) // 主客场对胜率的影响
+    Eb = Eb * (_home ? 1 / 1.3 : 1.3)
+
+    var _tr1 = parseInt(getLatestTeamRound(team))
+    var _tr2 = parseInt(getLatestTeamRound(opteam))
+
+    // 计算胜率
 
     setELO(team, parseInt(_round), Ea, parseFloat(_newELO1), _tr1 + 1)
     setELO(opteam, parseInt(_round), Eb, parseFloat(_newELO2), _tr2 + 1)
