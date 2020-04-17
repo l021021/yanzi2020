@@ -24,10 +24,12 @@ var password = 'Internetofthing'
 // var LocationId = '60358' //1003
 // var LocationId = '938433' //1004
 // var LocationId = '83561' //1005
+var LocationId = '194130' //dfocus
+
 
 // var LocationId = '521209' //wafer-shanghai
 // var LocationId = '74365' // kerry 静安
-var LocationId = '306571' // leino
+// var LocationId = '797296' // leino
 
 var _logLimit = 1000 // will exit when this number of messages has been logged
 
