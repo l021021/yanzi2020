@@ -1,4 +1,4 @@
-
+# -*- coding:utf-8 -*-
 import csv
 import math
 import random
@@ -13,7 +13,7 @@ team_elos = {}
 team_stats = {}
 X = []
 y = []
-folder = 'E:/gitdir/yanzi2020/NBA/data'
+folder = 'data'
 
 # ����ÿ����ӵ�eloֵ
 def calc_elo(win_team, lose_team):
@@ -157,6 +157,6 @@ if __name__ == '__main__':
 
     with open('16-17Result.csv', 'wb') as f:
         writer = csv.writer(f)
-        #writer.writerow(bytes(['win', 'lose', 'probability']))
-        #writer.writerows(bytes(result))
-    print(result)
+        writer.writerow(['win', 'lose', 'probability'])
+        writer.writerows(result)
+
