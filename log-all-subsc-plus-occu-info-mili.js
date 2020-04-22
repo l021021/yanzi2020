@@ -6,7 +6,7 @@ var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Internetofthing'
-var LocationId = '229349' // fangtang
+    //var LocationId = '229349' // fangtang
     // var LocationId = '188559' //1001
     // var LocationId = '88252' //1002
     // var LocationId = '60358' //1003
@@ -20,10 +20,11 @@ var LocationId = '229349' // fangtang
     // var LocationId = '223516' //huamao
     // var LocationId = '783825' //浦发11
     // var LocationId = '581669' //TEST36
+var LocationId = '503370' //VANKE 上海  
 
 // For log use only
 var _Counter = 0 // message counter
-var _logLimit = 20000 // will exit when this number of messages has been logged
+var _logLimit = 50000 // will exit when this number of messages has been logged
 var _t1 = new Date()
 var _t2 = new Date()
 var _t3 = new Date()
@@ -205,8 +206,8 @@ client.on('connect', function(connection) {
                                         '      ' +
                                         _Counter +
                                         '# ' +
-                                        _t3.toLocaleTimeString() +
-                                        ' SampleAsset ' +
+                                        _t3.toLocaleTimeString() + ' ' +
+                                        // ' SampleAsset ' +
                                         json.list[0].list[0].assetState.name +
                                         ' ' +
                                         json.list[0].dataSourceAddress.did +
@@ -345,7 +346,7 @@ client.on('connect', function(connection) {
                                 case 'SampleSoundPressureLevel':
                                 case 'SampleIlluminance':
                                 case 'SampleCO2':
-                                    console.log('      ' + _Counter + '# ' + _t3.toLocaleTimeString() + ' Samples  ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].value)
+                                    console.log('      ' + _Counter + '# ' + _t3.toLocaleTimeString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].value)
                                     break
                                 default:
                                     console.log(
