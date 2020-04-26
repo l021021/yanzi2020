@@ -22,11 +22,13 @@ var password = 'Internetofthing'
     // var LocationId = '223516' //huamao
     // var LocationId = '783825' //浦发11
     // var LocationId = '581669' //TEST36
-var LocationId = '503370' //VANKE 上海  
+    // var LocationId = '503370' //VANKE 上海  
+var LocationId = '274189' //圣奥
+
 
 // For log use only
 var _Counter = 0 // message counter
-var _logLimit = 50000 // will exit when this number of messages has been logged
+var _logLimit = 10000 // will exit when this number of messages has been logged
 var _t1 = new Date()
 var _t2 = new Date()
 var _t3 = new Date()

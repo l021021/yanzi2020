@@ -5,7 +5,7 @@ var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Internetofthing'
+var password = 'Ft@Sugarcube99'
     //var LocationId = '229349' // fangtang
     // var LocationId = '188559' //1001
     // var LocationId = '88252' //1002
@@ -15,12 +15,14 @@ var password = 'Internetofthing'
     // var LocationId = '306571' // 雷诺
     // var LocationId = '897737' // 威发test
     // var LocationId = '521209' //wafer-shanghai
-    // var LocationId = '503370' //wanshen
-    // var LocationId = '797296' // novah
+    // var LocationId = '274189' //sunao
+
+// var LocationId = '503370' //wanshen
+var LocationId = '797296' // novah
     // var LocationId = '223516' //huamao
     // var LocationId = '783825' //浦发11
     // var LocationId = '581669' //TEST36
-var LocationId = '503370' //VANKE 上海  
+    // var LocationId = '503370' //VANKE 上海  
 
 // For log use only
 var _Counter = 0 // message counter
