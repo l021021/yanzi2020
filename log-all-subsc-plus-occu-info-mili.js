@@ -18,11 +18,14 @@ var password = 'Ft@Sugarcube99'
     // var LocationId = '274189' //sunao
 
 // var LocationId = '503370' //wanshen
-var LocationId = '797296' // novah
-    // var LocationId = '223516' //huamao
-    // var LocationId = '783825' //浦发11
-    // var LocationId = '581669' //TEST36
-    // var LocationId = '503370' //VANKE 上海  
+// var LocationId = '797296' // novah
+// var LocationId = '223516' //huamao
+// var LocationId = '783825' //浦发11
+// var LocationId = '581669' //TEST36
+// var LocationId = '503370' //VANKE 上海  
+// var LocationId = '114190' // 华为-1
+// var LocationId = '996052' // 华为-2
+
 
 // For log use only
 var _Counter = 0 // message counter

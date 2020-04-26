@@ -7,7 +7,7 @@ var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Internetofthing'
+var password = 'Ft@Sugarcube99'
     // var username = "653498331@qq.com";
     // var password = "000000";
 
