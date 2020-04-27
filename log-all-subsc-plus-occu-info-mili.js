@@ -26,6 +26,7 @@ var password = 'Ft@Sugarcube99'
 // var LocationId = '114190' // 华为-1
 // var LocationId = '996052' // 华为-2
 
+var LocationId = '952675' // tuowen-16
 
 // For log use only
 var _Counter = 0 // message counter

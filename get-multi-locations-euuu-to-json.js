@@ -1,30 +1,25 @@
-/* eslint-disable no-redeclare */
-/* eslint-disable eol-last */
-/* eslint-disable camelcase */
-/* eslint-disable no-fallthrough */
-/* eslint-disable eqeqeq */
-// 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
+// 列出所有的Location已经其下的传感器;可能需要几分钟才能收全,适合于单个项目内多个网关数据的收集
 var WebSocketClient = require('websocket').client
 const fs = require('fs')
 
 var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Internetofthing'
-const locationIds = []
-const window_limit = 3
-const reportPeriod = 3600000 * 8 * 3
-// const _24Hour = 86400000
-const startDate = '2019/12/31/00:00:00'
-const endDate = '2020/01/01/09:59:59'
-var TimeoutId = setTimeout(doReport, 300000)
+var password = 'Ft@Sugarcube99'
+const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻
+const window_limit = 3 //大量数据时,建立接收windows
+const reportPeriod = 3600000 * 8 * 3 //最小的请求数据的长度,单个数据请求不能大于2000,可以根据网络情况优化
+    // const _24Hour = 86400000
+const startDate = '2020/04/27/00:00:00'
+const endDate = '2020/04/27/13:50:59'
+var TimeoutId = setTimeout(doReport, 300000) //数据超时
 
-for (let lc = 0; lc < locationIds.length; lc++) { }
-const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
+// for (let lc = 0; lc < locationIds.length; lc++) {}
+const dataFile = fs.createWriteStream('../log/' + locationIds[0] + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
 
 dataFile.on('finish',
-    function () { process.exit() })
+    function() { process.exit() })
 dataFile.on('destroy',
-    function () { process.exit() })
-// For log use only
+        function() { process.exit() })
+    // For log use only
 var _Counter = 0 // message counter
 var _requestCount = 0
 var _responseCount = 0
@@ -50,6 +45,7 @@ var unitObj = {
 
 }
 var c = console.log
+
 function Queue() {
     this.dataStore = []
     this.enqueue = enqueue
@@ -60,18 +56,23 @@ function Queue() {
     this.empty = empty
     this.length = this.dataStore.length
 }
+
 function enqueue(element) {
     this.dataStore.push(element)
 }
+
 function dequeue() {
     return this.dataStore.shift()
 }
+
 function head() {
     return this.dataStore[0]
 }
+
 function tail() {
     return this.dataStore[this.dataStore.length - 1]
 }
+
 function toString() {
     var retStr = ''
     for (var i = 0; i < this.dataStore.length; ++i) {
@@ -79,6 +80,7 @@ function toString() {
     }
     return retStr
 }
+
 function empty() {
     if (this.dataStore.length == 0) {
         return true
@@ -88,20 +90,20 @@ function empty() {
 }
 
 // Program body
-client.on('connectFailed', function (error) {
+client.on('connectFailed', function(error) {
     c('Connect Error: reconnect' + error.toString())
     start()
 })
 
-client.on('connect', function (connection) {
+client.on('connect', function(connection) {
     // c("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function (message) {
+    connection.on('message', function(message) {
         clearTimeout(TimeoutId)
-        // TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
-        // c('timer reset  ')
+            // TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
+            // c('timer reset  ')
 
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
@@ -120,9 +122,10 @@ client.on('connect', function (connection) {
                     if (json.responseCode.name == 'success') {
                         // sendPeriodicRequest() // as keepalive
                         // sendGetLocationsRequest() // not mandatory
-                        sendGetUnitsRequest(locationId) // get units from location
-                        // sendSubscribeRequest(LocationId); //test one location
-                        // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
+                        for (let lc = 0; lc < locationIds.length; lc++) {
+                            sendGetUnitsRequest(locationIds[lc]) //请求所有的location
+                        }
+
                     } else {
                         c(json.responseCode.name)
                         c("Couldn't login, check your username and passoword")
@@ -142,7 +145,7 @@ client.on('connect', function (connection) {
                         c('empty list # ' + ++_responseCount)
                     }
 
-                    sendMessagetoQue()// 保持消息队列,收一发一
+                    sendMessagetoQue() // 保持消息队列,收一发一
                     if (_requestCount === _responseCount) { doReport() }
                     break
                 case 'GetUnitsResponse':
@@ -170,9 +173,10 @@ client.on('connect', function (connection) {
 
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                 _Units.push(_tempunitObj)
-                                // request history record
-                                // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
-                                if (unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
+                                    // request history record
+                                    // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
+                                if (unitObj.did.indexOf('Motion') >= 0) { sendGetSamplesRequest(unitObj.locationId, unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
+                                //UUID or Motion 
                             };
                         }
 
@@ -192,44 +196,45 @@ client.on('connect', function (connection) {
 
                 default:
                     c('!!!! cannot understand')
-                    // connection.close();
+                        // connection.close();
                     break
             }
         }
     })
 
-    connection.on('error', function (error) {
+    connection.on('error', function(error) {
         c('Connection Error: reconnect' + error.toString())
         start()
     })
 
-    connection.on('close', function () {
+    connection.on('close', function() {
         c('Connection closed!')
     })
 
-    function sendGetSamplesRequest(deviceID, timeStart_mili, timeEnd_mili) {
+    function sendGetSamplesRequest(locationID, deviceID, timeStart_mili, timeEnd_mili) {
         if (timeStart_mili > timeEnd_mili) {
             c('Wrong Date.')
             return null
         }
         if (timeEnd_mili - timeStart_mili >= reportPeriod) {
             var request = {
-                messageType: 'GetSamplesRequest',
-                dataSourceAddress: {
-                    resourceType: 'DataSourceAddress',
-                    did: deviceID,
-                    locationId: locationId
-                },
-                timeSerieSelection: {
-                    resourceType: 'TimeSerieSelection',
-                    timeStart: timeStart_mili,
-                    timeEnd: timeStart_mili + reportPeriod
+                    messageType: 'GetSamplesRequest',
+                    dataSourceAddress: {
+                        resourceType: 'DataSourceAddress',
+                        did: deviceID,
+                        locationId: locationID
+                    },
+                    timeSerieSelection: {
+                        resourceType: 'TimeSerieSelection',
+                        timeStart: timeStart_mili,
+                        timeEnd: timeStart_mili + reportPeriod
+                    }
                 }
-            }
-            // push message in que
+                // push message in que
             c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendMessagetoQue(request)
             sendGetSamplesRequest( // 递归
+                locationID,
                 deviceID,
                 timeStart_mili + reportPeriod,
                 timeEnd_mili
@@ -240,7 +245,7 @@ client.on('connect', function (connection) {
                 dataSourceAddress: {
                     resourceType: 'DataSourceAddress',
                     did: deviceID,
-                    locationId: locationId
+                    locationId: locationID
                 },
                 timeSerieSelection: {
                     resourceType: 'TimeSerieSelection',
@@ -261,14 +266,14 @@ client.on('connect', function (connection) {
 
         if (mes === undefined && messageQueue.dataStore.length > 0) {
             sendMessage(messageQueue.dequeue())
-            // c('sending to queue . leaving ' + messageQueue.dataStore.length)
+                // c('sending to queue . leaving ' + messageQueue.dataStore.length)
             c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
         } else if (mes !== undefined && _windowSize < window_limit) {
             messageQueue.enqueue(mes)
             _windowSize++
             sendMessage(messageQueue.dequeue())
             c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
-            // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
+                // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
         } else if (mes !== undefined && _windowSize >= window_limit) {
             messageQueue.enqueue(mes)
             c('    sending request to queue, still ' + messageQueue.dataStore.length + ' left.')
@@ -279,7 +284,7 @@ client.on('connect', function (connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-            //    c('sending' + JSON.stringify(json));
+                //    c('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             c("sendMessage: Couldn't send message, the connection is not open")
@@ -329,7 +334,7 @@ function doReport() {
     if (_requestCount > _responseCount) {
         c('Failed')
         dataFile.destroy()
-        // process.exit()
+            // process.exit()
     }
     var t = new Date().getTime()
     var timestamp = new Date()
