@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 // 获得账号下所有location的事件信息,五分钟报告一次汇总,或者在得到记录数上限时退出
 //
 //
@@ -7,9 +8,9 @@ var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 var c = console.log
 var username = '653498331@qq.com'
 var password = '000000'
-const reportInter = 300000 //每隔五分钟,做一次汇总
-    // var username = "653498331@qq.com";
-    // var password = "000000";
+const reportInter = 300000 // 每隔五分钟,做一次汇总
+// var username = "653498331@qq.com";
+// var password = "000000";
 
 // ################################################
 
@@ -36,7 +37,8 @@ var sensorArray = []
 var motionTimeStamps = []
 var assetTimeStamps1 = []
 var assetTimeStamps2 = []
-var assetTimeStamps3 = ''
+// eslint-disable-next-line no-unused-vars
+var assetTimeStamps3
 
 // Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
@@ -50,16 +52,16 @@ var eventObj = {
 }
 
 // Program body
-client.on('connectFailed', function(error) {
+client.on('connectFailed', function (error) {
     console.log('Connect Error: reconnect' + error.toString())
     beginPOLL()
 })
 
-client.on('connect', function(connection) {
+client.on('connect', function (connection) {
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function(message) {
+    connection.on('message', function (message) {
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
             var t = new Date().getTime()
@@ -69,7 +71,7 @@ client.on('connect', function(connection) {
 
             if (_Counter >= _logLimit) {
                 console.log('Enough Data!')
-                    // console.log(_Locations.length + " locations : " + JSON.stringify(_Locations));
+                // console.log(_Locations.length + " locations : " + JSON.stringify(_Locations));
                 connection.close()
                 doReport()
                 process.exit()
@@ -104,7 +106,6 @@ client.on('connect', function(connection) {
                                     sendSubscribeRequest_lifecircle(json.list[i].locationAddress.locationId) // subscribe eventDTO
                                     sendSubscribeRequest_config(json.list[i].locationAddress.locationId)
                                     sendSubscribeRequest_data(json.list[i].locationAddress.locationId) // subscribe eventDTO
-
                                 }
                             }
                         }
@@ -115,9 +116,9 @@ client.on('connect', function(connection) {
                         process.exit()
                     };
                     break
-                    setTimeout(sendPeriodicRequest, 60000)
-                        // console.log(_Counter + '# ' + "periodic response-keepalive");
+                // console.log(_Counter + '# ' + "periodic response-keepalive");
                 case 'PeriodicResponse':
+                    setTimeout(sendPeriodicRequest, 60000)
                     break
                 case 'GetSamplesResponse':
                     break
@@ -149,7 +150,7 @@ client.on('connect', function(connection) {
                                     var temprecordObj
                                     var motionFlag = ' ?? ' // update new value
                                     recordObj.type = 'samplemotion'
-                                    recordObj.Did = json.list[0].dataSourceAddress.did //json.list[0].dataSourceAddress.did
+                                    recordObj.Did = json.list[0].dataSourceAddress.did // json.list[0].dataSourceAddress.did
                                     recordObj.timeStamp = _t1.getTime()
                                     sensorArray[json.list[0].dataSourceAddress.did] =
                                         json.list[0].list[0].value // setup sensor array
@@ -164,7 +165,7 @@ client.on('connect', function(connection) {
                                         recordObj.value = 'ot'
                                         temprecordObj = JSON.parse(JSON.stringify(recordObj))
                                         motionTimeStamps.push(temprecordObj)
-                                            // motionTimeStamps.push(json.list[0].dataSourceAddress.did + ',ot,' + _t1.getTime());
+                                        // motionTimeStamps.push(json.list[0].dataSourceAddress.did + ',ot,' + _t1.getTime());
                                     } else {
                                         // do not record to record
                                         // console.log("        Sensor first seen, cannot tell");
@@ -192,11 +193,11 @@ client.on('connect', function(connection) {
                                 case 'SampleAsset': // sampleAsset- free occupied ismotion isnomotion
                                     _t2.setTime(json.timeSent)
                                     _t3.setTime(json.list[0].list[0].sampleTime)
-                                        // eslint-disable-next-line no-redeclare
+                                    // eslint-disable-next-line no-redeclare
                                     var motionFlag = ' ? ' // update new value
-                                        // eslint-disable-next-line no-redeclare
+                                    // eslint-disable-next-line no-redeclare
                                     var temprecordObj
-                                        // var motionFlag = ' ?? '; //update new value
+                                    // var motionFlag = ' ?? '; //update new value
                                     recordObj.type = 'sampleAsset'
                                     recordObj.Did = json.list[0].dataSourceAddress.did
                                     recordObj.timeStamp = _t1.getTime()
@@ -303,15 +304,15 @@ client.on('connect', function(connection) {
                                 case 'SampleUpState':
                                     _t2.setTime(json.list[0].list[0].sampleTime)
                                     console.log(
-                                            _Counter +
-                                            '# ' +
-                                            _t2.toLocaleTimeString() +
-                                            'SampleUpState ' +
-                                            json.list[0].dataSourceAddress.did +
-                                            ' ' +
-                                            json.list[0].list[0].deviceUpState.name
-                                        )
-                                        // console.log(JSON.stringify(json));
+                                        _Counter +
+                                        '# ' +
+                                        _t2.toLocaleTimeString() +
+                                        'SampleUpState ' +
+                                        json.list[0].dataSourceAddress.did +
+                                        ' ' +
+                                        json.list[0].list[0].deviceUpState.name
+                                    )
+                                    // console.log(JSON.stringify(json));
                                     break
 
                                 case 'SlotDTO':
@@ -386,13 +387,13 @@ client.on('connect', function(connection) {
         }
     })
 
-    connection.on('error', function(error) {
+    connection.on('error', function (error) {
         console.log('Connection Error: reconnect' + error.toString())
         beginPOLL()
     })
 
-    connection.on('close', function(error) {
-        console.log('Connection closed!')
+    connection.on('close', function (error) {
+        console.log('Connection closed!' + error)
     })
 
     function sendMessage(message) {
@@ -497,7 +498,7 @@ client.on('connect', function(connection) {
 
 function beginPOLL() {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
+    // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
 function doReport() {
@@ -511,7 +512,8 @@ beginPOLL()
 function scan_array(arr) {
     c('\n Listing Stored Events: \n')
     for (var key in arr) { // 这个是关键
-        if (typeof(arr[key]) === 'array' || typeof(arr[key]) === 'object') { // 递归调用
+        // eslint-disable-next-line valid-typeof
+        if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
             scan_array(arr[key])
         } else {
             console.log('      ' + key + ' --- ' + arr[key])
