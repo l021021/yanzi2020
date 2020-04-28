@@ -5,22 +5,29 @@ var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Internetofthing'
-    //var LocationId = '229349' // fangtang
-    // var LocationId = '188559' //1001
-    // var LocationId = '88252' //1002
-    // var LocationId = '60358' //1003
-    // var LocationId = '938433' //1004
-    // var LocationId = '83561' //1005
-    // var LocationId = '306571' // 雷诺
-    // var LocationId = '897737' // 威发test
-    // var LocationId = '521209' //wafer-shanghai
-    // var LocationId = '503370' //wanshen
-    // var LocationId = '797296' // novah
-    // var LocationId = '223516' //huamao
-    // var LocationId = '783825' //浦发11
-    // var LocationId = '581669' //TEST36
-var LocationId = '503370' //VANKE 上海  
+var password = 'Ft@Sugarcube99'
+// var LocationId = '229349' // fangtang
+// var LocationId = '188559' //1001
+// var LocationId = '88252' //1002
+// var LocationId = '60358' //1003
+// var LocationId = '938433' //1004
+// var LocationId = '83561' //1005
+// var LocationId = '306571' // 雷诺
+// var LocationId = '897737' // 威发test
+// var LocationId = '521209' //wafer-shanghai
+// var LocationId = '503370' //wanshen
+// var LocationId = '797296' // novah
+// var LocationId = '223516' //huamao
+// var LocationId = '783825' //浦发11
+// var LocationId = '581669' //TEST36
+// var LocationId = '912706' // huawei-6
+var LocationId = '996052' // huawei-3
+// var LocationId = '114190' // huawei-3
+
+// var LocationId = '581669' //华为-2
+// var LocationId = '581669' //华为-1
+
+// var LocationId = '503370' // VANKE 上海
 
 // For log use only
 var _Counter = 0 // message counter
@@ -48,18 +55,18 @@ console.log('Probing: ' + LocationId + ': ')
 // Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
 
-client.on('connectFailed', function(error) {
+client.on('connectFailed', function (error) {
     console.log('Connect Error: ' + error.toString())
-        // eslint-disable-next-line no-undef
+    // eslint-disable-next-line no-undef
     connection.close()
 })
 
-client.on('connect', function(connection) {
+client.on('connect', function (connection) {
     // console.log("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function(message) {
+    connection.on('message', function (message) {
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
             var t = new Date().getTime()
@@ -109,11 +116,11 @@ client.on('connect', function(connection) {
                 case 'LoginResponse':
                     if (json.responseCode.name === 'success') {
                         sendPeriodicRequest() // as keepalive
-                            // sendGetLocationsRequest();// not mandatory
+                        // sendGetLocationsRequest();// not mandatory
                         sendSubscribeRequest(LocationId) // test
                         console.log('    Analyzing Location:' + LocationId)
-                            // sendSubscribeRequest_lifecircle(json.list[i].locationAddress.locationId);
-                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
+                        // sendSubscribeRequest_lifecircle(json.list[i].locationAddress.locationId);
+                        // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
                         console.log(json.responseCode.name)
                         console.log("Couldn't login, check your username and passoword")
@@ -124,15 +131,15 @@ client.on('connect', function(connection) {
 
                 case 'PeriodicResponse':
                     setTimeout(sendPeriodicRequest, 60000)
-                        // console.log(_Counter + '# ' + "periodic response-keepalive");
+                    // console.log(_Counter + '# ' + "periodic response-keepalive");
                     break
                 case 'SubscribeResponse':
                     var now = new Date().getTime()
                     setTimeout(sendGetLocationsRequest, json.expireTime - now)
                     _t1.setTime(json.expireTime)
                     console.log(
-                            'Susbscribe renew in (min)： ' + (json.expireTime - now) / 60000
-                        ) // 100min
+                        'Susbscribe renew in (min)： ' + (json.expireTime - now) / 60000
+                    ) // 100min
                     break
                 case 'SubscribeData':
                     // console.log('  ' + _Counter + '# ' + 'SubscribeData: ' + json.list[0].resourceType)
@@ -166,7 +173,7 @@ client.on('connect', function(connection) {
                                         recordObj.value = 'ot'
                                         temprecordObj = JSON.parse(JSON.stringify(recordObj))
                                         motionTimeStamps.push(temprecordObj)
-                                            // motionTimeStamps.push(json.list[0].dataSourceAddress.did + ',ot,' + _t1.getTime());
+                                        // motionTimeStamps.push(json.list[0].dataSourceAddress.did + ',ot,' + _t1.getTime());
                                     } else {
                                         // do not record to record
                                         // console.log("        Sensor first seen, cannot tell");
@@ -194,11 +201,11 @@ client.on('connect', function(connection) {
                                 case 'SampleAsset': // sampleAsset- free occupied ismotion isnomotion
                                     _t2.setTime(json.timeSent)
                                     _t3.setTime(json.list[0].list[0].sampleTime)
-                                        // eslint-disable-next-line no-redeclare
+                                    // eslint-disable-next-line no-redeclare
                                     var motionFlag = ' ? ' // update new value
-                                        // eslint-disable-next-line no-redeclare
+                                    // eslint-disable-next-line no-redeclare
                                     var temprecordObj
-                                        // var motionFlag = ' ?? '; //update new value
+                                    // var motionFlag = ' ?? '; //update new value
                                     recordObj.type = 'sampleAsset'
                                     recordObj.Did = json.list[0].dataSourceAddress.did
                                     recordObj.timeStamp = _t1.getTime()
@@ -305,15 +312,15 @@ client.on('connect', function(connection) {
                                 case 'SampleUpState':
                                     _t2.setTime(json.list[0].list[0].sampleTime)
                                     console.log(
-                                            _Counter +
-                                            '# ' +
-                                            _t2.toLocaleTimeString() +
-                                            'SampleUpState ' +
-                                            json.list[0].dataSourceAddress.did +
-                                            ' ' +
-                                            json.list[0].list[0].deviceUpState.name
-                                        )
-                                        // console.log(JSON.stringify(json));
+                                        _Counter +
+                                        '# ' +
+                                        _t2.toLocaleTimeString() +
+                                        'SampleUpState ' +
+                                        json.list[0].dataSourceAddress.did +
+                                        ' ' +
+                                        json.list[0].list[0].deviceUpState.name
+                                    )
+                                    // console.log(JSON.stringify(json));
                                     break
 
                                 case 'SlotDTO':
@@ -368,10 +375,10 @@ client.on('connect', function(connection) {
                                 case 'physicalDeviceIsNowDOWN':
                                 case 'remoteLocationGatewayIsNowDOWN':
                                 case 'remoteLocationGatewayIsNowUP':
-                                    // _t2.setTime(json.list[0].timeOfEvent);
-                                    // console.log(_Counter + '# ' + _t2.toLocaleTimeString() + ' EVENTS' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name);
-                                    //  break;
-                                    // eslint-disable-next-line no-fallthrough
+                                // _t2.setTime(json.list[0].timeOfEvent);
+                                // console.log(_Counter + '# ' + _t2.toLocaleTimeString() + ' EVENTS' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name);
+                                //  break;
+                                // eslint-disable-next-line no-fallthrough
                                 default:
                                     // console.log(_Counter + '#    Event DTO : ' + json.list[0].eventType.name);
                                     console.log(
@@ -390,22 +397,21 @@ client.on('connect', function(connection) {
 
                 default:
                     console.log(
-                            '!!!! cannot understand this messagetype' + json.messageType
-                        )
-                        // connection.close();
+                        '!!!! cannot understand this messagetype' + json.messageType
+                    )
+                    // connection.close();
                     break
             }
         }
     })
 
-    connection.on('error', function(error) {
+    connection.on('error', function (error) {
         console.log('Connection Error: ' + error.toString())
-        beginPOLL() //reconnect
-
+        beginPOLL() // reconnect
     })
 
     // eslint-disable-next-line handle-callback-err
-    connection.on('close', function() {
+    connection.on('close', function () {
         console.log('Connection closed!')
     })
 
@@ -413,7 +419,7 @@ client.on('connect', function(connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-                //    console.log('sending' + JSON.stringify(json));
+            //    console.log('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             console.log(
@@ -440,7 +446,7 @@ client.on('connect', function(connection) {
 
     function sendGetLocationsRequest() {
         var now = new Date().getTime()
-            // var nowMinusOneHour = now - 60 * 60 * 1000;
+        // var nowMinusOneHour = now - 60 * 60 * 1000;
         var request = {
             messageType: 'GetLocationsRequest',
             timeSent: now
@@ -450,7 +456,7 @@ client.on('connect', function(connection) {
 
     function sendSubscribeRequest(location_ID) {
         var now = new Date().getTime()
-            //   var nowMinusOneHour = now - 60 * 60 * 1000;
+        //   var nowMinusOneHour = now - 60 * 60 * 1000;
         var request = {
             messageType: 'SubscribeRequest',
             timeSent: now,
@@ -487,7 +493,7 @@ function beginPOLL() {
         return
     }
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
+    // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
 beginPOLL()
