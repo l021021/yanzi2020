@@ -11,13 +11,13 @@ var WebSocketClient = require('websocket').client
 const fs = require('fs')
 
 var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Internetofthing'
+var password = 'Ft@Sugarcube99'
 
 // /const locationId = '229349' // fangtang
 // const locationId = '581669' // 36
 // const locationId = '399621' // 4u
 // const locationId = '305026' // huace
-var locationId = '503370' //VANKE 上海 
+// var locationId = '503370' //VANKE 上海 
 
 // const locationId = '185308' // - As'tra Zeneca P1 Floor 1 - B is online  with 6 active sensors, 29 logical
 // const locationId = '329312' // - As'tra Zeneca P1 Floor 5 - A is online  with 9 active sensors, 50 logical
@@ -33,15 +33,15 @@ var locationId = '503370' //VANKE 上海
 // const locationId = '88252' // - As'tra Zeneca P1 Floor 2 - A is online  with 10 active sensors, 224 logical
 // const locationId = '938433' // - As'tra Zeneca P1 Floor 1 - A is online  with 22 active sensors, 260 logical
 // const locationId = '521209' // wafer shanghai
-// const locationId = '797296' // novah
-// const locationId = '223516' // - Ucommune - HuaMao is online  with 40 active sensors, 259 logical
-// const locationId = '229349' //- Fangtang is online  with 36 active sensors, 170 logical
-// const locationId = '252208' /// /- Ucommune - WeiTuo is online  with 60 active sensors, 352 logica
-// const locationId = '783825' // - Test26(PF11)
-// const locationId = '212446' // - (PF15)
+const locationId = '797296' // novah
+    // const locationId = '223516' // - Ucommune - HuaMao is online  with 40 active sensors, 259 logical
+    // const locationId = '229349' //- Fangtang is online  with 36 active sensors, 170 logical
+    // const locationId = '252208' /// /- Ucommune - WeiTuo is online  with 60 active sensors, 352 logica
+    // const locationId = '783825' // - Test26(PF11)
+    // const locationId = '212446' // - (PF15)
 
-const startDate = '2020/04/21/09:00:00'
-const endDate = '2020/04/21/13:00:00'
+const startDate = '2020/04/24/17:50:00'
+const endDate = '2020/04/24/20:20:00'
 const EUorUU = 'Motion' // 何种数据:UU or EU , Motion,Temp
 
 

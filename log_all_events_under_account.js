@@ -11,11 +11,11 @@
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 var c = console.log
-var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Internetofthing'
+var username = '653498331@qq.com'
+var password = '000000'
 const reportInter = 300000
-// var username = "653498331@qq.com";
-// var password = "000000";
+    // var username = "653498331@qq.com";
+    // var password = "000000";
 
 // ################################################
 
@@ -39,16 +39,16 @@ var eventObj = {
 }
 
 // Program body
-client.on('connectFailed', function (error) {
+client.on('connectFailed', function(error) {
     console.log('Connect Error: reconnect' + error.toString())
     beginPOLL()
 })
 
-client.on('connect', function (connection) {
+client.on('connect', function(connection) {
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function (message) {
+    connection.on('message', function(message) {
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
             var t = new Date().getTime()
@@ -58,7 +58,7 @@ client.on('connect', function (connection) {
 
             if (_Counter >= _logLimit) {
                 console.log('Enough Data!')
-                // console.log(_Locations.length + " locations : " + JSON.stringify(_Locations));
+                    // console.log(_Locations.length + " locations : " + JSON.stringify(_Locations));
                 connection.close()
                 doReport()
                 process.exit()
@@ -108,7 +108,7 @@ client.on('connect', function (connection) {
                         break
                     case 'PeriodicResponse':
                         setTimeout(sendPeriodicRequest, 60000)
-                        // console.log(_Counter + '# ' + "periodic response-keepalive");
+                            // console.log(_Counter + '# ' + "periodic response-keepalive");
                         break
                     case 'SubscribeResponse':
                         break
@@ -154,7 +154,7 @@ client.on('connect', function (connection) {
                                 console.log('!!!! cannot understand this resourcetype ' + json.list[0].resourceType)
                         }
                         eventsCounter[eventObj.locationId + '_' + _Locations[eventObj.locationId] + ':' + json.list[0].eventType.name] = (eventsCounter[eventObj.locationId + '_' + _Locations[eventObj.locationId] + ':' + json.list[0].eventType.name] + 1) || 1
-                        // setTimeout(doReport, reportInter)// 10分钟一次总结
+                            // setTimeout(doReport, reportInter)// 10分钟一次总结
                         break
 
                     default:
@@ -168,12 +168,12 @@ client.on('connect', function (connection) {
         }
     })
 
-    connection.on('error', function (error) {
+    connection.on('error', function(error) {
         console.log('Connection Error: reconnect' + error.toString())
         beginPOLL()
     })
 
-    connection.on('close', function (error) {
+    connection.on('close', function(error) {
         console.log('Connection closed!')
     })
 
@@ -261,7 +261,7 @@ client.on('connect', function (connection) {
 
 function beginPOLL() {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-    // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
+        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
 function doReport() {
@@ -275,7 +275,7 @@ beginPOLL()
 function scan_array(arr) {
     c('\n Listing Stored Events: \n')
     for (var key in arr) { // 这个是关键
-        if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
+        if (typeof(arr[key]) === 'array' || typeof(arr[key]) === 'object') { // 递归调用
             scan_array(arr[key])
         } else {
             console.log('      ' + key + ' --- ' + arr[key])

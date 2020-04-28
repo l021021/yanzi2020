@@ -1,43 +1,29 @@
-/* eslint-disable camelcase */
-// 记录实时MOTION数据,形成记录文件,供后续分析
-
-// TODO:transfer mili to time
+// 获得账号下所有location的事件信息,五分钟报告一次汇总,或者在得到记录数上限时退出
+//
+//
 
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus11.yanzi.se'
+var c = console.log
+var username = '653498331@qq.com'
+var password = '000000'
+const reportInter = 300000 //每隔五分钟,做一次汇总
+    // var username = "653498331@qq.com";
+    // var password = "000000";
 
-var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Internetofthing'
-    //var LocationId = '229349' // fangtang
-    // var LocationId = '188559' //1001
-    // var LocationId = '88252' //1002
-    // var LocationId = '60358' //1003
-    // var LocationId = '938433' //1004
-    // var LocationId = '83561' //1005
-    // var LocationId = '306571' // 雷诺
-    // var LocationId = '897737' // 威发test
-    // var LocationId = '521209' //wafer-shanghai
-    // var LocationId = '503370' //wanshen
-    // var LocationId = '797296' // novah
-    // var LocationId = '223516' //huamao
-    // var LocationId = '783825' //浦发11
-    // var LocationId = '581669' //TEST36
-    // var LocationId = '503370' //VANKE 上海  
-var LocationId = '274189' //圣奥
-
+// ################################################
 
 // For log use only
 var _Counter = 0 // message counter
-var _logLimit = 10000 // will exit when this number of messages has been logged
+var _logLimit = 500 // will exit when this number of messages has been logged
+
+var _Locations = []
+var _Events = []
+var eventsCounter = []
+
 var _t1 = new Date()
 var _t2 = new Date()
 var _t3 = new Date()
-
-var sensorArray = []
-var motionTimeStamps = []
-var assetTimeStamps1 = []
-var assetTimeStamps2 = []
-var assetTimeStamps3 = ''
 
 var recordObj = {
     type: '',
@@ -46,20 +32,30 @@ var recordObj = {
     value: ''
 }
 
-LocationId = process.argv[2] || LocationId
-console.log('Probing: ' + LocationId + ': ')
+var sensorArray = []
+var motionTimeStamps = []
+var assetTimeStamps1 = []
+var assetTimeStamps2 = []
+var assetTimeStamps3 = ''
 
 // Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
+var TimeoutId = setTimeout(doReport, reportInter)
+var eventObj = {
+    timeOfEvent: 1569232419674,
+    did: 'EUI64-0080E10300099999',
+    name: 'discovered',
+    locationId: '123456'
 
+}
+
+// Program body
 client.on('connectFailed', function(error) {
-    console.log('Connect Error: ' + error.toString())
-        // eslint-disable-next-line no-undef
-    connection.close()
+    console.log('Connect Error: reconnect' + error.toString())
+    beginPOLL()
 })
 
 client.on('connect', function(connection) {
-    // console.log("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
@@ -71,41 +67,16 @@ client.on('connect', function(connection) {
             timestamp.setTime(t)
             _Counter = _Counter + 1 // counter of all received packets
 
-            if (_Counter > _logLimit) {
-                console.log('Enough Data, I will quit now!')
+            if (_Counter >= _logLimit) {
+                console.log('Enough Data!')
+                    // console.log(_Locations.length + " locations : " + JSON.stringify(_Locations));
                 connection.close()
-                var output = ''
-                var sensorcounter = 0
-                for (var key in sensorArray) {
-                    sensorcounter++
-                    if (output === '') {
-                        output = sensorArray[key]
-                    } else {
-                        output += ',' + sensorArray[key]
-                    }
-                } // do some report before exit
-
-                // console.log(sensorArray.toString());
-                console.log(
-                    'Total Motions Sensors seen： ' +
-                    sensorcounter +
-                    ' : with counters as :' +
-                    output
-                )
-                console.log('\nMotion records calculated from counters:')
-                console.log(JSON.stringify(motionTimeStamps))
-                console.log('\nMotion records calculated from motion/nomotion packets:')
-                console.log(JSON.stringify(assetTimeStamps1))
-                console.log('\nMotion records calculated from free/occupy packets:')
-                console.log(JSON.stringify(assetTimeStamps2))
-                console.log('\nMotion records calculated from assetUtilization packets:')
-                console.log(assetTimeStamps3.toString())
-                console.log("That's all")
+                doReport()
                 process.exit()
             } // for log use only
-
-            // Print all messages with DTO type
-            // console.log(_Counter + '# ' + timestamp.toLocaleTimeString() + ':' + json.messageType);
+            // try {
+            // Print all messages with type
+            // console.log(_Counter + '# ' + timestamp.toLocaleTimeString() + ' RCVD_MSG:' + json.messageType)
             switch (json.messageType) {
                 case 'ServiceResponse':
                     sendLoginRequest()
@@ -113,11 +84,7 @@ client.on('connect', function(connection) {
                 case 'LoginResponse':
                     if (json.responseCode.name === 'success') {
                         sendPeriodicRequest() // as keepalive
-                            // sendGetLocationsRequest();// not mandatory
-                        sendSubscribeRequest(LocationId) // test
-                        console.log('    Analyzing Location:' + LocationId)
-                            // sendSubscribeRequest_lifecircle(json.list[i].locationAddress.locationId);
-                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
+                        sendGetLocationsRequest() // not mandatory
                     } else {
                         console.log(json.responseCode.name)
                         console.log("Couldn't login, check your username and passoword")
@@ -125,25 +92,52 @@ client.on('connect', function(connection) {
                         process.exit()
                     }
                     break
+                case 'GetLocationsResponse':
+                    if (json.responseCode.name === 'success') {
+                        // UPDATE location IDs
+                        if (json.list.length !== 0) {
+                            for (var i = 0; i < json.list.length; i++) {
+                                // let _locationExist = false
 
-                case 'PeriodicResponse':
+                                if (_Locations.indexOf(json.list[i].locationAddress.locationId) < 0) {
+                                    _Locations[json.list[i].locationAddress.locationId] = json.list[i].name
+                                    sendSubscribeRequest_lifecircle(json.list[i].locationAddress.locationId) // subscribe eventDTO
+                                    sendSubscribeRequest_config(json.list[i].locationAddress.locationId)
+                                    sendSubscribeRequest_data(json.list[i].locationAddress.locationId) // subscribe eventDTO
+
+                                }
+                            }
+                        }
+                    } else {
+                        console.log(json.responseCode.name)
+                        console.log("Couldn't get location")
+                        connection.close()
+                        process.exit()
+                    };
+                    break
                     setTimeout(sendPeriodicRequest, 60000)
                         // console.log(_Counter + '# ' + "periodic response-keepalive");
+                case 'PeriodicResponse':
                     break
+                case 'GetSamplesResponse':
+                    break
+                case 'GetUnitsResponse':
+                    break
+
                 case 'SubscribeResponse':
-                    var now = new Date().getTime()
-                    setTimeout(sendGetLocationsRequest, json.expireTime - now)
-                    _t1.setTime(json.expireTime)
-                    console.log(
-                            'Susbscribe renew in (min)： ' + (json.expireTime - now) / 60000
-                        ) // 100min
+                    // var now = new Date().getTime()
+                    // // let _t1 = new Date().getTime()
+                    // setTimeout(sendGetLocationsRequest, json.expireTime - now)
+                    // // _t1.setTime(json.expireTime)
+                    // console.log(
+                    //         'Susbscribe renew in (min)： ' + (json.expireTime - now) / 60000
+                    //     ) // 100min
                     break
                 case 'SubscribeData':
                     // console.log('  ' + _Counter + '# ' + 'SubscribeData: ' + json.list[0].resourceType)
+                    // eventsCounter[json.list[0].eventType.name] = (eventsCounter[json.list[0].eventType.name] + 1) || 0
                     switch (json.list[0].resourceType) {
                         case 'SampleList':
-                            // Sensor DATA
-                            // console.log('    ' + _Counter + '# ' + 'SampleList: ' + json.list[0].list[0].resourceType)
                             switch (json.list[0].list[0].resourceType) {
                                 case 'SampleMotion': // sampleMotion
                                     _t1.setTime(json.list[0].list[0].sampleTime)
@@ -155,7 +149,7 @@ client.on('connect', function(connection) {
                                     var temprecordObj
                                     var motionFlag = ' ?? ' // update new value
                                     recordObj.type = 'samplemotion'
-                                    recordObj.Did = json.list[0].dataSourceAddress.did
+                                    recordObj.Did = json.list[0].dataSourceAddress.did //json.list[0].dataSourceAddress.did
                                     recordObj.timeStamp = _t1.getTime()
                                     sensorArray[json.list[0].dataSourceAddress.did] =
                                         json.list[0].list[0].value // setup sensor array
@@ -254,7 +248,7 @@ client.on('connect', function(connection) {
                                             break
                                         default:
                                             console.log(
-                                                '!!!! cannot understand assetname ' +
+                                                '!Assetname ' +
                                                 json.list[0].list[0].assetState.name
                                             )
                                             break
@@ -343,92 +337,78 @@ client.on('connect', function(connection) {
                                     )
                                     break
 
-                                case 'SampleVOC':
-                                case 'SampleTemp':
-                                case 'SampleHumidity':
-                                case 'SamplePressure':
-                                case 'SampleSoundPressureLevel':
-                                case 'SampleIlluminance':
-                                case 'SampleCO2':
-                                    console.log('      ' + _Counter + '# ' + _t3.toLocaleTimeString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].value)
+                                case 'EventDTO':
+                                    var _tempeventObj
+                                    switch (json.list[0].eventType.name) {
+                                        case 'newUnAcceptedDeviceSeenByDiscovery':
+                                        case 'physicalDeviceIsNowUP':
+                                        case 'physicalDeviceIsNowDOWN':
+                                        case 'remoteLocationGatewayIsNowDOWN':
+                                        case 'remoteLocationGatewayIsNowUP':
+                                        case 'unitConfigurationChanged':
+                                            // console.log(json.list[0].unitAddress.did + ' 1  ' + json.list[0].unitAddress.locationId)
+                                            eventObj.did = json.list[0].unitAddress.did
+                                            eventObj.locationId = json.list[0].unitAddress.locationId
+
+                                            break
+                                        case 'locationChanged':
+                                            //  console.log(json.list[0].list[0].locationAddress.serverDid + ' 2  ' + json.list[0].list[0].locationAddress.locationId)
+                                            eventObj.did = json.list[0].list[0].locationAddress.serverDid
+                                            eventObj.locationId = json.list[0].list[0].locationAddress.locationId
+                                            break
+                                        default:
+                                            console.log('!EVENT: ' + json.list[0].eventType.name)
+                                    }
+                                    _t2.setTime(json.timeSent)
+                                    eventObj.timeOfEvent = json.timeSent
+                                    eventObj.name = json.list[0].eventType.name
+                                    _tempeventObj = JSON.parse(JSON.stringify(eventObj))
+
+                                    _Events.push(_tempeventObj)
+                                    console.log('      ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + eventObj.did + ' in ' + eventObj.locationId + '_' + _Locations[eventObj.locationId] + ':' + eventObj.name)
                                     break
                                 default:
-                                    console.log(
-                                        '!!!! cannot understand samplelist resourcetype' +
-                                        json.list[0].list[0].resourceType
-                                    )
+                                    console.log(' ENVI Data: ' + json.list[0].list[0].resourceType)
                             }
+                            // eventsCounter[eventObj.locationId + '_' + _Locations[eventObj.locationId] + ':' + json.list[0].list[0].eventType.name] = (eventsCounter[eventObj.locationId + '_' + _Locations[eventObj.locationId] + ':' + json.list[0].list[0].eventType.name] + 1) || 1
+                            // setTimeout(doReport, reportInter)// 10分钟一次总结
                             break
-                        case 'EventDTO':
-                            console.log(
-                                '    ' +
-                                _Counter +
-                                '#    Event DTO : ' +
-                                json.list[0].eventType.name
-                            )
-                            switch (json.list[0].eventType.name) {
-                                case 'newUnAcceptedDeviceSeenByDiscovery':
-                                case 'physicalDeviceIsNowUP':
-                                case 'physicalDeviceIsNowDOWN':
-                                case 'remoteLocationGatewayIsNowDOWN':
-                                case 'remoteLocationGatewayIsNowUP':
-                                    // _t2.setTime(json.list[0].timeOfEvent);
-                                    // console.log(_Counter + '# ' + _t2.toLocaleTimeString() + ' EVENTS' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name);
-                                    //  break;
-                                    // eslint-disable-next-line no-fallthrough
-                                default:
-                                    // console.log(_Counter + '#    Event DTO : ' + json.list[0].eventType.name);
-                                    console.log(
-                                        '!!!! cannot understand this Event' +
-                                        json.list[0].eventType.name
-                                    )
-                            }
-                            break
-                        default:
-                            console.log(
-                                '!!!! cannot understand this rsourcetype ' +
-                                json.list[0].resourceType
-                            )
-                    }
-                    break
 
-                default:
-                    console.log(
-                            '!!!! cannot understand this messagetype' + json.messageType
-                        )
-                        // connection.close();
-                    break
+                        default:
+                            console.log('OTHER DATA?  ' + JSON.stringify(json))
+
+                            break
+                    }
             }
+            // } catch (error) {
+            //     // console.log('Error!' + error.toString() + '-- --\n ' + JSON.stringify(json))
+            // }
         }
     })
 
     connection.on('error', function(error) {
-        console.log('Connection Error: ' + error.toString())
-        beginPOLL() //reconnect
-
+        console.log('Connection Error: reconnect' + error.toString())
+        beginPOLL()
     })
 
-    // eslint-disable-next-line handle-callback-err
-    connection.on('close', function() {
+    connection.on('close', function(error) {
         console.log('Connection closed!')
     })
 
     function sendMessage(message) {
         if (connection.connected) {
-            // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-                //    console.log('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
-            console.log(
-                "sendMessage: Couldn't send message, the connection is not open"
-            )
+            console.log("sendMessage: Couldn't send message, the connection is not open")
         }
     }
 
     function sendServiceRequest() {
         var request = {
-            messageType: 'ServiceRequest'
+            messageType: 'ServiceRequest',
+            clientId: 'client-fangtang'
+
         }
         sendMessage(request)
     }
@@ -444,7 +424,6 @@ client.on('connect', function(connection) {
 
     function sendGetLocationsRequest() {
         var now = new Date().getTime()
-            // var nowMinusOneHour = now - 60 * 60 * 1000;
         var request = {
             messageType: 'GetLocationsRequest',
             timeSent: now
@@ -452,9 +431,44 @@ client.on('connect', function(connection) {
         sendMessage(request)
     }
 
-    function sendSubscribeRequest(location_ID) {
+    function sendSubscribeRequest_lifecircle(location_ID) {
         var now = new Date().getTime()
-            //   var nowMinusOneHour = now - 60 * 60 * 1000;
+        var request = {
+            messageType: 'SubscribeRequest',
+            timeSent: now,
+            unitAddress: {
+                resourceType: 'UnitAddress',
+                locationId: location_ID
+            },
+            subscriptionType: {
+                resourceType: 'SubscriptionType',
+                name: 'lifecircle' // data   |  lifecircle  |  config
+            }
+        }
+
+        sendMessage(request)
+    }
+
+    function sendSubscribeRequest_config(location_ID) {
+        var now = new Date().getTime()
+        var request = {
+            messageType: 'SubscribeRequest',
+            timeSent: now,
+            unitAddress: {
+                resourceType: 'UnitAddress',
+                locationId: location_ID
+            },
+            subscriptionType: {
+                resourceType: 'SubscriptionType',
+                name: 'config' // data   |  lifecircle  |  config
+            }
+        }
+
+        sendMessage(request)
+    }
+
+    function sendSubscribeRequest_data(location_ID) {
+        var now = new Date().getTime()
         var request = {
             messageType: 'SubscribeRequest',
             timeSent: now,
@@ -482,16 +496,26 @@ client.on('connect', function(connection) {
 })
 
 function beginPOLL() {
-    if (!username) {
-        console.error('The username has to be set')
-        return
-    }
-    if (!password) {
-        console.error('The password has to be set')
-        return
-    }
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
         // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
+function doReport() {
+    scan_array(eventsCounter)
+    clearTimeout(TimeoutId)
+    TimeoutId = setTimeout(doReport, reportInter)
+}
+
 beginPOLL()
+
+function scan_array(arr) {
+    c('\n Listing Stored Events: \n')
+    for (var key in arr) { // 这个是关键
+        if (typeof(arr[key]) === 'array' || typeof(arr[key]) === 'object') { // 递归调用
+            scan_array(arr[key])
+        } else {
+            console.log('      ' + key + ' --- ' + arr[key])
+        }
+    }
+    c('\n                ------- \n')
+}

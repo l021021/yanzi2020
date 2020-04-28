@@ -29,9 +29,9 @@ var recordObj = {
     value: ''
 }
 
-var filename = '..\\log\\503370_2020_04_21_09_00_00_2020_04_21_13_00_00_Motion' // 历史记录文件
-const startDate = '2019/12/23/00:00:00'
-const endDate = '2019/12/31/23:59:59'
+var filename = '..\\log\\952675_2020_04_27_00_00_00_2020_04_27_09_59_59' // 历史记录文件
+    // const startDate = '2019/12/23/00:00:00'
+    // const endDate = '2019/12/31/23:59:59'
 
 var t1 = new Date()
 var t2 = new Date()
