@@ -1,12 +1,37 @@
+114190-Huawei-1-E2-2F is online  with 4 active sensors, 21 logical
+157285-Test41-QuanCan is online  with 3 active sensors, 22 logical
 185308-Astra Zeneca P1 Floor 1-B is online  with 6 active sensors, 29 logical
-329312-Astra Zeneca P1 Floor 5-A is online  with 9 active sensors, 50 logical
+190773-Envison-Meetings is online  with 6 active sensors, 148 logical
+221376-Kerry SKC is online  with 3 active sensors, 26 logical
+229349-Fangtang is online  with 35 active sensors, 177 logical
+252208-Ucommune-WeiTuo is online  with 60 active sensors, 352 logical
+254896-TurnOne - Vanke Dongguan is online  with 5 active sensors, 62 logical
+268429-TuoWen_17 is online  with 31 active sensors, 214 logical
+274189-圣奥 is online  with 31 active sensors, 244 logical
+306571-Test22（Leanon) is online  with 16 active sensors, 83 logical
+328916-TuoWen_19 is online  with 32 active sensors, 221 logical
+329312-Astra Zeneca P1 Floor 5-A is online  with 6 active sensors, 50 logical
+402837-TuoWen_15 is online  with 31 active sensors, 214 logical
 434888-Astra Zeneca P1 Floor 2-C is online  with 12 active sensors, 86 logical
-447224-Astra Zeneca P1 Floor 3-A is online  with 8 active sensors, 100 logical
-507828-Astra Zeneca P1 Floor 4-B is online  with 4 active sensors, 30 logical
+447224-Astra Zeneca P1 Floor 3-A is online  with 6 active sensors, 100 logical
+503370-Vanke Shanghai is online  with 49 active sensors, 258 logical
+507828-Astra Zeneca P1 Floor 4-B is online  with 3 active sensors, 30 logical
+521209-Wafer Shanghai is online  with 11 active sensors, 62 logical
+545672-KPCPMSH is online  with 6 active sensors, 39 logical
 60358-Astra Zeneca P1 Floor 2-B is online  with 32 active sensors, 243 logical
 608739-Astra Zeneca P1 Floor 5-B is online  with 4 active sensors, 17 logical
-652990-Astra Zeneca P1 Floor 3-C is online  with 3 active sensors, 30 logical
+652990-Astra Zeneca P1 Floor 3-C is online  with 4 active sensors, 30 logical
 668617-Astra Zeneca P1 Floor 4-A is online  with 11 active sensors, 94 logical
+732449-TuoWen_18 is online  with 31 active sensors, 221 logical
+74365-Kerry Properties is online  with 14 active sensors, 107 logical
+783825-Test26(PF11) is online  with 56 active sensors, 256 logical
+797296-Novah is online  with 118 active sensors, 632 logical
+805136-Test40 （Turnone） is online  with 5 active sensors, 30 logical
 83561-Astra Zeneca P1 Floor 3-B is online  with 10 active sensors, 224 logical
-88252-Astra Zeneca P1 Floor 2-A is online  with 9 active sensors, 224 logical
-938433-Astra Zeneca P1 Floor 1-A is online  with 22 active sensors, 260 logical
+88252-Astra Zeneca P1 Floor 2-A is online  with 10 active sensors, 224 logical
+897737-Test17(wafer-test) is online  with 9 active sensors, 54 logical
+912706-Huawei-3-M6-3F is online  with 6 active sensors, 23 logical
+938433-Astra Zeneca P1 Floor 1-A is online  with 21 active sensors, 260 logical
+952675-TuoWen_16 is online  with 31 active sensors, 214 logical
+996052-huawei-2-e2-3f is online  with 3 active sensors, 14 logical
+total 5151 logical sensors live while 721 sensors online
