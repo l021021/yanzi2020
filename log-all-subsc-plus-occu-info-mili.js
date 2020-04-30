@@ -6,7 +6,7 @@ var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-    //var LocationId = '229349' // fangtang
+var LocationId = '229349' // fangtang
     // var LocationId = '188559' //1001
     // var LocationId = '88252' //1002
     // var LocationId = '60358' //1003
@@ -26,7 +26,7 @@ var password = 'Ft@Sugarcube99'
 // var LocationId = '114190' // 华为-1
 // var LocationId = '996052' // 华为-2
 
-var LocationId = '952675' // tuowen-16
+// var LocationId = '952675' // tuowen-16
 
 // For log use only
 var _Counter = 0 // message counter

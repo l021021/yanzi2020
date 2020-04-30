@@ -6,10 +6,10 @@
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 
-var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Ft@Sugarcube99'
-    // var username = "653498331@qq.com";
-    // var password = "000000";
+// var username = 'frank.shen@pinyuaninfo.com'
+// var password = 'Ft@Sugarcube99'
+var username = "653498331@qq.com";
+var password = "000000";
 
 // ################################################
 
@@ -20,7 +20,7 @@ const idleTimeout = 1000 * 60
 var _OnlineUnitsCounter = 0
 var _Locations = []
 var _Units = []
-const logTime = 86400000 * 2 // DAY
+const logTime = 86400000 * 0.5 // DAY
 var reportPeriod = 86400000 * 10
 var TimeoutId = setTimeout(doReport, idleTimeout)
 var _requestCount = 0

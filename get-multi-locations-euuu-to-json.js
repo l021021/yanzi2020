@@ -4,12 +4,14 @@ const fs = require('fs')
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻
+    // const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻
+const locationIds = ['114190', '996052', '912706'] //华为
+
 const window_limit = 3 //大量数据时,建立接收windows
 const reportPeriod = 3600000 * 8 * 3 //最小的请求数据的长度,单个数据请求不能大于2000,可以根据网络情况优化
     // const _24Hour = 86400000
-const startDate = '2020/04/27/00:00:00'
-const endDate = '2020/04/27/13:50:59'
+const startDate = '2020/04/26/00:00:00'
+const endDate = '2020/04/29/14:59:59'
 var TimeoutId = setTimeout(doReport, 300000) //数据超时
 
 // for (let lc = 0; lc < locationIds.length; lc++) {}

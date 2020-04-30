@@ -1,19 +1,13 @@
-/* eslint-disable eol-last */
-/* eslint-disable valid-typeof */
-/* eslint-disable space-unary-ops */
-/* eslint-disable handle-callback-err */
-/* eslint-disable camelcase */
-
 // 获得账号下所有location的事件信息,五分钟报告一次汇总,或者在得到记录数上限时退出
 //
 //
 
 var WebSocketClient = require('websocket').client
-var cirrusAPIendpoint = 'cirrus11.yanzi.se'
+var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var c = console.log
 var username = '653498331@qq.com'
 var password = '000000'
-const reportInter = 300000
+const reportInter = 300000 //每隔五分钟,做一次汇总
     // var username = "653498331@qq.com";
     // var password = "000000";
 

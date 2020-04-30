@@ -33,15 +33,21 @@ var password = 'Ft@Sugarcube99'
 // const locationId = '88252' // - As'tra Zeneca P1 Floor 2 - A is online  with 10 active sensors, 224 logical
 // const locationId = '938433' // - As'tra Zeneca P1 Floor 1 - A is online  with 22 active sensors, 260 logical
 // const locationId = '521209' // wafer shanghai
-const locationId = '797296' // novah
-    // const locationId = '223516' // - Ucommune - HuaMao is online  with 40 active sensors, 259 logical
-    // const locationId = '229349' //- Fangtang is online  with 36 active sensors, 170 logical
-    // const locationId = '252208' /// /- Ucommune - WeiTuo is online  with 60 active sensors, 352 logica
-    // const locationId = '783825' // - Test26(PF11)
-    // const locationId = '212446' // - (PF15)
+// const locationId = '797296' // novah
+// const locationId = '114190' //华为2-2
+const locationId = '996052' //华为2-3
+    // const locationId = '912706' //华为6-3
 
-const startDate = '2020/04/24/17:50:00'
-const endDate = '2020/04/24/20:20:00'
+
+
+// const locationId = '223516' // - Ucommune - HuaMao is online  with 40 active sensors, 259 logical
+// const locationId = '229349' //- Fangtang is online  with 36 active sensors, 170 logical
+// const locationId = '252208' /// /- Ucommune - WeiTuo is online  with 60 active sensors, 352 logica
+// const locationId = '783825' // - Test26(PF11)
+// const locationId = '212446' // - (PF15)
+
+const startDate = '2020/04/26/00:00:00'
+const endDate = '2020/04/27/14:0:00'
 const EUorUU = 'Motion' // 何种数据:UU or EU , Motion,Temp
 
 

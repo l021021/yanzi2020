@@ -29,10 +29,10 @@ var recordObj = {
     value: ''
 }
 
-var filename = '..//log//797296_2019_04_01_00_00_00_2019_04_30_23_59_59_UU' // 历史记录文件
+var filename = '..//log//114190_2020_04_26_00_00_00_2020_04_29_14_59_59' // 历史记录文件
 
-const startDate = '2019/04/01/00:00:00'
-const endDate = '2019/04/30/23:59:59'
+const startDate = '2020/04/26/00:00:00'
+const endDate = '2020/04/29/14:59:59'
 
 var t1 = new Date()
 var t2 = new Date()
