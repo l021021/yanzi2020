@@ -1,15 +1,25 @@
+/* eslint-disable camelcase */
 // 获得账号下所有location的事件信息,五分钟报告一次汇总,或者在得到记录数上限时退出
 //
 //
 
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
-var c = console.log
+var c = console.log <<
+    << << < HEAD
     // var username = '653498331@qq.com'
     // var password = '000000'
     // const reportInter = 300000 //每隔五分钟,做一次汇总
 var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Ft@Sugarcube99'
+var password = 'Ft@Sugarcube99' ===
+    === =
+    var username = '653498331@qq.com'
+var password = '000000'
+const reportInter = 300000 // 每隔五分钟,做一次汇总
+    // var username = "653498331@qq.com";
+    // var password = "000000";
+    >>>
+    >>> > 6e dc5662754edaf456763429c9f62017c5bac6d8
 
 // ################################################
 
@@ -36,7 +46,8 @@ var sensorArray = []
 var motionTimeStamps = []
 var assetTimeStamps1 = []
 var assetTimeStamps2 = []
-var assetTimeStamps3 = ''
+    // eslint-disable-next-line no-unused-vars
+var assetTimeStamps3
 
 // Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
@@ -117,9 +128,9 @@ client.on('connect', function(connection) {
                         process.exit()
                     };
                     break
-                    setTimeout(sendPeriodicRequest, 60000)
-                        // console.log(_Counter + '# ' + "periodic response-keepalive");
+                    // console.log(_Counter + '# ' + "periodic response-keepalive");
                 case 'PeriodicResponse':
+                    setTimeout(sendPeriodicRequest, 60000)
                     break
                 case 'GetSamplesResponse':
                     break
@@ -402,7 +413,7 @@ client.on('connect', function(connection) {
     })
 
     connection.on('close', function(error) {
-        console.log('Connection closed!')
+        console.log('Connection closed!' + error)
     })
 
     function sendMessage(message) {
@@ -540,6 +551,7 @@ beginPOLL()
 function scan_array(arr) {
     c('\n Listing Stored Events: \n')
     for (var key in arr) { // 这个是关键
+        // eslint-disable-next-line valid-typeof
         if (typeof(arr[key]) === 'array' || typeof(arr[key]) === 'object') { // 递归调用
             scan_array(arr[key])
         } else {

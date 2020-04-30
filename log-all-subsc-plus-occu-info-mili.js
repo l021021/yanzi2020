@@ -22,9 +22,12 @@ var LocationId = '229349' // fangtang
 // var LocationId = '223516' //huamao
 // var LocationId = '783825' //浦发11
 // var LocationId = '581669' //TEST36
-// var LocationId = '503370' //VANKE 上海  
-// var LocationId = '114190' // 华为-1
-// var LocationId = '996052' // 华为-2
+// var LocationId = '912706' // huawei-6
+var LocationId = '996052' // huawei-3
+    // var LocationId = '114190' // huawei-3
+
+// var LocationId = '581669' //华为-2
+// var LocationId = '581669' //华为-1
 
 // var LocationId = '952675' // tuowen-16
 
@@ -406,8 +409,7 @@ client.on('connect', function(connection) {
 
     connection.on('error', function(error) {
         console.log('Connection Error: ' + error.toString())
-        beginPOLL() //reconnect
-
+        beginPOLL() // reconnect
     })
 
     // eslint-disable-next-line handle-callback-err
