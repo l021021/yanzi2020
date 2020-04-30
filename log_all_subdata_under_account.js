@@ -5,21 +5,19 @@
 
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
-var c = console.log <<
-    << << < HEAD
-    // var username = '653498331@qq.com'
-    // var password = '000000'
-    // const reportInter = 300000 //每隔五分钟,做一次汇总
+var c = console.log
+
+// var username = '653498331@qq.com'
+// var password = '000000'
+// const reportInter = 300000 //每隔五分钟,做一次汇总
 var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Ft@Sugarcube99' ===
-    === =
-    var username = '653498331@qq.com'
+var password = 'Ft@Sugarcube99'
+var username = '653498331@qq.com'
 var password = '000000'
 const reportInter = 300000 // 每隔五分钟,做一次汇总
     // var username = "653498331@qq.com";
     // var password = "000000";
-    >>>
-    >>> > 6e dc5662754edaf456763429c9f62017c5bac6d8
+
 
 // ################################################
 

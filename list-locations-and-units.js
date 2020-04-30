@@ -3,7 +3,7 @@
 // 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
 
 var WebSocketClient = require('websocket').client
-var cirrusAPIendpoint = 'cirrus11.yanzi.se'
+var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
@@ -15,6 +15,8 @@ var password = 'Ft@Sugarcube99'
 // For log use only
 var _Counter = 0 // message counter
 var _OnlineUnitsCounter = 0
+var _UnitsCounter = 0
+
 var _Locations = []
 var _Units = []
 var TimeoutId = setTimeout(doReport, 60000)
@@ -64,7 +66,7 @@ client.on('connect', function(connection) {
     connection.on('message', function(message) {
         clearTimeout(TimeoutId)
         TimeoutId = setTimeout(doReport, 60000) // exit after 10 seconds idle
-        console.log('timer reset  ')
+            // console.log('timer reset  ')
 
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
@@ -160,11 +162,11 @@ client.on('connect', function(connection) {
 
                                 unitObj.type = json.list[index].unitTypeFixed.name
 
-                                // console.log(json.list[index].unitTypeFixed.name + '\n\n');
 
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                 _Units.push(_tempunitObj)
-                                    // _UnitsCounter++;
+                                _UnitsCounter++;
+                                console.log(_UnitsCounter + '# ' + JSON.stringify(_tempunitObj));
                                 if (json.list[index].lifeCycleState.name == 'present') {
                                     _OnlineUnitsCounter++
                                 }
@@ -341,11 +343,11 @@ function doReport() {
     //     if (a[1].lifeCycleState == 'subUnit' && a[i].isChassis == false) console.log(_Units[key1].did + ' as a ' + _Units[key1].type + ' in ' + _Units[key1].locationId);
 
     // });
-    t = new Date().getTime()
-    timestamp = new Date()
-    timestamp.setTime(t)
-    console.log(timestamp.toLocaleTimeString() + 'ok!')
-    clearTimeout(TimeoutId)
+    // t = new Date().getTime()
+    // timestamp = new Date()
+    // timestamp.setTime(t)
+    // console.log(timestamp.toLocaleTimeString() + 'ok!')
+    // clearTimeout(TimeoutId)
     process.exit()
 }
 
