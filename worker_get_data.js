@@ -1,79 +1,21 @@
-/* eslint-disable no-redeclare */
-/* eslint-disable eol-last */
-/* eslint-disable camelcase */
-/* eslint-disable no-fallthrough */
-/* eslint-disable eqeqeq */
-// 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
-
-// 注意需要修改,决定拉UUID还是EUI
-
 var WebSocketClient = require('websocket').client
 const fs = require('fs')
 
-var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Ft@Sugarcube99'
-const startDate = '2020/04/01/00:00:00'
-const endDate = '2020/04/30/23:59:59'
-const EUorUU = 'UU' // 何种数据:UU or EU , Motion,Temp
 
-// /const locationId = '229349' // fangtang
-// const locationId = '581669' // 36
-// const locationId = '399621' // 4u
-const locationId = '305026' // huace
-    // var locationId = '503370' //VANKE 上海 
-
-// const locationId = '185308' // - As'tra Zeneca P1 Floor 1 - B is online  with 6 active sensors, 29 logical
-// const locationId = '329312' // - As'tra Zeneca P1 Floor 5 - A is online  with 9 active sensors, 50 logical
-// const locationId = '434888' // - As'tra Zeneca P1 Floor 2 - C is online  with 12 active sensors, 86 logical
-// const locationId = '447224' // - As'tra Zeneca P1 Floor 3 - A is online  with 8 active sensors, 100 logical
-// const locationId = '507828' // - As'tra Zeneca P1 Floor 4 - B is online  with 4 active sensors, 30 logical
-
-// const locationId = '60358' // - As'tra Zeneca P1 Floor 2 - B is online  with 32 active sensors, 243 logical
-// const locationId = '608739' // - As'tra Zeneca P1 Floor 5 - B is online  with 3 active sensors, 17 logical
-// const locationId = '652990' // - As'tra Zeneca P1 Floor 3 - C is online  with 4 active sensors, 30 logical
-// const locationId = '668617' // - As'tra Zeneca P1 Floor 4 - A is online  with 11 active sensors, 94 logical
-// const locationId = '83561' // - As'tra Zeneca P1 Floor 3 - B is online  with 9 active sensors, 224 logical
-// const locationId = '88252' // - As'tra Zeneca P1 Floor 2 - A is online  with 10 active sensors, 224 logical
-// const locationId = '938433' // - As'tra Zeneca P1 Floor 1 - A is online  with 22 active sensors, 260 logical
-// const locationId = '521209' // wafer shanghai
-// const locationId = '797296' // novah
-// const locationId = '114190' //华为2-2
-// const locationId = '996052' //华为2-3
-// const locationId = '912706' //华为6-3
+process.argv.forEach((val, index) => {
+    console.log(`${index}: ${val}`);
+});
 
 
+// process.exit()
+const username = 'frank.shen@pinyuaninfo.com'
+const password = 'Ft@Sugarcube99'
 
-// const locationId = '223516' // - Ucommune - HuaMao is online  with 40 active sensors, 259 logical
-// const locationId = '229349' //- Fangtang is online  with 36 active sensors, 170 logical
-// const locationId = '252208' /// /- Ucommune - WeiTuo is online  with 60 active sensors, 352 logica
-// const locationId = '783825' // - Test26(PF11)
-// const locationId = '212446' // - (PF15)
+const locationId = process.argv[2]
+const startDate = process.argv[3]
+const endDate = process.argv[4]
+const EUorUU = process.argv[5]
 
-
-
-
-// const locationId = '60358' // - As'tra Zeneca P1 Floor 2 - B is online  with 32 active sensors, 243 logical
-// const locationId = '608739' // - As'tra Zeneca P1 Floor 5 - B is online  with 3 active sensors, 17 logical
-// const locationId = '652990' // - As'tra Zeneca P1 Floor 3 - C is online  with 4 active sensors, 30 logical
-// const locationId = '668617' // - As'tra Zeneca P1 Floor 4 - A is online  with 11 active sensors, 94 logical
-// const locationId = '83561' // - As'tra Zeneca P1 Floor 3 - B is online  with 9 active sensors, 224 logical
-// const locationId = '88252' // - As'tra Zeneca P1 Floor 2 - A is online  with 10 active sensors, 224 logical
-// const locationId = '938433' // - As'tra Zeneca P1 Floor 1 - A is online  with 22 active sensors, 260 logical
-// const locationId = '521209' // wafer shanghai
-// const locationId = '797296' // novah
-// const locationId = '223516' // - Ucommune - HuaMao is online  with 40 active sensors, 259 logical
-// const locationId = '229349' //- Fangtang is online  with 36 active sensors, 170 logical
-// const locationId = '252208' /// /- Ucommune - WeiTuo is online  with 60 active sensors, 352 logica
-// const locationId = '783825' // - Test26(PF11)
-// const locationId = '212446' // - (PF15)
-
-// const startDate = '2019/12/29/12:00:00'
-// const endDate = '2019/12/30/11:59:59'
-// const EUorUU = 'Temp' // 何种数据:UU or EU , Motion,Temp
-//     >>>
-//     >>>
-//     >
-//     88 aff0da8db9731129c8ca7db3c84cbc9d2294ea
 
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
 

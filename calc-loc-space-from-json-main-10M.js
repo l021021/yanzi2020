@@ -29,10 +29,10 @@ var recordObj = {
     value: ''
 }
 
-var filename = '..//log//114190_2020_04_26_00_00_00_2020_04_29_14_59_59' // 历史记录文件
+var filename = 'C:\\Users\\bruce\\OneDrive - 上海方糖智能科技有限公司\\FTBI\\AZ\\April\\185308_x_2020_04_01_00_00_00_2020_04_30_20_59_59' // 历史记录文件
 
-const startDate = '2020/04/26/00:00:00'
-const endDate = '2020/04/29/14:59:59'
+const startDate = '2020/04/01/00:00:00'
+const endDate = '2020/04/30/20:59:59'
 
 var t1 = new Date()
 var t2 = new Date()

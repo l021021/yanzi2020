@@ -15,8 +15,8 @@ var c = console.log;
 var username = '653498331@qq.com'
 var password = '000000'
 const reportInter = 300000 // 每隔五分钟,做一次汇总
-var username = "653498331@qq.com";
-var password = "000000";
+    // var username = "653498331@qq.com";
+    // var password = "000000";
 
 
 // ################################################
@@ -111,8 +111,8 @@ client.on('connect', function(connection) {
 
                                 if (_Locations.indexOf(json.list[i].locationAddress.locationId) < 0) {
                                     _Locations[json.list[i].locationAddress.locationId] = json.list[i].name
-                                    sendSubscribeRequest(json.list[i].locationAddress.locationId, 'battery') // battery
-                                        // data   |  lifecircle  |  config | batetry|sensorData|assetData|occupancy| occupancySlots|sensorSlots| assetSlots
+                                    sendSubscribeRequest(json.list[i].locationAddress.locationId, 'lifecircle') // battery
+                                        // data   |  lifecircle  |  config | battery|sensorData|assetData|occupancy| occupancySlots|sensorSlots| assetSlots
                                 }
                             }
                         }
