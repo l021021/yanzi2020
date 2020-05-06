@@ -7,5 +7,7 @@
 			"path": "E:\\gitdir\\log"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"git.ignoreLimitWarning": true
+	}
 }

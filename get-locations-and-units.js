@@ -7,8 +7,8 @@ var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-    // var username = "653498331@qq.com";
-    // var password = "000000";
+// var username = "653498331@qq.com";
+// var password = "000000";
 
 // ################################################
 
@@ -19,8 +19,8 @@ var _UnitsCounter = 0
 
 var _Locations = []
 var _Units = []
-var TimeoutId = setTimeout(doReport, 60000)
-    // Create a web socket client initialized with the options as above
+var TimeoutId = setTimeout(doReport, 20000)// wait for 1 min before exit
+// Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
 
 // All Objs definition
@@ -35,7 +35,7 @@ var locationObj = {
     Allunits: 0,
     Onlineunits: 0,
     gwOnline: false
-        // "activityLevel": "medium"
+    // "activityLevel": "medium"
 
 }
 
@@ -53,20 +53,20 @@ var unitObj = {
 }
 
 // Program body
-client.on('connectFailed', function(error) {
+client.on('connectFailed', function (error) {
     console.log('Connect Error: reconnect' + error.toString())
     beginPOLL()
 })
 
-client.on('connect', function(connection) {
+client.on('connect', function (connection) {
     // console.log("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function(message) {
+    connection.on('message', function (message) {
         clearTimeout(TimeoutId)
         TimeoutId = setTimeout(doReport, 60000) // exit after 10 seconds idle
-            // console.log('timer reset  ')
+        // console.log('timer reset  ')
 
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
@@ -84,7 +84,7 @@ client.on('connect', function(connection) {
             // } //for log use only
 
             // Print all messages with type
-            console.log(_Counter + '# ' + timestamp.toLocaleTimeString() + ' RCVD_MSG:' + json.messageType)
+            // console.log(_Counter + '# ' + timestamp.toLocaleTimeString() + ' RCVD_MSG:' + json.messageType)
             switch (json.messageType) {
                 case 'ServiceResponse':
                     sendLoginRequest()
@@ -93,8 +93,8 @@ client.on('connect', function(connection) {
                     if (json.responseCode.name == 'success') {
                         sendPeriodicRequest() // as keepalive
                         sendGetLocationsRequest() // not mandatory
-                            // sendSubscribeRequest(LocationId); //test one location
-                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
+                        // sendSubscribeRequest(LocationId); //test one location
+                        // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
                         console.log(json.responseCode.name)
                         console.log("Couldn't login, check your username and passoword")
@@ -137,7 +137,7 @@ client.on('connect', function(connection) {
                     // sendGetUnitsRequest(537931);
                     break
                 case 'GetSamplesResponse':
-                    json.list[0].lifeCycleState.namejson.list[0].lifeCycleState.name
+                    // json.list[0].lifeCycleState.namejson.list[0].lifeCycleState.name
                     break
                 case 'GetUnitsResponse':
                     if (json.responseCode.name == 'success') {
@@ -162,11 +162,10 @@ client.on('connect', function(connection) {
 
                                 unitObj.type = json.list[index].unitTypeFixed.name
 
-
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                 _Units.push(_tempunitObj)
-                                _UnitsCounter++;
-                                console.log(_UnitsCounter + '# ' + JSON.stringify(_tempunitObj));
+                                _UnitsCounter++
+                                console.log(_UnitsCounter + '# ' + JSON.stringify(_tempunitObj))
                                 if (json.list[index].lifeCycleState.name == 'present') {
                                     _OnlineUnitsCounter++
                                 }
@@ -181,7 +180,7 @@ client.on('connect', function(connection) {
                     break
                 case 'PeriodicResponse':
                     setTimeout(sendPeriodicRequest, 60000)
-                        // console.log(_Counter + '# ' + "periodic response-keepalive");
+                    // console.log(_Counter + '# ' + "periodic response-keepalive");
                     break
                 case 'SubscribeResponse':
 
@@ -189,18 +188,18 @@ client.on('connect', function(connection) {
 
                 default:
                     console.log('!!!! cannot understand')
-                        // connection.close();
+                    // connection.close();
                     break
             }
         }
     })
 
-    connection.on('error', function(error) {
+    connection.on('error', function (error) {
         console.log('Connection Error: reconnect' + error.toString())
         beginPOLL()
     })
 
-    connection.on('close', function() {
+    connection.on('close', function () {
         console.log('Connection closed!')
     })
 
@@ -208,7 +207,7 @@ client.on('connect', function(connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-                //    console.log('sending' + JSON.stringify(json));
+            //    console.log('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             console.log("sendMessage: Couldn't send message, the connection is not open")
@@ -235,7 +234,7 @@ client.on('connect', function(connection) {
 
     function sendGetLocationsRequest() {
         var now = new Date().getTime()
-            // var nowMinusOneHour = now - 60 * 60 * 1000;
+        // var nowMinusOneHour = now - 60 * 60 * 1000;
         var request = {
             messageType: 'GetLocationsRequest',
             timeSent: now
@@ -270,25 +269,25 @@ client.on('connect', function(connection) {
 
 function beginPOLL() {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
+    // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
 function doReport() {
-    var output = ''
+    // var output = ''
     var t = new Date().getTime()
     var timestamp = new Date()
     timestamp.setTime(t)
     console.log('Reporting：')
     console.log(timestamp.toLocaleTimeString() + '')
-        // sorting
-    _Locations.sort(function(a, b) {
+    // sorting
+    _Locations.sort(function (a, b) {
         var x = a.locationId
         var y = b.locationId
         if (x > y) return 1
         if (x < y) return -1
         return 0
     })
-    _Units.sort(function(a, b) {
+    _Units.sort(function (a, b) {
         var x = a.locationId
         var y = b.locationId
         if (x > y) return 1
@@ -296,23 +295,14 @@ function doReport() {
         return 0
     })
 
-    // record all  Locations
-
-    for (const key in _Locations) {
-        output += _Locations[key].locationId + ' or ' + _Locations[key].name + '\n'
-    }
-    console.log('total ' + _Locations.length + ' locations: \n' + output) // print all locations with name
-    console.log('total ' + _Units.length + ' Units: \n') // print all Units with name
-
-    // match sensor to locations
-    for (let i = 0; i < _Units.length; i++) { // TODO: for each could be wrong
+    for (let i = 0; i < _Units.length; i++) {
         for (let j = 0; j < _Locations.length; j++) { // update to its locations
             if (_Locations[j].locationId == _Units[i].locationId) { // Location match
                 _Locations[j].Allunits++
-                    if (_Units[i].lifeCycleState == 'present') { // mark live gateways
-                        _Locations[j].gwOnline = true // Location Online
-                        _Locations[j].Onlineunits++ // mark online sensors
-                    }
+                if (_Units[i].lifeCycleState == 'present') { // mark live gateways
+                    _Locations[j].gwOnline = true // Location Online
+                    _Locations[j].Onlineunits++ // mark online sensors
+                }
                 if (_Units[i].isChassis == 'true') {
                     _Locations[j].units++
                 } // mark physical sensors
@@ -322,9 +312,10 @@ function doReport() {
     }
 
     // list each active location with sensors
-    for (let j = 0; j < _Locations.length; j++) { // TODO：for each
-        if (_Locations[j].gwOnline) { console.log('' + _Locations[j].locationId + '-' + _Locations[j].name + ' is online  with ' + _Locations[j].Onlineunits + ' active sensors, ' + _Locations[j].Allunits + ' logical') }
-    }
+    console.table(_Locations)
+    // for (let j = 0; j < _Locations.length; j++) { // TODO：for each
+    //     if (_Locations[j].gwOnline) { console.log('' + _Locations[j].locationId + '-' + _Locations[j].name + ' is online  with ' + _Locations[j].Onlineunits + ' active sensors, ' + _Locations[j].Allunits + ' logical') }
+    // }
     console.log('total ' + _Units.length + ' logical sensors live while ' + _OnlineUnitsCounter + ' sensors online') // sum up
 
     // //list all online physical sensors

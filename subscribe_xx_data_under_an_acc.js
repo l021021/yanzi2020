@@ -6,20 +6,12 @@
 
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
-// var c = console.log
+var c = console.log
 
-// var username = '653498331@qq.com'
-// var password = '000000'
-// const reportInter = 300000 //每隔五分钟,做一次汇总
 // var username = 'frank.shen@pinyuaninfo.com'
 // var password = 'Ft@Sugarcube99'
 var username = '653498331@qq.com'
 var password = '000000'
-// const reportInter = 300000 // 每隔五分钟,做一次汇总
-// var username = '653498331@qq.com'
-// var password = '000000'
-
-// ################################################
 
 // For log use only
 var _Counter = 0 // message counter
@@ -60,8 +52,8 @@ var client = new WebSocketClient()
 
 // Program body
 client.on('connectFailed', function (error) {
-    console.log('Connect Error: reconnect' + error.toString())
-    beginPOLL()
+    c('Connect Error: reconnect' + error.toString())
+    setInterval(beginPOLL, 5000)
 })
 
 client.on('connect', function (connection) {
@@ -330,7 +322,7 @@ client.on('connect', function (connection) {
                                     // 环境参数
                                     _t2.setTime(json.timeSent)
                                     // if json.list[0].list[0].resourceType ==
-                                    console.log('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' in ' + json.locationId + ' ' + json.list[0].list[0].percentFull || '')
+                                    console.log('   ' + _Counter + '# ' + _t2.toLocaleString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' in ' + json.locationId + ' ' + json.list[0].list[0].percentFull || '')
                                     break
                             }
 
@@ -477,7 +469,6 @@ client.on('connect', function (connection) {
 
 function beginPOLL() {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-    // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
 // function doReport() {

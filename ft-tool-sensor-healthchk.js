@@ -45,7 +45,7 @@ var motionTimeStamps
 
 var _t1 = new Date()
 for (var i = 0; i < 5; i++) {
-    sensorArray[i] = new Array()
+    sensorArray[i] = []
 }
 
 // Create a web socket client initialized with the options as above
@@ -109,7 +109,7 @@ client.on('connect', function (connection) {
                     sendLoginRequest()
                     break
                 case 'LoginResponse':
-                    if (json.responseCode.name == 'success') {
+                    if (json.responseCode.name === 'success') {
                         sendPeriodicRequest() // as keepalive
                         sendSubscribeRequest(LocationId) // test
                         sendSubscribeRequest_lifecircle(LocationId) // eventDTO
@@ -138,13 +138,13 @@ client.on('connect', function (connection) {
                                     var temp1 = sensorArray[3][json.list[0].dataSourceAddress.did]
                                     var motionFlag = ' ? ' // update new value
                                     sensorArray[3][json.list[0].dataSourceAddress.did] = json.list[0].list[0].value // latest value
-                                    if (temp1 == (json.list[0].list[0].value - 1)) { // Value changed!
+                                    if (temp1 === (json.list[0].list[0].value - 1)) { // Value changed!
                                         console.log('motion!')
                                         motionFlag = ' + '
                                         sensorArray[1][json.list[0].dataSourceAddress.did] = sensorArray[1][json.list[0].dataSourceAddress.did] + 1
 
                                         motionTimeStamps = motionTimeStamps + '{"ID":' + '"' + json.list[0].dataSourceAddress.did + '","in":"' + _t1.toLocaleTimeString() + '"},'
-                                    } else if (temp1 == json.list[0].list[0].value) {
+                                    } else if (temp1 === json.list[0].list[0].value) {
                                         console.log('no motion!')
                                         motionFlag = ' - '
                                         sensorArray[2][json.list[0].dataSourceAddress.did] = sensorArray[2][json.list[0].dataSourceAddress.did] + 1
