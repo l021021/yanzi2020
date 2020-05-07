@@ -8,20 +8,16 @@ var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var c = console.log
 
-// var username = 'frank.shen@pinyuaninfo.com'
-// var password = 'Ft@Sugarcube99'
-var username = '653498331@qq.com'
-var password = '000000' <<
-    << << < HEAD
+var username = 'frank.shen@pinyuaninfo.com'
+var password = 'Ft@Sugarcube99'
+    // var username = '653498331@qq.com'
+    // var password = '000000'
+let typeofSubs = 'config' // data   |  lifecircle  |  config | battery|sensorData|assetData|occupancy| occupancySlots|sensorSlots| assetSlots
 const reportInter = 300000 // 每隔五分钟,做一次汇总
     // var username = "653498331@qq.com";
     // var password = "000000";
 
 
-// ################################################
-    ===
-    === = >>>
-    >>> > f44059a0590abcc42f516cdba0ee1dbec149f6f4
 
 // For log use only
 var _Counter = 0 // message counter
@@ -113,7 +109,7 @@ client.on('connect', function(connection) {
 
                                 if (_Locations.indexOf(json.list[i].locationAddress.locationId) < 0) {
                                     _Locations[json.list[i].locationAddress.locationId] = json.list[i].name
-                                    sendSubscribeRequest(json.list[i].locationAddress.locationId, 'lifecircle') // battery
+                                    sendSubscribeRequest(json.list[i].locationAddress.locationId, typeofSubs) // battery
                                         // data   |  lifecircle  |  config | battery|sensorData|assetData|occupancy| occupancySlots|sensorSlots| assetSlots
                                 }
                             }
@@ -127,21 +123,13 @@ client.on('connect', function(connection) {
                     break
                     // console.log(_Counter + '# ' + "periodic response-keepalive");
                 case 'PeriodicResponse':
-                    setTimeout(sendPeriodicRequest, 60000)
+                    setInterval(sendPeriodicRequest, 60000)
                     break
                 case 'GetSamplesResponse':
                     break
                 case 'GetUnitsResponse':
                     break
-
                 case 'SubscribeResponse':
-                    // var now = new Date().getTime()
-                    //     // let _t1 = new Date().getTime()
-                    // setTimeout(sendGetLocationsRequest, json.expireTime - now)
-                    //     // _t1.setTime(json.expireTime)
-                    //     // // console.log(
-                    //     //         'Susbscribe renew in (min)： ' + (json.expireTime - now) / 60000
-                    //     //     ) // 100min
                     break
                 case 'SubscribeData':
                     switch (json.list[0].resourceType) {
@@ -335,7 +323,6 @@ client.on('connect', function(connection) {
                                     console.log('   ' + _Counter + '# ' + _t2.toLocaleString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' in ' + json.locationId + ' ' + json.list[0].list[0].percentFull || '')
                                     break
                             }
-
                             break
                         case 'EventType':
                             {
