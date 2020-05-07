@@ -1,3 +1,4 @@
+/* eslint-disable no-lone-blocks */
 /* eslint-disable camelcase */
 // 获得账号下所有location的事件信息,五分钟报告一次汇总,或者在得到记录数上限时退出
 //
@@ -5,29 +6,30 @@
 
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
-var c = console.log;
+var c = console.log
 
-// var username = '653498331@qq.com'
-// var password = '000000'
-// const reportInter = 300000 //每隔五分钟,做一次汇总
 // var username = 'frank.shen@pinyuaninfo.com'
 // var password = 'Ft@Sugarcube99'
 var username = '653498331@qq.com'
-var password = '000000'
+var password = '000000' <<
+    << << < HEAD
 const reportInter = 300000 // 每隔五分钟,做一次汇总
     // var username = "653498331@qq.com";
     // var password = "000000";
 
 
 // ################################################
+    ===
+    === = >>>
+    >>> > f44059a0590abcc42f516cdba0ee1dbec149f6f4
 
 // For log use only
 var _Counter = 0 // message counter
 var _logLimit = 5000 // will exit when this number of messages has been logged
 
 var _Locations = []
-var _Events = []
-var eventsCounter = []
+    // var _Events = []
+    // var eventsCounter = []
 
 var _t1 = new Date()
 var _t2 = new Date()
@@ -50,18 +52,18 @@ var assetTimeStamps3
 // Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
     // var TimeoutId = setTimeout(doReport, reportInter)
-var eventObj = {
-    timeOfEvent: 1569232419674,
-    did: 'EUI64-0080E10300099999',
-    name: 'discovered',
-    locationId: '123456'
+    // var eventObj = {
+    //     timeOfEvent: 1569232419674,
+    //     did: 'EUI64-0080E10300099999',
+    //     name: 'discovered',
+    //     locationId: '123456'
 
-}
+// }
 
 // Program body
 client.on('connectFailed', function(error) {
-    console.log('Connect Error: reconnect' + error.toString())
-    beginPOLL()
+    c('Connect Error: reconnect' + error.toString())
+    setInterval(beginPOLL, 5000)
 })
 
 client.on('connect', function(connection) {
@@ -156,7 +158,7 @@ client.on('connect', function(connection) {
                                         var temprecordObj
                                         var motionFlag = ' ?? ' // update new value
                                         recordObj.type = 'samplemotion'
-                                        recordObj.Did = json.list[0].dataSourceAddress.did //json.list[0].dataSourceAddress.did
+                                        recordObj.Did = json.list[0].dataSourceAddress.did // json.list[0].dataSourceAddress.did
                                         recordObj.timeStamp = _t1.getTime()
                                         sensorArray[json.list[0].dataSourceAddress.did] =
                                         json.list[0].list[0].value // setup sensor array
@@ -330,7 +332,7 @@ client.on('connect', function(connection) {
                                     // 环境参数
                                     _t2.setTime(json.timeSent)
                                         // if json.list[0].list[0].resourceType ==
-                                    console.log('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' in ' + json.locationId + ' ' + json.list[0].list[0].percentFull || '')
+                                    console.log('   ' + _Counter + '# ' + _t2.toLocaleString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' in ' + json.locationId + ' ' + json.list[0].list[0].percentFull || '')
                                     break
                             }
 
@@ -364,14 +366,13 @@ client.on('connect', function(connection) {
                                             )
                                         }
                                         break
-
                                 }
                             }
                             break
                         case 'EventDTO':
                             {
-                                var _tempeventObj
-                                switch (json.list[0].eventType.name) { //json.list[0]json.list[0].eventType.name
+                                // var _tempeventObj
+                                switch (json.list[0].eventType.name) { // json.list[0]json.list[0].eventType.name
                                     case 'newUnAcceptedDeviceSeenByDiscovery':
                                     case 'physicalDeviceIsNowUP':
                                     case 'physicalDeviceIsNowDOWN':
@@ -447,24 +448,6 @@ client.on('connect', function(connection) {
         sendMessage(request)
     }
 
-    function sendSubscribeRequest_lifecircle(location_ID) {
-        var now = new Date().getTime()
-        var request = {
-            messageType: 'SubscribeRequest',
-            timeSent: now,
-            unitAddress: {
-                resourceType: 'UnitAddress',
-                locationId: location_ID
-            },
-            subscriptionType: {
-                resourceType: 'SubscriptionType',
-                name: 'lifecircle' // data   |  lifecircle  |  config
-            }
-        }
-
-        sendMessage(request)
-    }
-
     function sendSubscribeRequest(location_ID, dataType) {
         var now = new Date().getTime()
         var request = {
@@ -484,8 +467,6 @@ client.on('connect', function(connection) {
         sendMessage(request)
     }
 
-
-
     function sendPeriodicRequest() {
         var now = new Date().getTime()
         var request = {
@@ -498,7 +479,6 @@ client.on('connect', function(connection) {
 
 function beginPOLL() {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
 // function doReport() {
@@ -509,15 +489,15 @@ function beginPOLL() {
 
 beginPOLL()
 
-function scan_array(arr) {
-    c('\n Listing Stored Events: \n')
-    for (var key in arr) { // 这个是关键
-        // eslint-disable-next-line valid-typeof
-        if (typeof(arr[key]) === 'array' || typeof(arr[key]) === 'object') { // 递归调用
-            scan_array(arr[key])
-        } else {
-            console.log('      ' + key + ' --- ' + arr[key])
-        }
-    }
-    c('\n                ------- \n')
-}
+// function scan_array(arr) {
+//     c('\n Listing Stored Events: \n')
+//     for (var key in arr) { // 这个是关键
+//         // eslint-disable-next-line valid-typeof
+//         if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
+//             scan_array(arr[key])
+//         } else {
+//             console.log('      ' + key + ' --- ' + arr[key])
+//         }
+//     }
+//     c('\n                ------- \n')
+// }

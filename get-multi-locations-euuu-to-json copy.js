@@ -5,15 +5,15 @@ const fs = require('fs')
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-// const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
+// const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻
 // const locationIds = ['114190', '996052', '912706'] // 华为
 const locationIds = ['185308', '329312', '434888', '447224', '507828', '60358', '608739', '652990', '668617', '83561', '88252', '938433'] // AZ
 
-const windowLimit = 10 // 大量数据时,建立接收windows
+const windowLimit = 3 // 大量数据时,建立接收windows
 const reportPeriod = 3600000 * 8 * 3 // 最小的请求数据的长度,单个数据请求不能大于2000,可以根据网络情况优化
 // const _24Hour = 86400000
-const startDate = '2020/04/01/00:00:00'
-const endDate = '2020/04/03/23:59:59'
+const startDate = '2020/04/21/00:00:00'
+const endDate = '2020/04/30/23:59:59'
 var TimeoutId = setTimeout(doReport, 300000) // 数据超时
 
 // for (let lc = 0; lc < locationIds.length; lc++) {}

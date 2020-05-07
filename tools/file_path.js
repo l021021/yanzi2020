@@ -1,20 +1,17 @@
-var fs = require("fs")
+var fs = require('fs')
 
 function getAllFileFromPath(path) {
     fs.readdir(path, function(err, res) {
-
-
-        // console.log(JSON.stringify(res))
+if (err) { console.log(err) }
         for (var subPath of res) {
-            var statObj = fs.statSync(path + "/" + subPath);
+            var statObj = fs.statSync(path + '/' + subPath)
             if (statObj.isDirectory()) {
-                console.log("Dir:", subPath);
-                getAllFileFromPath(path + "/" + subPath)
+                console.log('Dir:', subPath)
+                getAllFileFromPath(path + '/' + subPath)
             } else {
-                console.log("File:", subPath);
-
+                console.log('File:', subPath)
             }
         }
     })
 }
-getAllFileFromPath("c:\\codebase")
+getAllFileFromPath('e:\\gitdir')

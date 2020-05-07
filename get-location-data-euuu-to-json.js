@@ -27,7 +27,6 @@ const locationId = '305026' // huace
 // const locationId = '434888' // - As'tra Zeneca P1 Floor 2 - C is online  with 12 active sensors, 86 logical
 // const locationId = '447224' // - As'tra Zeneca P1 Floor 3 - A is online  with 8 active sensors, 100 logical
 // const locationId = '507828' // - As'tra Zeneca P1 Floor 4 - B is online  with 4 active sensors, 30 logical
-
 // const locationId = '60358' // - As'tra Zeneca P1 Floor 2 - B is online  with 32 active sensors, 243 logical
 // const locationId = '608739' // - As'tra Zeneca P1 Floor 5 - B is online  with 3 active sensors, 17 logical
 // const locationId = '652990' // - As'tra Zeneca P1 Floor 3 - C is online  with 4 active sensors, 30 logical
@@ -38,18 +37,24 @@ const locationId = '305026' // huace
 // const locationId = '521209' // wafer shanghai
 // const locationId = '797296' // novah
 // const locationId = '114190' //华为2-2
+<<
+<< << < HEAD
 // const locationId = '996052' //华为2-3
 // const locationId = '912706' //华为6-3
 
 
+    ===
+    === =
+    const locationId = '996052' // 华为2-3
+        // const locationId = '912706' //华为6-3
+        >>>
+        >>> > f44059a0590abcc42f516cdba0ee1dbec149f6f4
 
 // const locationId = '223516' // - Ucommune - HuaMao is online  with 40 active sensors, 259 logical
 // const locationId = '229349' //- Fangtang is online  with 36 active sensors, 170 logical
 // const locationId = '252208' /// /- Ucommune - WeiTuo is online  with 60 active sensors, 352 logica
 // const locationId = '783825' // - Test26(PF11)
 // const locationId = '212446' // - (PF15)
-
-
 
 
 // const locationId = '60358' // - As'tra Zeneca P1 Floor 2 - B is online  with 32 active sensors, 243 logical
