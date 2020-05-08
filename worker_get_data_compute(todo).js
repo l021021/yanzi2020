@@ -1,12 +1,9 @@
-//Worker logger: get historical data from location
 var WebSocketClient = require('websocket').client
 const fs = require('fs')
 
-const c = console.log
 
 process.argv.forEach((val, index) => {
-    c('Worker logger working with:')
-    c(`${index}: ${val}`);
+    console.log(`${index}: ${val}`);
 });
 
 
@@ -22,7 +19,7 @@ const EUorUU = process.argv[5]
 
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
 
-var TimeoutId = setTimeout(doReport, 30000) //timeout set for 30 sec, fail after this time
+var TimeoutId = setTimeout(doReport, 300000)
 const window_limit = 3
 const reportPeriod = 3600000 * 8 * 3
     // For log use only
@@ -33,7 +30,7 @@ var _windowSize = 0
 var _listCount = 0
 var _Units = []
 
-var cirrusAPIendpoint = 'cirrus20.yanzi.se'
+var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 var messageQueue = new Queue()
 
 var client = new WebSocketClient()
@@ -50,12 +47,10 @@ var unitObj = {
     type: ''
 
 }
+var c = console.log
 
 dataFile.on('finish',
-    function() {
-        c('Worker logger  finishing job...')
-        process.exit()
-    })
+    function() { process.exit() })
 dataFile.on('destroy',
     function() { process.exit() })
 
@@ -105,7 +100,7 @@ function empty() {
 // Program body
 client.on('connectFailed', function(error) {
     c('Connect Error: reconnect' + error.toString())
-    process.exit()
+    start()
 })
 
 client.on('connect', function(connection) {
@@ -115,7 +110,7 @@ client.on('connect', function(connection) {
     // Handle messages
     connection.on('message', function(message) {
         clearTimeout(TimeoutId)
-        TimeoutId = setTimeout(doReport, 30000) //重新设定定时,exit after 30 seconds idle
+            // TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
             // c('timer reset  ')
 
         if (message.type === 'utf8') {
@@ -134,8 +129,10 @@ client.on('connect', function(connection) {
                 case 'LoginResponse':
                     if (json.responseCode.name == 'success') {
                         sendPeriodicRequest() // as keepalive
+                            // sendGetLocationsRequest() // not mandatory
                         sendGetUnitsRequest(locationId) // get units from location
-
+                            // sendSubscribeRequest(LocationId); //test one location
+                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
                         c(json.responseCode.name)
                         c("Couldn't login, check your username and passoword")
@@ -143,27 +140,29 @@ client.on('connect', function(connection) {
                         process.exit()
                     }
                     break
-                case 'GetSamplesResponse':
-                    clearTimeout(TimeoutId)
-                    TimeoutId = setTimeout(doReport, 30000) //重新设定定时,exit after 30 seconds idle
+                case 'GetLocationsResponse':
 
+                    break
+                case 'GetSamplesResponse':
                     if (json.responseCode.name === 'success' && json.sampleListDto.list) { // json.sampleListDto.dataSourceAddress.did
                         c('receiving ' + json.sampleListDto.list.length + ' lists for ' + json.sampleListDto.dataSourceAddress.did + ' # ' + ++_responseCount)
                         _listCount += json.sampleListDto.list.length
                         dataFile.write(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleTemp/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleUpState/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleAsset/g, json.sampleListDto.dataSourceAddress.did)) // 修改了第一个replace . 插入sample报文的did
-
+                            // c(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleUpState/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did))
                     } else {
                         c('empty list # ' + ++_responseCount)
                     }
 
-                    sendMessagetoQue() // 保持消息队列,收一发一//全部完成后,结束
+                    sendMessagetoQue() // 保持消息队列,收一发一
                     if (_requestCount === _responseCount) { doReport() }
                     break
                 case 'GetUnitsResponse':
                     if (json.responseCode.name == 'success') {
+                        // c(JSON.stringify(json) + '\n\n');
+
                         var _tempunitObj
 
-                        // c('Seeing ' + json.list.length + ' (logical or physical) sensors in  ' + json.locationAddress.locationId)
+                        c('Seeing ' + json.list.length + ' (logical or physical) sensors in  ' + json.locationAddress.locationId)
                         for (let index = 0; index < json.list.length; index++) { // process each response packet
                             if (json.list[index].unitTypeFixed.name == 'gateway' || json.list[index].unitTypeFixed.name == 'remoteGateway' || json.list[index].unitAddress.did.indexOf('AP') != -1) { // c(json.list[index].unitAddress.did);
                                 // c('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
@@ -177,6 +176,7 @@ client.on('connect', function(connection) {
                                 unitObj.isChassis = json.list[index].isChassis
                                 unitObj.nameSetByUser = json.list[index].nameSetByUser
                                 unitObj.serverDid = json.list[index].unitAddress.serverDid
+
                                 unitObj.type = json.list[index].unitTypeFixed.name
 
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
@@ -199,7 +199,12 @@ client.on('connect', function(connection) {
                     break
                 case 'PeriodicResponse':
                     setTimeout(sendPeriodicRequest, 60000)
+                        // c(_Counter + '# ' + "periodic response-keepalive");
                     break
+                case 'SubscribeResponse':
+
+                case 'SubscribeData':
+
                 default:
                     c('!!!! cannot understand')
                         // connection.close();
@@ -246,7 +251,7 @@ client.on('connect', function(connection) {
                     }
                 }
                 // push message in que
-                // c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
+            c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendMessagetoQue(request)
             sendGetSamplesRequest( // 递归
                 deviceID,
@@ -281,16 +286,16 @@ client.on('connect', function(connection) {
         if (mes === undefined && messageQueue.dataStore.length > 0) {
             sendMessage(messageQueue.dequeue())
                 // c('sending to queue . leaving ' + messageQueue.dataStore.length)
-                // c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
+            c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
         } else if (mes !== undefined && _windowSize < window_limit) {
             messageQueue.enqueue(mes)
             _windowSize++
             sendMessage(messageQueue.dequeue())
-                // c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
+            c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
                 // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
         } else if (mes !== undefined && _windowSize >= window_limit) {
             messageQueue.enqueue(mes)
-                // c('    sending request to queue, still ' + messageQueue.dataStore.length + ' left.')
+            c('    sending request to queue, still ' + messageQueue.dataStore.length + ' left.')
         }
     }
 
@@ -341,12 +346,12 @@ client.on('connect', function(connection) {
 
 function start() {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-        // c('Connecting to wss://' + cirrusAPIendpoint + '/cirrusAPI using username ' + username)
+    c('Connecting to wss://' + cirrusAPIendpoint + '/cirrusAPI using username ' + username)
 }
 
 function doReport() {
     if (_requestCount > _responseCount) {
-        c('!!!Failed')
+        c('Failed')
         dataFile.destroy()
             // process.exit()
     }
