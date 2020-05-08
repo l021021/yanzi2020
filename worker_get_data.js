@@ -2,6 +2,8 @@
 var WebSocketClient = require('websocket').client
 const fs = require('fs')
 
+<<
+<< << < HEAD
 const c = console.log
 
 process.argv.forEach((val, index) => {
@@ -9,6 +11,12 @@ process.argv.forEach((val, index) => {
     c(`${index}: ${val}`);
 });
 
+===
+=== =
+process.argv.forEach((val, index) => {
+        console.log(`${index}: ${val}`)
+    }) >>>
+    >>> > 3 c5a88967daa5e1bcde7240db58964bfff7f98d8
 
 // process.exit()
 const username = 'frank.shen@pinyuaninfo.com'
@@ -19,11 +27,16 @@ const startDate = process.argv[3]
 const endDate = process.argv[4]
 const EUorUU = process.argv[5]
 
-
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
 
+<<
+<< << < HEAD
 var TimeoutId = setTimeout(doReport, 30000) //timeout set for 30 sec, fail after this time
-const window_limit = 3
+const window_limit = 3 ===
+    === =
+    var TimeoutId = setTimeout(doReport, 300000)
+const windowLimit = 3 >>>
+    >>> > 3 c5a88967daa5e1bcde7240db58964bfff7f98d8
 const reportPeriod = 3600000 * 8 * 3
     // For log use only
 var _Counter = 0 // message counter
@@ -95,7 +108,7 @@ function toString() {
 }
 
 function empty() {
-    if (this.dataStore.length == 0) {
+    if (this.dataStore.length === 0) {
         return true
     } else {
         return false
@@ -132,7 +145,7 @@ client.on('connect', function(connection) {
                     sendLoginRequest()
                     break
                 case 'LoginResponse':
-                    if (json.responseCode.name == 'success') {
+                    if (json.responseCode.name === 'success') {
                         sendPeriodicRequest() // as keepalive
                         sendGetUnitsRequest(locationId) // get units from location
 
@@ -165,7 +178,7 @@ client.on('connect', function(connection) {
 
                         // c('Seeing ' + json.list.length + ' (logical or physical) sensors in  ' + json.locationAddress.locationId)
                         for (let index = 0; index < json.list.length; index++) { // process each response packet
-                            if (json.list[index].unitTypeFixed.name == 'gateway' || json.list[index].unitTypeFixed.name == 'remoteGateway' || json.list[index].unitAddress.did.indexOf('AP') != -1) { // c(json.list[index].unitAddress.did);
+                            if (json.list[index].unitTypeFixed.name === 'gateway' || json.list[index].unitTypeFixed.name === 'remoteGateway' || json.list[index].unitAddress.did.indexOf('AP') !== -1) { // c(json.list[index].unitAddress.did);
                                 // c('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
                             } else {
                                 // record all sensors
@@ -226,12 +239,12 @@ client.on('connect', function(connection) {
         sendMessage(request)
     }
 
-    function sendGetSamplesRequest(deviceID, timeStart_mili, timeEnd_mili) {
-        if (timeStart_mili > timeEnd_mili) {
+    function sendGetSamplesRequest(deviceID, timeStartmili, timeEndmili) {
+        if (timeStartmili > timeEndmili) {
             c('Wrong Date.')
             return null
         }
-        if (timeEnd_mili - timeStart_mili >= reportPeriod) {
+        if (timeEndmili - timeStartmili >= reportPeriod) {
             var request = {
                     messageType: 'GetSamplesRequest',
                     dataSourceAddress: {
@@ -241,8 +254,8 @@ client.on('connect', function(connection) {
                     },
                     timeSerieSelection: {
                         resourceType: 'TimeSerieSelection',
-                        timeStart: timeStart_mili,
-                        timeEnd: timeStart_mili + reportPeriod
+                        timeStart: timeStartmili,
+                        timeEnd: timeStartmili + reportPeriod
                     }
                 }
                 // push message in que
@@ -250,11 +263,11 @@ client.on('connect', function(connection) {
             sendMessagetoQue(request)
             sendGetSamplesRequest( // 递归
                 deviceID,
-                timeStart_mili + reportPeriod,
-                timeEnd_mili
+                timeStartmili + reportPeriod,
+                timeEndmili
             )
         } else {
-            var request = {
+            request = {
                 messageType: 'GetSamplesRequest',
                 dataSourceAddress: {
                     resourceType: 'DataSourceAddress',
@@ -263,8 +276,8 @@ client.on('connect', function(connection) {
                 },
                 timeSerieSelection: {
                     resourceType: 'TimeSerieSelection',
-                    timeStart: timeStart_mili,
-                    timeEnd: timeEnd_mili
+                    timeStart: timeStartmili,
+                    timeEnd: timeEndmili
                 }
             }
             c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
@@ -288,7 +301,7 @@ client.on('connect', function(connection) {
             sendMessage(messageQueue.dequeue())
                 // c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
                 // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
-        } else if (mes !== undefined && _windowSize >= window_limit) {
+        } else if (mes !== undefined && _windowSize >= windowLimit) {
             messageQueue.enqueue(mes)
                 // c('    sending request to queue, still ' + messageQueue.dataStore.length + ' left.')
         }
