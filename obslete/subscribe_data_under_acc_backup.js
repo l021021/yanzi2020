@@ -1,17 +1,24 @@
+/* eslint-disable no-lone-blocks */
+/* eslint-disable camelcase */
+// 获得账号下所有location的事件信息,五分钟报告一次汇总,或者在得到记录数上限时退出
+//
+//
+
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
-var sessionId
-
+var c = console.log
 var heartbeatFlag = 0
     // var username = 'frank.shen@pinyuaninfo.com'
     // var password = 'Ft@Sugarcube99'
 var username = '653498331@qq.com'
 var password = '000000'
 let typeofSubs = ['battery', 'data', 'lifecircle', 'config', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
-var _logLimit = 50000 // will exit when this number of messages has been logged
-const filter = ''
+const reportInter = 300000 // 每隔五分钟,做一次汇总
+    // var username = "653498331@qq.com";
+    // var password = "000000";
 
 var _Counter = 0 // message counter
+var _logLimit = 50000 // will exit when this number of messages has been logged
 var sensorArray = []
 var motionTimeStamps = []
 var assetTimeStamps1, assetTimeStamps2, assetTimeStamps3 = []
@@ -22,14 +29,13 @@ var _t1 = new Date()
 var _t2 = new Date()
 var _t3 = new Date()
 
-var _recordObj = {
+var recordObj = {
     type: '',
     Did: '',
     timeStamp: '',
     value: ''
 }
 
-function c(data) { if ((data.indexOf(filter) >= 0) && (filter.length !== '')) console.log(data) }
 
 var client = new WebSocketClient()
 
@@ -42,10 +48,19 @@ startConnect()
 
 client.on('connectFailed', function(error) {
     c('Connect Error: reconnect' + error.toString())
-
+        // setTimeout(() => {
+        //     startConnect
+        // }, 5000);
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
 })
 
+client.on('connectFailed', function(error) {
+    c('Connect Error: reconnect' + error.toString())
+        // setTimeout(() => {
+        //     startConnect
+        // }, 5000);
+    client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
+})
 
 client.on('connect', function(connection) {
     c('   connected to cloud ')
@@ -62,26 +77,26 @@ client.on('connect', function(connection) {
             _Counter++ // counter of all received packets
 
             if (_Counter >= _logLimit) {
-                c('Enough Data!')
-                c(_Locations.length + " locations : " + JSON.stringify(_Locations));
+                console.log('Enough Data!')
+                    // console.log(_Locations.length + " locations : " + JSON.stringify(_Locations));
                 connection.close()
+                    // doReport()
                 process.exit()
-            }
-            // c(_Counter + '# ' + timestamp.toLocaleTimeString() + ' RCVD_MSG:' + json.messageType)
+            } // for log use only
+            // try {
+            // Print all messages with type
+            // console.log(_Counter + '# ' + timestamp.toLocaleTimeString() + ' RCVD_MSG:' + json.messageType)
             switch (json.messageType) {
                 case 'ServiceResponse':
                     sendLoginRequest()
                     break
                 case 'LoginResponse':
-                    if (json.responseCode.name === 'success') { //json.sessionId
-                        sessionId = json.sessionId
+                    if (json.responseCode.name === 'success') {
                         setInterval(sendPeriodicRequest, 60000) // as keepalive
                         sendGetLocationsRequest() // not mandatory
-                        setInterval(sendGetLocationsRequest, 60000 * 120) // resubscribe every 120 MIn
-
                     } else {
-                        c(json.responseCode.name)
-                        c("Couldn't login, check your username and passoword")
+                        console.log(json.responseCode.name)
+                        console.log("Couldn't login, check your username and passoword")
                         connection.close()
                         process.exit()
                     }
@@ -100,30 +115,22 @@ client.on('connect', function(connection) {
                             }
                         }
                     } else {
-                        c(json.responseCode.name)
-                        c("Couldn't get location")
+                        console.log(json.responseCode.name)
+                        console.log("Couldn't get location")
                         connection.close()
                         process.exit()
                     };
                     break
-                    // c(_Counter + '# ' + "periodic response-keepalive");
+                    // console.log(_Counter + '# ' + "periodic response-keepalive");
                 case 'PeriodicResponse':
-                    heartbeatFlag = 0
-                    console.log('    periodic response rcvd (%s)', heartbeatFlag)
+                    heartbeatFlag--
+                    c('    periodic response rcvd (%s)', heartbeatFlag)
                     break
                 case 'GetSamplesResponse':
                     break
                 case 'GetUnitsResponse':
                     break
                 case 'SubscribeResponse':
-                    let now = new Date().getTime()
-                    let expireTime = json.expireTime
-                        // let timeOut=setTimeout(sendGetLocationsRequest, json.expireTime - now - 600000)
-
-                    // _t1.setTime(json.expireTime)
-                    console.log(
-                            'Susbscribe expire in (min)： ' + (json.expireTime - now) / 60000
-                        ) // 100min
                     break
                 case 'SubscribeData':
                     switch (json.list[0].resourceType) {
@@ -139,29 +146,29 @@ client.on('connect', function(connection) {
                                         let temp1 = sensorArray[json.list[0].dataSourceAddress.did] || 0 //json.list[0].dataSourceAddress.did
                                         var temprecordObj
                                         var motionFlag = ' ?? ' // update new value
-                                        _recordObj.type = 'samplemotion'
-                                        _recordObj.Did = json.list[0].dataSourceAddress.did // json.list[0].dataSourceAddress.did
-                                        _recordObj.timeStamp = _t1.getTime()
+                                        recordObj.type = 'samplemotion'
+                                        recordObj.Did = json.list[0].dataSourceAddress.did // json.list[0].dataSourceAddress.did
+                                        recordObj.timeStamp = _t1.getTime()
                                         sensorArray[json.list[0].dataSourceAddress.did] =
                                         json.list[0].list[0].value // setup sensor array
                                         if (temp1 === json.list[0].list[0].value - 1) {
                                             // Value changed!
                                             motionFlag = ' ++ '
-                                            _recordObj.value = 'in'
-                                            temprecordObj = JSON.parse(JSON.stringify(_recordObj))
+                                            recordObj.value = 'in'
+                                            temprecordObj = JSON.parse(JSON.stringify(recordObj))
                                             motionTimeStamps.push(temprecordObj)
                                         } else if (temp1 === json.list[0].list[0].value) {
                                             //no change
                                             motionFlag = ' == '
-                                            _recordObj.value = 'ot'
-                                            temprecordObj = JSON.parse(JSON.stringify(_recordObj))
+                                            recordObj.value = 'ot'
+                                            temprecordObj = JSON.parse(JSON.stringify(recordObj))
                                             motionTimeStamps.push(temprecordObj)
                                                 // motionTimeStamps.push(json.list[0].dataSourceAddress.did + ',ot,' + _t1.getTime());
                                         } else {
-                                            //  c("        Sensor first seen, cannot tell");
+                                            //  console.log("        Sensor first seen, cannot tell");
                                         }
 
-                                        c(
+                                        console.log(
                                             '   ' +
                                             _Counter +
                                             '# ' +
@@ -169,12 +176,15 @@ client.on('connect', function(connection) {
                                             ' SampleMotion ' +
                                             json.list[0].dataSourceAddress.did +
                                             motionFlag +
-                                            // _t1.toLocaleTimeString() +
-                                            // ' # ' +
-                                            // json.list[0].list[0].value +
-                                            // ' Last: ' +
-                                            // _t2.toLocaleTimeString() +
-                                            ' in ' + json.locationId
+                                            _t1.toLocaleTimeString() +
+                                            ' # ' +
+                                            json.list[0].list[0].value +
+                                            ' Last: ' +
+                                            _t2.toLocaleTimeString() +
+                                            ' static(s)：  ' +
+                                            (json.list[0].list[0].sampleTime -
+                                                json.list[0].list[0].timeLastMotion) /
+                                            1000
                                         )
                                     }
                                     break
@@ -187,10 +197,10 @@ client.on('connect', function(connection) {
                                             // eslint-disable-next-line no-redeclare
                                         var temprecordObj
                                             // var motionFlag = ' ?? '; //update new value
-                                        _recordObj.type = 'sampleAsset'
-                                        _recordObj.Did = json.list[0].dataSourceAddress.did
-                                        _recordObj.timeStamp = _t1.getTime()
-                                        c(
+                                        recordObj.type = 'sampleAsset'
+                                        recordObj.Did = json.list[0].dataSourceAddress.did
+                                        recordObj.timeStamp = _t1.getTime()
+                                        console.log(
                                             '   ' +
                                             _Counter +
                                             '# ' +
@@ -199,46 +209,45 @@ client.on('connect', function(connection) {
                                             json.list[0].list[0].assetState.name +
                                             ' ' +
                                             json.list[0].dataSourceAddress.did +
-                                            // ' @ ' +
-                                            // _t3.toLocaleTimeString() +
-                                            // '  ' +
-                                            // json.list[0].list[0].assetState.name + 
-                                            ' in ' + json.locationId
+                                            ' @ ' +
+                                            _t3.toLocaleTimeString() +
+                                            '  ' +
+                                            json.list[0].list[0].assetState.name
                                         )
                                         switch (json.list[0].list[0].assetState.name) {
                                             case 'isMotion':
                                                 // assetTimeStamps1 += json.list[0].dataSourceAddress.did + ',mo,' + _t3.getTime() + '\n';
-                                                _recordObj.value = 'mo'
-                                                temprecordObj = JSON.parse(JSON.stringify(_recordObj))
+                                                recordObj.value = 'mo'
+                                                temprecordObj = JSON.parse(JSON.stringify(recordObj))
                                                     // assetTimeStamps1.push(temprecordObj)
 
                                                 break
                                             case 'isNoMotion':
                                                 // assetTimeStamps1 += json.list[0].dataSourceAddress.did + ',nm,' + _t3.getTime() + '\n';
-                                                _recordObj.value = 'nm'
-                                                temprecordObj = JSON.parse(JSON.stringify(_recordObj))
+                                                recordObj.value = 'nm'
+                                                temprecordObj = JSON.parse(JSON.stringify(recordObj))
                                                     // assetTimeStamps1.push(temprecordObj)
                                                 break
                                             case 'free':
                                                 // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',fr,' + _t3.getTime() + '\n';
-                                                _recordObj.value = 'fr'
-                                                temprecordObj = JSON.parse(JSON.stringify(_recordObj))
+                                                recordObj.value = 'fr'
+                                                temprecordObj = JSON.parse(JSON.stringify(recordObj))
                                                     // assetTimeStamps2.push(temprecordObj)
                                                 break
                                             case 'occupied':
                                                 // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',oc,' + _t3.getTime() + '\n';
-                                                _recordObj.value = 'oc'
-                                                temprecordObj = JSON.parse(JSON.stringify(_recordObj))
+                                                recordObj.value = 'oc'
+                                                temprecordObj = JSON.parse(JSON.stringify(recordObj))
                                                     // assetTimeStamps2.push(temprecordObj)
                                                 break
                                             case 'missingInput':
                                                 // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',mi,' + _t3.getTime() + '\n';
-                                                _recordObj.value = 'mi'
-                                                temprecordObj = JSON.parse(JSON.stringify(_recordObj))
+                                                recordObj.value = 'mi'
+                                                temprecordObj = JSON.parse(JSON.stringify(recordObj))
                                                     // assetTimeStamps2.push(temprecordObj)
                                                 break
                                             default:
-                                                c(
+                                                console.log(
                                                     '!Assetname ' +
                                                     json.list[0].list[0].assetState.name
                                                 )
@@ -250,7 +259,7 @@ client.on('connect', function(connection) {
                                     {
                                         _t2.setTime(json.timeSent)
                                         _t3.setTime(json.list[0].list[0].sampleTime)
-                                        c(
+                                        console.log(
                                             '   ' +
                                             _Counter +
                                             '# ' +
@@ -260,7 +269,7 @@ client.on('connect', function(connection) {
                                             ' @ ' +
                                             _t3.toLocaleTimeString() +
                                             ' Occu%:' +
-                                            json.list[0].list[0].value + ' in ' + json.locationId
+                                            json.list[0].list[0].value
                                         )
                                     }
                                     break
@@ -268,19 +277,19 @@ client.on('connect', function(connection) {
                                     {
                                         _t2.setTime(json.timeSent)
                                         _t3.setTime(json.list[0].list[0].sampleTime)
-                                        c(
+                                        console.log(
                                             '   ' +
                                             _Counter +
                                             '# ' +
                                             _t2.toLocaleTimeString() +
                                             ' SampleUtilization ' +
                                             json.list[0].dataSourceAddress.did +
-                                            // ' @ ' +
-                                            // _t3.toLocaleTimeString() +
+                                            ' @ ' +
+                                            _t3.toLocaleTimeString() +
                                             ' free:' +
                                             json.list[0].list[0].free +
                                             ' occupied:' +
-                                            json.list[0].list[0].occupied + ' in ' + json.locationId
+                                            json.list[0].list[0].occupied
                                         )
                                         assetTimeStamps3 +=
                                         _t2.toLocaleTimeString() +
@@ -289,30 +298,30 @@ client.on('connect', function(connection) {
                                         ' free:' +
                                         json.list[0].list[0].free +
                                         ' occupied:' +
-                                        json.list[0].list[0].occupied + ' in ' + json.locationId +
+                                        json.list[0].list[0].occupied +
                                         '\n'
                                     }
                                     break
                                 case 'SampleUpState':
                                     {
                                         _t2.setTime(json.list[0].list[0].sampleTime)
-                                        c('   ' +
+                                        console.log('   ' +
                                             _Counter +
                                             '# ' +
                                             _t2.toLocaleTimeString() +
                                             ' SampleUpState ' +
                                             json.list[0].dataSourceAddress.did +
                                             ' ' +
-                                            json.list[0].list[0].deviceUpState.name + ' in ' + json.locationId
+                                            json.list[0].list[0].deviceUpState.name
                                         )
-                                        // c(JSON.stringify(json));
+                                        // console.log(JSON.stringify(json));
                                     }
                                     break
                                 default:
                                     // 环境参数
                                     _t2.setTime(json.timeSent)
                                         // if json.list[0].list[0].resourceType ==
-                                    c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].value + ' in ' + json.locationId)
+                                    console.log('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' in ' + json.locationId + ' ' + json.list[0].list[0].percentFull || '')
                                     break
                             }
                             break
@@ -321,7 +330,7 @@ client.on('connect', function(connection) {
                                 switch (json.list[0].resourceType) {
                                     case 'SlotDTO':
                                         {
-                                            c(
+                                            console.log(
                                                 '   ' +
                                                 _Counter +
                                                 '# SlotDTO ' +
@@ -335,7 +344,7 @@ client.on('connect', function(connection) {
                                         break
                                     case 'SampleEndOfSlot':
                                         {
-                                            c(
+                                            console.log(
                                                 '   ' +
                                                 _Counter +
                                                 '# EndofDTO ' +
@@ -359,20 +368,20 @@ client.on('connect', function(connection) {
                                     case 'remoteLocationGatewayIsNowUP':
                                     case 'unitConfigurationChanged':
                                     case 'locationChanged':
-                                        //  c(json.list[0].list[0].locationAddress.serverDid + ' 2  ' + json.list[0].list[0].locationAddress.locationId)
+                                        //  console.log(json.list[0].list[0].locationAddress.serverDid + ' 2  ' + json.list[0].list[0].locationAddress.locationId)
                                         //   eventObj.did = json.list[0].list[0].locationAddress.serverDid
                                         //  eventObj.locationId = json.list[0].list[0].locationAddress.locationId
-                                        c('   ' + _Counter + '# ' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name + ' in ' + json.locationId)
+                                        console.log('   ' + _Counter + '# ' + json.locationId + ' ' + json.list[0].eventType.name)
 
                                         break
                                     default:
-                                        c(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)
+                                        console.log(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)
                                         break
                                 }
                             }
                             break
                         default:
-                            c(' !!!!  ' + _Counter + 'OTHER DATA?  ' + JSON.stringify(json))
+                            console.log(' !!!!  ' + _Counter + 'OTHER DATA?  ' + JSON.stringify(json))
                             break
                     }
             }
@@ -381,23 +390,22 @@ client.on('connect', function(connection) {
     })
 
     connection.on('error', function(error) {
-        c(' !!! Connection Error: reconnect' + error.toString())
+        console.log(' !!! Connection Error: reconnect' + error.toString())
         setTimeout(() => {
-            startConnect()
+            startConnect
         }, 2000);
     })
 
     connection.on('close', function(error) {
-        c('Connection closed!' + error)
+        console.log('Connection closed!' + error)
     })
 
     function sendMessage(message) {
         if (connection.connected) {
             var json = JSON.stringify(message, null, 1)
-            json.sessionId = sessionId
             connection.sendUTF(json)
         } else {
-            c("sendMessage: Couldn't send message, the connection is not open")
+            console.log("sendMessage: Couldn't send message, the connection is not open")
         }
     }
 
@@ -467,6 +475,6 @@ client.on('connect', function(connection) {
         heartbeatFlag++
         sendMessage(request)
 
-        console.log('    periodic request send (%s)', heartbeatFlag)
+        c('    periodic request send (%s)', heartbeatFlag)
     }
 })
