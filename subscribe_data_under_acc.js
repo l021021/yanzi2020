@@ -29,7 +29,14 @@ var _recordObj = {
     value: ''
 }
 
-function c(data) { if ((data.indexOf(filter) >= 0) && (filter.length !== '')) console.log(data) }
+function c(data) {
+    if ((data.indexOf(filter) >= 0) && (filter.length !== '')) try {
+        console.log(data)
+
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 var client = new WebSocketClient()
 
@@ -126,6 +133,7 @@ client.on('connect', function(connection) {
                         ) // 100min
                     break
                 case 'SubscribeData':
+                    _t2.setTime(json.timeSent)
                     switch (json.list[0].resourceType) {
                         case 'SampleList':
                             switch (json.list[0].list[0].resourceType) {
@@ -180,7 +188,6 @@ client.on('connect', function(connection) {
                                     break
                                 case 'SampleAsset': // sampleAsset- free occupied ismotion isnomotion
                                     {
-                                        _t2.setTime(json.timeSent)
                                         _t3.setTime(json.list[0].list[0].sampleTime)
                                         // eslint-disable-next-line no-redeclare
                                         var motionFlag = ' ? ' // update new value
@@ -248,7 +255,6 @@ client.on('connect', function(connection) {
                                     break
                                 case 'SamplePercentage': // SamplePercentage
                                     {
-                                        _t2.setTime(json.timeSent)
                                         _t3.setTime(json.list[0].list[0].sampleTime)
                                         c(
                                             '   ' +
@@ -266,7 +272,7 @@ client.on('connect', function(connection) {
                                     break
                                 case 'SampleUtilization': // SampleUtilization
                                     {
-                                        _t2.setTime(json.timeSent)
+
                                         _t3.setTime(json.list[0].list[0].sampleTime)
                                         c(
                                             '   ' +
@@ -295,7 +301,7 @@ client.on('connect', function(connection) {
                                     break
                                 case 'SampleUpState':
                                     {
-                                        _t2.setTime(json.list[0].list[0].sampleTime)
+
                                         c('   ' +
                                             _Counter +
                                             '# ' +
@@ -318,12 +324,13 @@ client.on('connect', function(connection) {
                             break
                         case 'EventType':
                             {
+
                                 switch (json.list[0].resourceType) {
                                     case 'SlotDTO':
                                         {
                                             c(
                                                 '   ' +
-                                                _Counter +
+                                                _Counter + _t2.toLocaleTimeString() +
                                                 '# SlotDTO ' +
                                                 json.list[0].dataSourceAddress.did +
                                                 '=' +
@@ -337,13 +344,16 @@ client.on('connect', function(connection) {
                                         {
                                             c(
                                                 '   ' +
-                                                _Counter +
+                                                _Counter + _t2.toLocaleTimeString() +
                                                 '# EndofDTO ' +
                                                 json.list[0].dataSourceAddress.did +
                                                 ' ' +
                                                 json.list[0].list[0].sample.assetState.name
                                             )
                                         }
+                                        break
+                                    default:
+                                        c(' !!!!  ' + _Counter + ' Unknown eventtype: ' + json.list[0].eventType.name)
                                         break
                                 }
                             }
@@ -362,8 +372,8 @@ client.on('connect', function(connection) {
                                         //  c(json.list[0].list[0].locationAddress.serverDid + ' 2  ' + json.list[0].list[0].locationAddress.locationId)
                                         //   eventObj.did = json.list[0].list[0].locationAddress.serverDid
                                         //  eventObj.locationId = json.list[0].list[0].locationAddress.locationId
-                                        c('   ' + _Counter + '# ' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name + ' in ' + json.locationId)
-
+                                        c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name + ' in ' + json.locationId)
+                                            //json.list[0].unitAddress.did
                                         break
                                     default:
                                         c(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)
