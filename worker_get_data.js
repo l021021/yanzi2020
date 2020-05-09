@@ -2,8 +2,7 @@
 var WebSocketClient = require('websocket').client
 const fs = require('fs')
 
-<<
-<< << < HEAD
+
 const c = console.log
 
 process.argv.forEach((val, index) => {
@@ -11,14 +10,11 @@ process.argv.forEach((val, index) => {
     c(`${index}: ${val}`);
 });
 
-===
-=== =
+
 process.argv.forEach((val, index) => {
         console.log(`${index}: ${val}`)
-    }) >>>
-    >>> > 3 c5a88967daa5e1bcde7240db58964bfff7f98d8
-
-// process.exit()
+    })
+    // process.exit()
 const username = 'frank.shen@pinyuaninfo.com'
 const password = 'Ft@Sugarcube99'
 
@@ -29,14 +25,12 @@ const EUorUU = process.argv[5]
 
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
 
-<<
-<< << < HEAD
+
 var TimeoutId = setTimeout(doReport, 30000) //timeout set for 30 sec, fail after this time
-const window_limit = 3 ===
-    === =
-    var TimeoutId = setTimeout(doReport, 300000)
-const windowLimit = 3 >>>
-    >>> > 3 c5a88967daa5e1bcde7240db58964bfff7f98d8
+const window_limit = 3
+
+var TimeoutId = setTimeout(doReport, 300000)
+const windowLimit = 3
 const reportPeriod = 3600000 * 8 * 3
     // For log use only
 var _Counter = 0 // message counter

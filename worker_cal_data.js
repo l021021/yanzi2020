@@ -177,28 +177,26 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
         t1.setTime(motionTimeStamps[i2 - 1].timeStamp) // 前一个事件时间
         t1.setMilliseconds(0) // 得到整秒
 
-        t1m.setTime(motionTimeStamps[i2 - 1].timeStamp) // t1_10M：前一个事件的整十分钟
+        // 得到整数十分钟开始,如0,10,20,50
+        t1m.setTime(motionTimeStamps[i2 - 1].timeStamp)
         t1m.setMilliseconds(0)
         t1m.setSeconds(0)
-        t1m.setMinutes(interval * (Math.floor(t1.getMinutes() / interval))) // 得到整数十分钟开始,如0,10,20,50
+        t1m.setMinutes(interval * (Math.floor(t1.getMinutes() / interval)))
 
         t2.setTime(motionTimeStamps[i2].timeStamp) // 当前事件时间
         t2.setMilliseconds(0) // 得到整秒
-            // t2h.setTime(motionTimeStamps[i2].timeStamp) //
 
-        // t2h.setMilliseconds(0)
-        // t2h.setSeconds(0)
-        // t2h.setMinutes(0) // 得到整十分钟
-        t2m.setTime(motionTimeStamps[i2].timeStamp) // t1_10M：前一个事件的整十分钟
+        // 得到整数十分钟开始,如0,10,20,50
+        t2m.setTime(motionTimeStamps[i2].timeStamp)
         t2m.setMilliseconds(0)
         t2m.setSeconds(0)
-        t2m.setMinutes(interval * (Math.floor(t2.getMinutes() / interval))) // 得到整数十分钟开始,如0,10,20,50
+        t2m.setMinutes(interval * (Math.floor(t2.getMinutes() / interval)))
 
         timeObj.ID = motionTimeStamps[i2].Did
 
         // 得到十分钟差和秒数零头
 
-        hourDiff = Math.floor((t2m - t1m) / 60 / interval / 1000) // 两次数据之间十分钟差
+        hourDiff = Math.floor((t2m - t1m) / (60 * 1000 * interval)) // 两次数据之间差几个间隔
         t1ToNext = 60 * interval - t1.getSeconds() - (t1.getMinutes() % interval) * 60 // 前面的零头秒数.例如 16:14:06, 则 = 45.54 =2754 TODO,有问题,对整点
         PrevTot2 = t2.getSeconds() + (t2.getMinutes() % interval) * 60 // 后面的零头秒数 16:14:06, 则 = 14.06=846
             // 这样, 10:01:22 in -11:23:44 ot ,应该计算01分的38秒占用,03分的44秒占用 ,02的66秒占用

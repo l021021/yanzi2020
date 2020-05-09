@@ -7,25 +7,23 @@
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var c = console.log
-
-var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Ft@Sugarcube99'
-    // var username = '653498331@qq.com'
-    // var password = '000000'
-let typeofSubs = 'config' // data   |  lifecircle  |  config | battery|sensorData|assetData|occupancy| occupancySlots|sensorSlots| assetSlots
+var heartbeatFlag = 0
+    // var username = 'frank.shen@pinyuaninfo.com'
+    // var password = 'Ft@Sugarcube99'
+var username = '653498331@qq.com'
+var password = '000000'
+let typeofSubs = ['battery', 'data', 'lifecircle', 'config', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
 const reportInter = 300000 // 每隔五分钟,做一次汇总
     // var username = "653498331@qq.com";
     // var password = "000000";
 
-
-
-// For log use only
 var _Counter = 0 // message counter
-var _logLimit = 5000 // will exit when this number of messages has been logged
+var _logLimit = 50000 // will exit when this number of messages has been logged
+var sensorArray = []
+var motionTimeStamps = []
+var assetTimeStamps1, assetTimeStamps2, assetTimeStamps3 = []
 
 var _Locations = []
-    // var _Events = []
-    // var eventsCounter = []
 
 var _t1 = new Date()
 var _t2 = new Date()
@@ -38,31 +36,35 @@ var recordObj = {
     value: ''
 }
 
-var sensorArray = []
-var motionTimeStamps = []
-var assetTimeStamps1 = []
-var assetTimeStamps2 = []
-    // eslint-disable-next-line no-unused-vars
-var assetTimeStamps3
 
-// Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
-    // var TimeoutId = setTimeout(doReport, reportInter)
-    // var eventObj = {
-    //     timeOfEvent: 1569232419674,
-    //     did: 'EUI64-0080E10300099999',
-    //     name: 'discovered',
-    //     locationId: '123456'
-
-// }
 
 // Program body
+function startConnect() {
+    client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
+}
+
+startConnect()
+
 client.on('connectFailed', function(error) {
     c('Connect Error: reconnect' + error.toString())
-    setInterval(beginPOLL, 5000)
+        // setTimeout(() => {
+        //     startConnect
+        // }, 5000);
+    client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
+})
+
+client.on('connectFailed', function(error) {
+    c('Connect Error: reconnect' + error.toString())
+        // setTimeout(() => {
+        //     startConnect
+        // }, 5000);
+    client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
 })
 
 client.on('connect', function(connection) {
+    c('   connected to cloud ')
+    heartbeatFlag = 0
     sendServiceRequest()
 
     // Handle messages
@@ -90,7 +92,7 @@ client.on('connect', function(connection) {
                     break
                 case 'LoginResponse':
                     if (json.responseCode.name === 'success') {
-                        sendPeriodicRequest() // as keepalive
+                        setInterval(sendPeriodicRequest, 60000) // as keepalive
                         sendGetLocationsRequest() // not mandatory
                     } else {
                         console.log(json.responseCode.name)
@@ -101,16 +103,14 @@ client.on('connect', function(connection) {
                     break
                 case 'GetLocationsResponse':
                     if (json.responseCode.name === 'success') {
-                        setTimeout(sendGetLocationsRequest, 60 * 1000 * 60)
-                            // UPDATE location IDs
+                        // setTimeout(sendGetLocationsRequest, 60 * 1000 * 60)
+                        // UPDATE location IDs
                         if (json.list.length !== 0) {
                             for (var i = 0; i < json.list.length; i++) {
-                                // let _locationExist = false
 
                                 if (_Locations.indexOf(json.list[i].locationAddress.locationId) < 0) {
                                     _Locations[json.list[i].locationAddress.locationId] = json.list[i].name
-                                    sendSubscribeRequest(json.list[i].locationAddress.locationId, typeofSubs) // battery
-                                        // data   |  lifecircle  |  config | battery|sensorData|assetData|occupancy| occupancySlots|sensorSlots| assetSlots
+                                    sendSubscribeRequest(json.list[i].locationAddress.locationId, typeofSubs)
                                 }
                             }
                         }
@@ -123,7 +123,8 @@ client.on('connect', function(connection) {
                     break
                     // console.log(_Counter + '# ' + "periodic response-keepalive");
                 case 'PeriodicResponse':
-                    setInterval(sendPeriodicRequest, 60000)
+                    heartbeatFlag--
+                    c('    periodic response rcvd (%s)', heartbeatFlag)
                     break
                 case 'GetSamplesResponse':
                     break
@@ -142,7 +143,7 @@ client.on('connect', function(connection) {
                                         _t3.setTime(json.timeSent) // packet sent
 
                                         // algorithm based on SampleMotion；
-                                        var temp1 = sensorArray[json.list[0].dataSourceAddress.did]
+                                        let temp1 = sensorArray[json.list[0].dataSourceAddress.did] || 0 //json.list[0].dataSourceAddress.did
                                         var temprecordObj
                                         var motionFlag = ' ?? ' // update new value
                                         recordObj.type = 'samplemotion'
@@ -157,14 +158,14 @@ client.on('connect', function(connection) {
                                             temprecordObj = JSON.parse(JSON.stringify(recordObj))
                                             motionTimeStamps.push(temprecordObj)
                                         } else if (temp1 === json.list[0].list[0].value) {
+                                            //no change
                                             motionFlag = ' == '
                                             recordObj.value = 'ot'
                                             temprecordObj = JSON.parse(JSON.stringify(recordObj))
                                             motionTimeStamps.push(temprecordObj)
                                                 // motionTimeStamps.push(json.list[0].dataSourceAddress.did + ',ot,' + _t1.getTime());
                                         } else {
-                                            // do not record to record
-                                            // console.log("        Sensor first seen, cannot tell");
+                                            //  console.log("        Sensor first seen, cannot tell");
                                         }
 
                                         console.log(
@@ -218,32 +219,32 @@ client.on('connect', function(connection) {
                                                 // assetTimeStamps1 += json.list[0].dataSourceAddress.did + ',mo,' + _t3.getTime() + '\n';
                                                 recordObj.value = 'mo'
                                                 temprecordObj = JSON.parse(JSON.stringify(recordObj))
-                                                assetTimeStamps1.push(temprecordObj)
+                                                    // assetTimeStamps1.push(temprecordObj)
 
                                                 break
                                             case 'isNoMotion':
                                                 // assetTimeStamps1 += json.list[0].dataSourceAddress.did + ',nm,' + _t3.getTime() + '\n';
                                                 recordObj.value = 'nm'
                                                 temprecordObj = JSON.parse(JSON.stringify(recordObj))
-                                                assetTimeStamps1.push(temprecordObj)
+                                                    // assetTimeStamps1.push(temprecordObj)
                                                 break
                                             case 'free':
                                                 // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',fr,' + _t3.getTime() + '\n';
                                                 recordObj.value = 'fr'
                                                 temprecordObj = JSON.parse(JSON.stringify(recordObj))
-                                                assetTimeStamps2.push(temprecordObj)
+                                                    // assetTimeStamps2.push(temprecordObj)
                                                 break
                                             case 'occupied':
                                                 // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',oc,' + _t3.getTime() + '\n';
                                                 recordObj.value = 'oc'
                                                 temprecordObj = JSON.parse(JSON.stringify(recordObj))
-                                                assetTimeStamps2.push(temprecordObj)
+                                                    // assetTimeStamps2.push(temprecordObj)
                                                 break
                                             case 'missingInput':
                                                 // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',mi,' + _t3.getTime() + '\n';
                                                 recordObj.value = 'mi'
                                                 temprecordObj = JSON.parse(JSON.stringify(recordObj))
-                                                assetTimeStamps2.push(temprecordObj)
+                                                    // assetTimeStamps2.push(temprecordObj)
                                                 break
                                             default:
                                                 console.log(
@@ -320,7 +321,7 @@ client.on('connect', function(connection) {
                                     // 环境参数
                                     _t2.setTime(json.timeSent)
                                         // if json.list[0].list[0].resourceType ==
-                                    console.log('   ' + _Counter + '# ' + _t2.toLocaleString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' in ' + json.locationId + ' ' + json.list[0].list[0].percentFull || '')
+                                    console.log('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' in ' + json.locationId + ' ' + json.list[0].list[0].percentFull || '')
                                     break
                             }
                             break
@@ -374,25 +375,25 @@ client.on('connect', function(connection) {
 
                                         break
                                     default:
-                                        console.log('   ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)
+                                        console.log(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)
                                         break
                                 }
                             }
                             break
                         default:
-                            console.log('   ' + _Counter + 'OTHER DATA?  ' + JSON.stringify(json))
+                            console.log(' !!!!  ' + _Counter + 'OTHER DATA?  ' + JSON.stringify(json))
                             break
                     }
             }
-            // } catch (error) {
-            //     // console.log('Error!' + error.toString() + '-- --\n ' + JSON.stringify(json))
-            // }
+
         }
     })
 
     connection.on('error', function(error) {
-        console.log('Connection Error: reconnect' + error.toString())
-        beginPOLL()
+        console.log(' !!! Connection Error: reconnect' + error.toString())
+        setTimeout(() => {
+            startConnect
+        }, 2000);
     })
 
     connection.on('close', function(error) {
@@ -436,22 +437,26 @@ client.on('connect', function(connection) {
     }
 
     function sendSubscribeRequest(location_ID, dataType) {
-        var now = new Date().getTime()
-        var request = {
-            messageType: 'SubscribeRequest',
-            timeSent: now,
-            unitAddress: {
-                resourceType: 'UnitAddress',
-                locationId: location_ID
-            },
-            subscriptionType: {
-                resourceType: 'SubscriptionType',
-                name: dataType // data   |  lifecircle  |  config | batetry|sensorData|assetData|occupancy| occupancySlots|sensorSlots| assetSlots
+        let now = new Date().getTime()
+        let request
 
+        dataType.forEach(element => {
+
+            request = {
+                messageType: 'SubscribeRequest',
+                timeSent: now,
+                unitAddress: {
+                    resourceType: 'UnitAddress',
+                    locationId: location_ID
+                },
+                subscriptionType: {
+                    resourceType: 'SubscriptionType',
+                    name: element
+                }
             }
-        }
 
-        sendMessage(request)
+            sendMessage(request)
+        });
     }
 
     function sendPeriodicRequest() {
@@ -460,31 +465,16 @@ client.on('connect', function(connection) {
             messageType: 'PeriodicRequest',
             timeSent: now
         }
+        if (heartbeatFlag === 5) {
+            c('    periodic request missed (%s), will reconnect', heartbeatFlag)
+            connection.close()
+
+            // heartbeatFlag = 0
+            startConnect()
+        }
+        heartbeatFlag++
         sendMessage(request)
+
+        c('    periodic request send (%s)', heartbeatFlag)
     }
 })
-
-function beginPOLL() {
-    client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-}
-
-// function doReport() {
-//     scan_array(eventsCounter)
-//     clearTimeout(TimeoutId)
-//     TimeoutId = setTimeout(doReport, reportInter)
-// }
-
-beginPOLL()
-
-// function scan_array(arr) {
-//     c('\n Listing Stored Events: \n')
-//     for (var key in arr) { // 这个是关键
-//         // eslint-disable-next-line valid-typeof
-//         if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
-//             scan_array(arr[key])
-//         } else {
-//             console.log('      ' + key + ' --- ' + arr[key])
-//         }
-//     }
-//     c('\n                ------- \n')
-// }
