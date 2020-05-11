@@ -12,8 +12,8 @@ const fs = require('fs')
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-const startDate = '2020/05/07/15:30:00'
-const endDate = '2020/05/07/17:57:00'
+const startDate = '2020/04/29/00:00:00'
+const endDate = '2020/05/10/00:00:00'
 const EUorUU = 'Motion' // 何种数据:UU or EU , Motion,Temp
     // const locationId = '229349' // fangtang
     // const locationId = '305026' // huace
@@ -64,7 +64,7 @@ var _windowSize = 0
 var _listCount = 0
 var _Units = []
 
-var cirrusAPIendpoint = 'cirrus11.yanzi.se'
+var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var messageQueue = new Queue()
 
 var client = new WebSocketClient()

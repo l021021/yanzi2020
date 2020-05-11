@@ -1,23 +1,3 @@
-/* eslint-disable camelcase */
-/* eslint-disable eol-last */
-/* eslint-disable no-redeclare */
-/*
-从 log-sapce-history-to-file 产生的文件中计算占用数据,精确到分
-
-1.从文件读入记录
-2.装换成in、ot数组 motiontimestamps
-对每个ID循环
-    计算得到timearray
-    写入文件
-4.查重算法,仅限于前五个记录
-
-5.boundary 首末记录处理
-
-6.10M reports
-
-7.process offline data
-
-*/
 const FS = require('fs')
 var str
 var json = []
@@ -30,10 +10,21 @@ var recordObj = {
     value: ''
 }
 
-var filename = 'C:\\codebase\\log\\114190_x_2020_04_29_00_00_00_2020_05_10_00_00_00' // 历史记录文件
+const locationId = process.argv[2]
+const startDate = process.argv[3]
+const endDate = process.argv[4]
+const EUorUU = process.argv[5]
+var interval = process.argv[6]
+const c = console.log
 
-const startDate = '2020/04/29/00:00:00'
-const endDate = '2020/05/10/00:00:00'
+const filename = '../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU
+str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })
+const CSVFile = FS.createWriteStream(filename + '-10M.csv', { encoding: 'utf8' })
+
+c('----------data converter working with:')
+process.argv.forEach((val, index) => {
+    c(`${index}: ${val}`);
+});
 
 var t1 = new Date()
 var t2 = new Date()
@@ -59,19 +50,16 @@ var motionTimeStamps = []
 var t1ToNext, PrevTot2, hourDiff
 
 var lastValue = -1
-const c = console.log
 
-str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })
-const CSVFile = FS.createWriteStream(filename + '-10M.csv', { encoding: 'utf8' })
 
 // 读取文件发生错误事件
 CSVFile.on('error', (err) => {
     console.log('发生异常:', err)
 })
 
-CSVFile.on('open', (fd) => {
-    console.log('文件已打开:', fd)
-})
+// CSVFile.on('open', (fd) => {
+//     console.log('文件已打开:', fd)
+// })
 
 CSVFile.on('finish', () => {
     console.log('写入已完成..')
@@ -84,6 +72,7 @@ CSVFile.on('end', () => {
 
 CSVFile.on('close', () => {
     console.log('文件已关闭！')
+    c('---worker exiting---')
     process.exit()
 })
 
