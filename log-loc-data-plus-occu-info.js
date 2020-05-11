@@ -8,7 +8,7 @@ var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-    // var LocationId = '229349' // fangtang
+    var LocationId = '229349' // fangtang
     // var LocationId = '188559' //1001
     // var LocationId = '88252' //1002
     // var LocationId = '60358' //1003
@@ -19,7 +19,7 @@ var password = 'Ft@Sugarcube99'
 
 // var LocationId = '521209' //wafer-shanghai
 // var LocationId = '503370' //wanshen
-var LocationId = '797296' //novah
+// var LocationId = '797296' // novah
     // var LocationId = '223516' //huamao
     // var LocationId = '783825' //浦发11
     // var LocationId = '581669' //test36
@@ -311,7 +311,7 @@ client.on('connect', function(connection) {
             },
             subscriptionType: {
                 resourceType: 'SubscriptionType',
-                name: 'battery' // data   |  lifecircle  |  config
+                name: 'data' // data   |  lifecircle  |  config
             }
         }
 
