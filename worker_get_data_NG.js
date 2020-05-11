@@ -2,6 +2,8 @@
 var WebSocketClient = require('websocket').client
 const fs = require('fs')
 
+const username = 'frank.shen@pinyuaninfo.com'
+const password = 'Ft@Sugarcube99'
 
 const c = console.log
 
@@ -9,14 +11,6 @@ process.argv.forEach((val, index) => {
     c('Worker logger working with:')
     c(`${index}: ${val}`);
 });
-
-
-process.argv.forEach((val, index) => {
-        console.log(`${index}: ${val}`)
-    })
-    // process.exit()
-const username = 'frank.shen@pinyuaninfo.com'
-const password = 'Ft@Sugarcube99'
 
 const locationId = process.argv[2]
 const startDate = process.argv[3]

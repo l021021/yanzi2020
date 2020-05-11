@@ -1,30 +1,29 @@
-// 列出所有的Location已经其下的传感器;可能需要几分钟才能收全,适合于单个项目内多个网关数据的收集
+/*worker 程序,配合main_multithread_runner工作,从命令行传入参数,生成数据,再由main调用converter,生成CSV*/
 var WebSocketClient = require('websocket').client
 const fs = require('fs')
 
+var client = new WebSocketClient()
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-    // const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻
-const locationIds = ['114190', '996052', '912706'] // 华为
-    // const locationIds = ['185308', '329312', '434888', '447224', '507828', '60358', '608739', '652990', '668617', '83561', '88252', '938433'] // AZ
+const c = console.log
 
-const windowLimit = 3 // 大量数据时,建立接收windows
-const reportPeriod = 3600000 * 8 * 3 // 最小的请求数据的长度,单个数据请求不能大于2000,可以根据网络情况优化
-    // const _24Hour = 86400000
-const startDate = '2020/04/29/00:00:00'
-const endDate = '2020/05/10/00:00:00'
-const EUorUU = 'Motion'
-var TimeoutId = setTimeout(doReport, 300000) // 数据超时
+c('Worker logger working with:')
+process.argv.forEach((val, index) => {
+    c(`${index}: ${val}`);
+});
 
-// for (let lc = 0; lc < locationIds.length; lc++) {}
-const dataFile = fs.createWriteStream('../log/' + locationIds[0] + '_x_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
+const locationId = process.argv[2]
+const startDate = process.argv[3]
+const endDate = process.argv[4]
+const EUorUU = process.argv[5]
 
-dataFile.on('finish',
-    function() { process.exit() })
-dataFile.on('destroy',
-        function() { process.exit() })
-    // For log use only
+const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
+
+const TimeoutId = setTimeout(doReport, 30000) //超时
+const window_limit = 3
+const reportPeriod = 3600000 * 8 * 3 //一天
+    // For temp log use only
 var _Counter = 0 // message counter
 var _requestCount = 0
 var _responseCount = 0
@@ -34,7 +33,6 @@ var _Units = []
 
 var messageQueue = new Queue()
 
-var client = new WebSocketClient()
 
 var unitObj = {
     did: '',
@@ -48,7 +46,11 @@ var unitObj = {
     type: ''
 
 }
-var c = console.log
+
+dataFile.on('finish',
+    function() { process.exit() })
+dataFile.on('destroy',
+    function() { process.exit() })
 
 function Queue() {
     this.dataStore = []
@@ -86,7 +88,7 @@ function toString() {
 }
 
 function empty() {
-    if (this.dataStore.length === 0) {
+    if (this.dataStore.length == 0) {
         return true
     } else {
         return false
@@ -123,12 +125,12 @@ client.on('connect', function(connection) {
                     sendLoginRequest()
                     break
                 case 'LoginResponse':
-                    if (json.responseCode.name === 'success') {
-                        // sendPeriodicRequest() // as keepalive
-                        // sendGetLocationsRequest() // not mandatory
-                        for (let lc = 0; lc < locationIds.length; lc++) {
-                            sendGetUnitsRequest(locationIds[lc]) // 请求所有的location
-                        }
+                    if (json.responseCode.name == 'success') {
+                        sendPeriodicRequest() // as keepalive
+                            // sendGetLocationsRequest() // not mandatory
+                        sendGetUnitsRequest(locationId) // get units from location
+                            // sendSubscribeRequest(LocationId); //test one location
+                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
                         c(json.responseCode.name)
                         c("Couldn't login, check your username and passoword")
@@ -140,10 +142,11 @@ client.on('connect', function(connection) {
 
                     break
                 case 'GetSamplesResponse':
-                    if (json.responseCode.name === 'success' && json.sampleListDto.list) {
+                    if (json.responseCode.name === 'success' && json.sampleListDto.list) { // json.sampleListDto.dataSourceAddress.did
                         c('receiving ' + json.sampleListDto.list.length + ' lists for ' + json.sampleListDto.dataSourceAddress.did + ' # ' + ++_responseCount)
                         _listCount += json.sampleListDto.list.length
-                        dataFile.write(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleAsset/g, json.sampleListDto.dataSourceAddress.did))
+                        dataFile.write(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleTemp/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleUpState/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleAsset/g, json.sampleListDto.dataSourceAddress.did)) // 修改了第一个replace . 插入sample报文的did
+                            // c(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleUpState/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did))
                     } else {
                         c('empty list # ' + ++_responseCount)
                     }
@@ -152,14 +155,14 @@ client.on('connect', function(connection) {
                     if (_requestCount === _responseCount) { doReport() }
                     break
                 case 'GetUnitsResponse':
-                    if (json.responseCode.name === 'success') {
+                    if (json.responseCode.name == 'success') {
                         // c(JSON.stringify(json) + '\n\n');
 
                         var _tempunitObj
 
-                        c('seeing ' + json.list.length + ' sensors in  ' + json.locationAddress.locationId)
+                        c('Seeing ' + json.list.length + ' (logical or physical) sensors in  ' + json.locationAddress.locationId)
                         for (let index = 0; index < json.list.length; index++) { // process each response packet
-                            if (json.list[index].unitTypeFixed.name === 'gateway' || json.list[index].unitAddress.did.indexOf('AP') !== -1) { // c(json.list[index].unitAddress.did);
+                            if (json.list[index].unitTypeFixed.name == 'gateway' || json.list[index].unitTypeFixed.name == 'remoteGateway' || json.list[index].unitAddress.did.indexOf('AP') != -1) { // c(json.list[index].unitAddress.did);
                                 // c('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
                             } else {
                                 // record all sensors
@@ -175,11 +178,14 @@ client.on('connect', function(connection) {
                                 unitObj.type = json.list[index].unitTypeFixed.name
 
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
+                                    // c(unitObj.type)
+                                    // c(unitObj.lifeCycleState)
+                                    // c(unitObj.did)
+                                    // c('\n')
+
                                 _Units.push(_tempunitObj)
                                     // request history record
-                                    // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
-                                if (unitObj.did.indexOf('Motion') >= 0) { sendGetSamplesRequest(unitObj.locationId, unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
-                                // UUID or Motion
+                                if (((unitObj.type === 'physicalOrChassis') && EUorUU === 'EU') || ((unitObj.type === 'inputMotion') && EUorUU === 'Motion') || ((EUorUU === 'UU') && (unitObj.did.indexOf('UU') >= 0)) || ((EUorUU === 'Temp') && (unitObj.did.indexOf('Temp') >= 0))) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) } // 请求何种数据?
                             };
                         }
 
@@ -190,11 +196,13 @@ client.on('connect', function(connection) {
 
                     break
                 case 'PeriodicResponse':
-                    // setTimeout(sendPeriodicRequest, 60000)
-                    // c(_Counter + '# ' + "periodic response-keepalive");
+                    setTimeout(sendPeriodicRequest, 60000)
+                        // c(_Counter + '# ' + "periodic response-keepalive");
                     break
                 case 'SubscribeResponse':
+
                 case 'SubscribeData':
+
                 default:
                     c('!!!! cannot understand')
                         // connection.close();
@@ -212,46 +220,54 @@ client.on('connect', function(connection) {
         c('Connection closed!')
     })
 
-    function sendGetSamplesRequest(locationID, deviceID, timeStartmili, timeEndmili) {
-        if (timeStartmili > timeEndmili) {
+    function sendPeriodicRequest() {
+        var now = new Date().getTime()
+        var request = {
+            messageType: 'PeriodicRequest',
+            timeSent: now
+        }
+        sendMessage(request)
+    }
+
+    function sendGetSamplesRequest(deviceID, timeStart_mili, timeEnd_mili) {
+        if (timeStart_mili > timeEnd_mili) {
             c('Wrong Date.')
             return null
         }
-        if (timeEndmili - timeStartmili >= reportPeriod) {
+        if (timeEnd_mili - timeStart_mili >= reportPeriod) {
             var request = {
                     messageType: 'GetSamplesRequest',
                     dataSourceAddress: {
                         resourceType: 'DataSourceAddress',
                         did: deviceID,
-                        locationId: locationID
+                        locationId: locationId
                     },
                     timeSerieSelection: {
                         resourceType: 'TimeSerieSelection',
-                        timeStart: timeStartmili,
-                        timeEnd: timeStartmili + reportPeriod
+                        timeStart: timeStart_mili,
+                        timeEnd: timeStart_mili + reportPeriod
                     }
                 }
                 // push message in que
             c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendMessagetoQue(request)
             sendGetSamplesRequest( // 递归
-                locationID,
                 deviceID,
-                timeStartmili + reportPeriod,
-                timeEndmili
+                timeStart_mili + reportPeriod,
+                timeEnd_mili
             )
         } else {
-            request = {
+            var request = {
                 messageType: 'GetSamplesRequest',
                 dataSourceAddress: {
                     resourceType: 'DataSourceAddress',
                     did: deviceID,
-                    locationId: locationID
+                    locationId: locationId
                 },
                 timeSerieSelection: {
                     resourceType: 'TimeSerieSelection',
-                    timeStart: timeStartmili,
-                    timeEnd: timeEndmili
+                    timeStart: timeStart_mili,
+                    timeEnd: timeEnd_mili
                 }
             }
             c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
@@ -269,13 +285,13 @@ client.on('connect', function(connection) {
             sendMessage(messageQueue.dequeue())
                 // c('sending to queue . leaving ' + messageQueue.dataStore.length)
             c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
-        } else if (mes !== undefined && _windowSize < windowLimit) {
+        } else if (mes !== undefined && _windowSize < window_limit) {
             messageQueue.enqueue(mes)
             _windowSize++
             sendMessage(messageQueue.dequeue())
             c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
                 // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
-        } else if (mes !== undefined && _windowSize >= windowLimit) {
+        } else if (mes !== undefined && _windowSize >= window_limit) {
             messageQueue.enqueue(mes)
             c('    sending request to queue, still ' + messageQueue.dataStore.length + ' left.')
         }
