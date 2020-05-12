@@ -30,7 +30,7 @@ var recordObj = {
     value: ''
 }
 
-var filename = 'C:\\codebase\\log\\114190_x_2020_04_29_00_00_00_2020_05_10_00_00_00' // 历史记录文件
+var filename = '..\\log\\114190_2020_04_29_00_00_00_2020_05_10_00_00_00_Motion' // 历史记录文件
 
 const startDate = '2020/04/29/00:00:00'
 const endDate = '2020/05/10/00:00:00'

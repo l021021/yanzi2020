@@ -1,3 +1,4 @@
+/* eslint-disable no-lone-blocks */
 // 记录实时MOTION数据,形成记录文件,供后续分析
 
 // TODO:transfer mili to time
@@ -7,7 +8,7 @@ var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-    //var LocationId = '229349' // fangtang
+    // var LocationId = '229349' // fangtang
     // var LocationId = '188559' //1001
     // var LocationId = '88252' //1002
     // var LocationId = '60358' //1003
@@ -21,11 +22,9 @@ var password = 'Ft@Sugarcube99'
     // var LocationId = '223516' //huamao
     // var LocationId = '783825' //浦发11
     // var LocationId = '581669' //TEST36
-    // var LocationId = '503370' //VANKE 上海  
-var locationId = '274189' //圣奥
-let typeofSubs = 'occupancy' // data   |  lifecircle  |  config | battery|sensorData|assetData|occupancy| occupancySlots|sensorSlots| assetSlots
-
-
+    // var LocationId = '503370' //VANKE 上海
+var locationId = '274189' // 圣奥
+const typeofSubs = 'data' // data   |  lifecircle  |  config | battery|sensorData|assetData|occupancy| occupancySlots|sensorSlots| assetSlots
 
 // For log use only
 var _Counter = 0 // message counter
@@ -128,7 +127,7 @@ client.on('connect', function(connection) {
                 case 'PeriodicResponse':
                     break
                 case 'SubscribeResponse':
-                    setInterval(sendSubscribeRequest, 6000000) //periodic subscribe
+                    setInterval(sendSubscribeRequest, 6000000) // periodic subscribe
                     break
                 case 'SubscribeData':
                     {
@@ -186,7 +185,7 @@ client.on('connect', function(connection) {
                                             _t2.setTime(json.timeSent)
                                             _t3.setTime(json.list[0].list[0].sampleTime)
                                             motionFlag = ' ? ' // update new value
-                                            temprecordObj
+                                            // temprecordObj
                                             recordObj.type = 'SampleAsset'
                                             recordObj.Did = json.list[0].dataSourceAddress.did
                                             recordObj.timeStamp = _t1.getTime()
@@ -400,15 +399,12 @@ client.on('connect', function(connection) {
                                                 json.list[0].eventType.name
                                             )
                                     }
-
                                 }
                                 break
                             default:
                                 console.log('!Unknown  resourcetype' + json.list[0].resourceType)
                                 break
-
                         }
-
                     }
                     break
                 default:
@@ -422,8 +418,7 @@ client.on('connect', function(connection) {
 
     connection.on('error', function(error) {
         console.log('Connection Error: ' + error.toString())
-        beginPOLL() //reconnect
-
+        beginPOLL() // reconnect
     })
 
     // eslint-disable-next-line handle-callback-err

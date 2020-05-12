@@ -1,3 +1,5 @@
+/* eslint-disable no-lone-blocks */
+/* eslint-disable no-unused-vars */
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var sessionId
@@ -7,21 +9,20 @@ var heartbeatFlag = 0
     // var password = 'Ft@Sugarcube99'
 var username = '653498331@qq.com'
 var password = '000000'
-let typeofSubs = ['battery', 'data', 'lifecircle', 'config', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
+const typeofSubs = ['battery', 'data', 'lifecircle', 'config', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
 var _logLimit = 50000 // will exit when this number of messages has been logged
 const filter = ''
 
 var _Counter = 0 // message counter
 var sensorArray = []
 var motionTimeStamps = []
-var assetTimeStamps1, assetTimeStamps2, assetTimeStamps3 = []
+var assetTimeStamps1; var assetTimeStamps2; var assetTimeStamps3 = []
 
 var _Locations = []
 
 var _t1 = new Date()
 var _t2 = new Date()
 var _t3 = new Date()
-
 var _recordObj = {
     type: '',
     Did: '',
@@ -30,12 +31,13 @@ var _recordObj = {
 }
 
 function c(data) {
-    if ((data.indexOf(filter) >= 0) && (filter.length !== '')) try {
+    if ((data.indexOf(filter) >= 0) && (filter.length !== '')) {
+ try {
         console.log(data)
-
     } catch (error) {
         console.log(error)
     }
+}
 }
 
 var client = new WebSocketClient()
@@ -53,7 +55,6 @@ client.on('connectFailed', function(error) {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
 })
 
-
 client.on('connect', function(connection) {
     c('   connected to cloud ')
     heartbeatFlag = 0
@@ -70,7 +71,7 @@ client.on('connect', function(connection) {
 
             if (_Counter >= _logLimit) {
                 c('Enough Data!')
-                c(_Locations.length + " locations : " + JSON.stringify(_Locations));
+                c(_Locations.length + ' locations : ' + JSON.stringify(_Locations))
                 connection.close()
                 process.exit()
             }
@@ -80,12 +81,11 @@ client.on('connect', function(connection) {
                     sendLoginRequest()
                     break
                 case 'LoginResponse':
-                    if (json.responseCode.name === 'success') { //json.sessionId
+                    if (json.responseCode.name === 'success') { // json.sessionId
                         sessionId = json.sessionId
                         setInterval(sendPeriodicRequest, 60000) // as keepalive
                         sendGetLocationsRequest() // not mandatory
                         setInterval(sendGetLocationsRequest, 60000 * 120) // resubscribe every 120 MIn
-
                     } else {
                         c(json.responseCode.name)
                         c("Couldn't login, check your username and passoword")
@@ -99,9 +99,9 @@ client.on('connect', function(connection) {
                         // UPDATE location IDs
                         if (json.list.length !== 0) {
                             for (var i = 0; i < json.list.length; i++) {
-
                                 if (_Locations.indexOf(json.list[i].locationAddress.locationId) < 0) {
                                     _Locations[json.list[i].locationAddress.locationId] = json.list[i].name
+                                    c(json.list[i].locationAddress.locationId)
                                     sendSubscribeRequest(json.list[i].locationAddress.locationId, typeofSubs)
                                 }
                             }
@@ -123,14 +123,11 @@ client.on('connect', function(connection) {
                 case 'GetUnitsResponse':
                     break
                 case 'SubscribeResponse':
-                    let now = new Date().getTime()
-                    let expireTime = json.expireTime
+                    // const expireTime = json.expireTime
                         // let timeOut=setTimeout(sendGetLocationsRequest, json.expireTime - now - 600000)
 
                     // _t1.setTime(json.expireTime)
-                    console.log(
-                            'Susbscribe expire in (min)： ' + (json.expireTime - now) / 60000
-                        ) // 100min
+                    // console.log(                            'Susbscribe expire in (min)： ' + (json.expireTime - t) / 60000                        ) // 100min
                     break
                 case 'SubscribeData':
                     _t2.setTime(json.timeSent)
@@ -144,7 +141,7 @@ client.on('connect', function(connection) {
                                         _t3.setTime(json.timeSent) // packet sent
 
                                         // algorithm based on SampleMotion；
-                                        let temp1 = sensorArray[json.list[0].dataSourceAddress.did] || 0 //json.list[0].dataSourceAddress.did
+                                        const temp1 = sensorArray[json.list[0].dataSourceAddress.did] || 0 // json.list[0].dataSourceAddress.did
                                         var temprecordObj
                                         var motionFlag = ' ?? ' // update new value
                                         _recordObj.type = 'samplemotion'
@@ -159,7 +156,7 @@ client.on('connect', function(connection) {
                                             temprecordObj = JSON.parse(JSON.stringify(_recordObj))
                                             motionTimeStamps.push(temprecordObj)
                                         } else if (temp1 === json.list[0].list[0].value) {
-                                            //no change
+                                            // no change
                                             motionFlag = ' == '
                                             _recordObj.value = 'ot'
                                             temprecordObj = JSON.parse(JSON.stringify(_recordObj))
@@ -209,7 +206,7 @@ client.on('connect', function(connection) {
                                             // ' @ ' +
                                             // _t3.toLocaleTimeString() +
                                             // '  ' +
-                                            // json.list[0].list[0].assetState.name + 
+                                            // json.list[0].list[0].assetState.name +
                                             ' in ' + json.locationId
                                         )
                                         switch (json.list[0].list[0].assetState.name) {
@@ -272,7 +269,6 @@ client.on('connect', function(connection) {
                                     break
                                 case 'SampleUtilization': // SampleUtilization
                                     {
-
                                         _t3.setTime(json.list[0].list[0].sampleTime)
                                         c(
                                             '   ' +
@@ -301,7 +297,6 @@ client.on('connect', function(connection) {
                                     break
                                 case 'SampleUpState':
                                     {
-
                                         c('   ' +
                                             _Counter +
                                             '# ' +
@@ -324,7 +319,6 @@ client.on('connect', function(connection) {
                             break
                         case 'EventType':
                             {
-
                                 switch (json.list[0].resourceType) {
                                     case 'SlotDTO':
                                         {
@@ -373,7 +367,7 @@ client.on('connect', function(connection) {
                                         //   eventObj.did = json.list[0].list[0].locationAddress.serverDid
                                         //  eventObj.locationId = json.list[0].list[0].locationAddress.locationId
                                         c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name + ' in ' + json.locationId)
-                                            //json.list[0].unitAddress.did
+                                            // json.list[0].unitAddress.did
                                         break
                                     default:
                                         c(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)
@@ -386,7 +380,6 @@ client.on('connect', function(connection) {
                             break
                     }
             }
-
         }
     })
 
@@ -394,7 +387,7 @@ client.on('connect', function(connection) {
         c(' !!! Connection Error: reconnect' + error.toString())
         setTimeout(() => {
             startConnect()
-        }, 2000);
+        }, 2000)
     })
 
     connection.on('close', function(error) {
@@ -438,12 +431,12 @@ client.on('connect', function(connection) {
         sendMessage(request)
     }
 
+    // eslint-disable-next-line camelcase
     function sendSubscribeRequest(location_ID, dataType) {
-        let now = new Date().getTime()
+        const now = new Date().getTime()
         let request
 
         dataType.forEach(element => {
-
             request = {
                 messageType: 'SubscribeRequest',
                 timeSent: now,
@@ -458,7 +451,7 @@ client.on('connect', function(connection) {
             }
 
             sendMessage(request)
-        });
+        })
     }
 
     function sendPeriodicRequest() {
@@ -467,16 +460,16 @@ client.on('connect', function(connection) {
             messageType: 'PeriodicRequest',
             timeSent: now
         }
-        if (heartbeatFlag === 5) {
+        if (heartbeatFlag === 3) {
             c('    periodic request missed (%s), will reconnect', heartbeatFlag)
             connection.close()
 
             // heartbeatFlag = 0
             startConnect()
         }
-        heartbeatFlag++
         sendMessage(request)
 
         console.log('    periodic request send (%s)', heartbeatFlag)
+        heartbeatFlag++
     }
 })
