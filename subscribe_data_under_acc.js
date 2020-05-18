@@ -56,13 +56,13 @@ function startConnect() {
 startConnect()
 
 client.on('connectFailed', function(error) {
-    c('Connect Error: reconnect' + error.toString())
+    c(' --- Connect Error: reconnect -- ' + error.toString())
 
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
 })
 
 client.on('connect', function(connection) {
-    c('   connected to cloud ')
+    c(' --- Connected to cloud --- ')
     heartbeatFlag = 0
     sendServiceRequest()
 
@@ -107,7 +107,7 @@ client.on('connect', function(connection) {
                             for (var i = 0; i < json.list.length; i++) {
                                 if (_Locations.indexOf(json.list[i].locationAddress.locationId) < 0) {
                                     _Locations[json.list[i].locationAddress.locationId] = json.list[i].name
-                                    c(json.list[i].locationAddress.locationId)
+                                        // c(json.list[i].locationAddress.locationId)
                                     sendSubscribeRequest(json.list[i].locationAddress.locationId, typeofSubs)
                                 }
                             }
@@ -122,7 +122,7 @@ client.on('connect', function(connection) {
                     // c(_Counter + '# ' + "periodic response-keepalive");
                 case 'PeriodicResponse':
                     heartbeatFlag = 0
-                    console.log('    periodic response rcvd (%s)', heartbeatFlag)
+                        // console.log('    periodic response rcvd (%s)', heartbeatFlag)
                     break
                 case 'GetSamplesResponse':
                     break
@@ -394,10 +394,10 @@ client.on('connect', function(connection) {
     })
 
     connection.on('error', function(error) {
-        c(' !!! Connection Error: reconnect' + error.toString())
+        c(' --- Connection Error: reconnect in 5 sec --' + error.toString())
         setTimeout(() => {
             startConnect()
-        }, 2000)
+        }, 5000)
     })
 
     connection.on('close', function(error) {
@@ -472,6 +472,7 @@ client.on('connect', function(connection) {
         }
         if (heartbeatFlag === 3) {
             c('    periodic request missed (%s), will reconnect', heartbeatFlag)
+
             connection.close()
 
             // heartbeatFlag = 0
@@ -479,7 +480,7 @@ client.on('connect', function(connection) {
         }
         sendMessage(request)
 
-        console.log('    periodic request send (%s)', heartbeatFlag)
+        // console.log('    periodic request send (%s)', heartbeatFlag)
         heartbeatFlag++
     }
 })
