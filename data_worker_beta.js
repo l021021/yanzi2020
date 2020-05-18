@@ -79,7 +79,7 @@ CSVFile.on('close', () => {
 str = str.replace(/\]\[/gi, ',') // change ][ to , which was caused by consecutive packets
 
 locationJson = JSON.parse(str) // 从文件读入的原始记录总表
-c('总motion记录数' + locationJson.length)
+c(' --- total motion records --- ' + locationJson.length)
 
 // locationJson.sort()
 
