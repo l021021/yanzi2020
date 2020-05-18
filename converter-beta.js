@@ -33,7 +33,7 @@ var _temprecObj = {
 var recordsofSensor = []
 
 // var minDiff
-var t1ToNext, PrevTot2, intervalDiff
+var t1ToNextinterval, prevInterval2t2, intervalDiff
 
 var _lastValue = -1
 
@@ -214,13 +214,13 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
         _temprecObj.ID = recordsofSensor[iRec].Did
 
         // 得到十分钟差和秒数零头
-
+        /// Iwashere
         intervalDiff = Math.floor((t2m - t1m) / (interval * 60 * 1000)) // 两次数据之间整格子差
-        t1ToNext = 60 * interval - t1s.getSeconds() - (t1s.getMinutes() % interval) * 60 // 前面的零头秒数.例如 16:14:06, 则 = 45.54 =2754 TODO,有问题,对整点
-        PrevTot2 = t2s.getSeconds() + (t2s.getMinutes() % interval) * 60 // 后面的零头秒数 16:14:06, 则 = 14.06=846
+        t1toNextinterval = 60 * interval - t1s.getSeconds() - (t1s.getMinutes() % interval) * 60 // 前面的零头秒数.例如 16:14:06, 则 = 45.54 =2754 TODO,有问题,对整点
+        prevInterval2t2 = t2s.getSeconds() + (t2s.getMinutes() % interval) * 60 // 后面的零头秒数 16:14:06, 则 = 14.06=846
             // 这样, 10:01:22 in -11:23:44 ot ,应该计算01分的38秒占用,03分的44秒占用 ,02的66秒占用
 
-        c('     ->' + '#1 ' + t1s.toLocaleString() + '=' + t1m.toLocaleTimeString() + '+' + intervalDiff + '+' + t1ToNext + 's= #2:' + t2s.toLocaleString() + '-' + PrevTot2 + 's=' +
+        c('     ->' + '#1 ' + t1s.toLocaleTimeString() + '=' + t1m.toLocaleTimeString() + '+' + intervalDiff + '+' + t1ToNextinterval + 's= #2:' + t2s.toLocaleString() + '-' + prevInterval2t2 + 's=' +
             t2m.toLocaleTimeString())
 
         if (recordsofSensor[iRec - 1].value === 'in') { // 如果前一个是in,那么后面的时间段应该100%占用
@@ -228,8 +228,8 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
 
             if (t1m >= t2m) {
                 //   c('        头尾在同样的一十分钟,计算缝隙')
-                t1ToNext = (t1ToNext + PrevTot2 - 60 * interval) /// 计算缝隙
-                PrevTot2 = 0 // 合并计算了
+                t1ToNextinterval = (t1ToNextinterval + prevInterval2t2 - 60 * interval) /// 计算缝隙
+                prevInterval2t2 = 0 // 合并计算了
             }
 
             t0.setTime(t1m.getTime()) // 前一十分钟
@@ -244,13 +244,13 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
                     if (timeArray[k].timeStamp === t0.toLocaleString()) {
                         c(k + '        头部记录存在！增加数值' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
                         _RecordExist = true
-                        timeArray[k].value += t1ToNext / 600 // 增加新的占用
+                        timeArray[k].value += t1ToNextinterval / 600 // 增加新的占用
                     }
                 }
             }
             if (!_RecordExist) { // 这一分不存在
                 _temprecObj.timeStamp = t0.toLocaleString()
-                _temprecObj.value = t1ToNext / 60 / interval // 10m
+                _temprecObj.value = t1ToNextinterval / 60 / interval // 10m
                 var _temprecObj = JSON.parse(JSON.stringify(_temprecObj))
                 timeArray.push(_temprecObj) // 增加记录
                 c('      头部记录不存在！加入新记录：' + JSON.stringify(_temprecObj))
@@ -279,7 +279,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
                         if (timeArray[k].timeStamp === t0.toLocaleString()) {
                             _RecordExist = true
                                 //        c(k + '     尾部记录存在！尾部数值增加  ' + JSON.stringify(timeArray[k]) + ' + ' + PrevTot2)
-                            timeArray[k].value += PrevTot2 / 600
+                            timeArray[k].value += prevInterval2t2 / 600
                             c(k + '     尾部记录存在！尾部数值增加  ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
                         }
                     }
@@ -287,7 +287,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
 
                 if (!_RecordExist) {
                     _temprecObj.timeStamp = t2m.toLocaleString()
-                    _temprecObj.value = PrevTot2 / 60 / interval // 10m
+                    _temprecObj.value = prevInterval2t2 / 60 / interval // 10m
                     var _temprecObj = JSON.parse(JSON.stringify(_temprecObj))
                     timeArray.push(_temprecObj)
                     c('      尾部记录不存在，加入新记录：' + JSON.stringify(_temprecObj))
@@ -298,8 +298,8 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
         } else { // 如果前一个记录是ot,后面时间缝隙全都是0
             if (t1m >= t2m) {
                 c('      头尾在相同的一十分钟,计算缝隙')
-                t1ToNext = (t1ToNext + PrevTot2 - 60 * interval) /// 计算缝隙
-                PrevTot2 = 0 // 计算头部即可
+                t1ToNextinterval = (t1ToNextinterval + prevInterval2t2 - 60 * interval) /// 计算缝隙
+                prevInterval2t2 = 0 // 计算头部即可
             };
 
             t0.setTime(t1m) // Previous hour sharp

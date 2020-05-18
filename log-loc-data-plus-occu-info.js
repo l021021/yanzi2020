@@ -6,9 +6,12 @@
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
-var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Ft@Sugarcube99'
-    var LocationId = '229349' // fangtang
+// var username = 'frank.shen@pinyuaninfo.com'
+// var password = 'Ft@Sugarcube99'
+
+var username = 'de1999@vip.qq.com'
+var password = '23456789'
+    // var LocationId = '229349' // fangtang
     // var LocationId = '188559' //1001
     // var LocationId = '88252' //1002
     // var LocationId = '60358' //1003
@@ -16,13 +19,16 @@ var password = 'Ft@Sugarcube99'
     // var LocationId = '83561' //1005
     // eslint-disable-next-line no-redeclare
     // var LocationId = '306571' // 雷诺
+var LocationId = '402837' // turnone-15
+
+
 
 // var LocationId = '521209' //wafer-shanghai
 // var LocationId = '503370' //wanshen
 // var LocationId = '797296' // novah
-    // var LocationId = '223516' //huamao
-    // var LocationId = '783825' //浦发11
-    // var LocationId = '581669' //test36
+// var LocationId = '223516' //huamao
+// var LocationId = '783825' //浦发11
+// var LocationId = '581669' //test36
 
 // For log use only
 var _Counter = 0 // message counter
@@ -99,7 +105,7 @@ client.on('connect', function(connection) {
                     if (json.responseCode.name === 'success') {
                         sendPeriodicRequest() // as keepalive
                             // sendGetLocationsRequest();// not mandatory
-                        sendSubscribeRequest(LocationId) // test
+                            // sendSubscribeRequest(LocationId) // test
                         console.log('    Analyzing Location:' + LocationId)
                             // sendSubscribeRequest_lifecircle(json.list[i].locationAddress.locationId);
                         sendSubscribeRequest_lifecircle(LocationId) // eventDTO
@@ -202,7 +208,7 @@ client.on('connect', function(connection) {
 
                                 case 'SampleUpState':
                                     _t2.setTime(json.list[0].list[0].sampleTime)
-                                    console.log(_Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].deviceUpState.name)
+                                    console.log(_Counter + '# ' + _t3.toLocaleTimeString() + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].deviceUpState.name)
                                         // console.log(JSON.stringify(json));
                                     break
 

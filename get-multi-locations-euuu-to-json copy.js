@@ -5,7 +5,7 @@ const fs = require('fs')
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-    // const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻
+    // const locationIds = [d] //拓闻
 const locationIds = ['114190', '996052', '912706'] // 华为
     // const locationIds = ['185308', '329312', '434888', '447224', '507828', '60358', '608739', '652990', '668617', '83561', '88252', '938433'] // AZ
 

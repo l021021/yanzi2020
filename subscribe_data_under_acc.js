@@ -7,16 +7,22 @@ var sessionId
 var heartbeatFlag = 0
     // var username = 'frank.shen@pinyuaninfo.com'
     // var password = 'Ft@Sugarcube99'
-var username = '653498331@qq.com'
-var password = '000000'
-const typeofSubs = ['battery', 'data', 'lifecircle', 'config', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
+    // var username = '653498331@qq.com'
+    // var password = '000000'
+var username = 'de1999@vip.qq.com'
+var password = '23456789'
+    // const typeofSubs = ['battery', 'data', 'lifecircle', 'config', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
+const typeofSubs = ['lifecircle', 'config', 'occupancy']
+
 var _logLimit = 50000 // will exit when this number of messages has been logged
 const filter = ''
 
 var _Counter = 0 // message counter
 var sensorArray = []
 var motionTimeStamps = []
-var assetTimeStamps1; var assetTimeStamps2; var assetTimeStamps3 = []
+var assetTimeStamps1;
+var assetTimeStamps2;
+var assetTimeStamps3 = []
 
 var _Locations = []
 
@@ -32,12 +38,12 @@ var _recordObj = {
 
 function c(data) {
     if ((data.indexOf(filter) >= 0) && (filter.length !== '')) {
- try {
-        console.log(data)
-    } catch (error) {
-        console.log(error)
+        try {
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
     }
-}
 }
 
 var client = new WebSocketClient()
@@ -124,7 +130,7 @@ client.on('connect', function(connection) {
                     break
                 case 'SubscribeResponse':
                     // const expireTime = json.expireTime
-                        // let timeOut=setTimeout(sendGetLocationsRequest, json.expireTime - now - 600000)
+                    // let timeOut=setTimeout(sendGetLocationsRequest, json.expireTime - now - 600000)
 
                     // _t1.setTime(json.expireTime)
                     // console.log(                            'Susbscribe expire in (min)： ' + (json.expireTime - t) / 60000                        ) // 100min
@@ -366,8 +372,12 @@ client.on('connect', function(connection) {
                                         //  c(json.list[0].list[0].locationAddress.serverDid + ' 2  ' + json.list[0].list[0].locationAddress.locationId)
                                         //   eventObj.did = json.list[0].list[0].locationAddress.serverDid
                                         //  eventObj.locationId = json.list[0].list[0].locationAddress.locationId
-                                        c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name + ' in ' + json.locationId)
-                                            // json.list[0].unitAddress.did
+                                        try { c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name + ' in ' + json.locationId) } catch {
+                                            console.log(error)
+                                            console.log(JSON.stringify(json))
+
+                                        }
+                                        // json.list[0].unitAddress.did
                                         break
                                     default:
                                         c(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)

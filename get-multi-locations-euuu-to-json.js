@@ -5,25 +5,25 @@ const fs = require('fs')
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-// const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
-const locationIds = ['114190', '996052', '912706'] // 华为
-// const locationIds = ['185308', '329312', '434888', '447224', '507828', '60358', '608739', '652990', '668617', '83561', '88252', '938433'] // AZ
+const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
+    // const locationIds = ['114190', '996052', '912706'] // 华为
+    // const locationIds = ['185308', '329312', '434888', '447224', '507828', '60358', '608739', '652990', '668617', '83561', '88252', '938433'] // AZ
 
 const windowLimit = 10 // 大量数据时,建立接收windows
 const reportPeriod = 3600000 * 8 * 3 // 最小的请求数据的长度,单个数据请求不能大于2000,可以根据网络情况优化
-// const _24Hour = 86400000
-const startDate = '2020/04/29/00:00:00'
-const endDate = '2020/05/10/00:00:00'
+    // const _24Hour = 86400000
+const startDate = '2020/05/14/20:00:00'
+const endDate = '2020/05/15/08:00:00'
 var TimeoutId = setTimeout(doReport, 30000) // 数据超时
 
 // for (let lc = 0; lc < locationIds.length; lc++) {}
 const dataFile = fs.createWriteStream('../log/' + locationIds[0] + '_x_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
 
 dataFile.on('finish',
-    function () { process.exit() })
+    function() { process.exit() })
 dataFile.on('destroy',
-    function () { process.exit() })
-// For log use only
+        function() { process.exit() })
+    // For log use only
 var _Counter = 0 // message counter
 var _requestCount = 0
 var _responseCount = 0
@@ -93,20 +93,20 @@ function empty() {
 }
 
 // Program body
-client.on('connectFailed', function (error) {
+client.on('connectFailed', function(error) {
     c('Connect Error: reconnect' + error.toString())
     start()
 })
 
-client.on('connect', function (connection) {
+client.on('connect', function(connection) {
     // c("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function (message) {
+    connection.on('message', function(message) {
         clearTimeout(TimeoutId)
-        // TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
-        // c('timer reset  ')
+            // TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
+            // c('timer reset  ')
 
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
@@ -175,8 +175,8 @@ client.on('connect', function (connection) {
 
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                 _Units.push(_tempunitObj)
-                                // request history record
-                                // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
+                                    // request history record
+                                    // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
                                 if (unitObj.did.indexOf('Motion') >= 0) { sendGetSamplesRequest(unitObj.locationId, unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
                                 // UUID or Motion
                             };
@@ -196,18 +196,18 @@ client.on('connect', function (connection) {
                 case 'SubscribeData':
                 default:
                     c('!!!! cannot understand')
-                    // connection.close();
+                        // connection.close();
                     break
             }
         }
     })
 
-    connection.on('error', function (error) {
+    connection.on('error', function(error) {
         c('Connection Error: reconnect' + error.toString())
         start()
     })
 
-    connection.on('close', function () {
+    connection.on('close', function() {
         c('Connection closed!')
     })
 
@@ -218,19 +218,19 @@ client.on('connect', function (connection) {
         }
         if (timeEndmili - timeStartmili >= reportPeriod) {
             var request = {
-                messageType: 'GetSamplesRequest',
-                dataSourceAddress: {
-                    resourceType: 'DataSourceAddress',
-                    did: deviceID,
-                    locationId: locationID
-                },
-                timeSerieSelection: {
-                    resourceType: 'TimeSerieSelection',
-                    timeStart: timeStartmili,
-                    timeEnd: timeStartmili + reportPeriod
+                    messageType: 'GetSamplesRequest',
+                    dataSourceAddress: {
+                        resourceType: 'DataSourceAddress',
+                        did: deviceID,
+                        locationId: locationID
+                    },
+                    timeSerieSelection: {
+                        resourceType: 'TimeSerieSelection',
+                        timeStart: timeStartmili,
+                        timeEnd: timeStartmili + reportPeriod
+                    }
                 }
-            }
-            // push message in que
+                // push message in que
             c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendMessagetoQue(request)
             sendGetSamplesRequest( // 递归
@@ -266,14 +266,14 @@ client.on('connect', function (connection) {
 
         if (mes === undefined && messageQueue.dataStore.length > 0) {
             sendMessage(messageQueue.dequeue())
-            // c('sending to queue . leaving ' + messageQueue.dataStore.length)
+                // c('sending to queue . leaving ' + messageQueue.dataStore.length)
             c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
         } else if (mes !== undefined && _windowSize < windowLimit) {
             messageQueue.enqueue(mes)
             _windowSize++
             sendMessage(messageQueue.dequeue())
             c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
-            // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
+                // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
         } else if (mes !== undefined && _windowSize >= windowLimit) {
             messageQueue.enqueue(mes)
             c('    sending request to queue, still ' + messageQueue.dataStore.length + ' left.')
@@ -284,7 +284,7 @@ client.on('connect', function (connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-            //    c('sending' + JSON.stringify(json));
+                //    c('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             c("sendMessage: Couldn't send message, the connection is not open")
@@ -334,7 +334,7 @@ function doReport() {
     if (_requestCount > _responseCount) {
         c('Failed')
         dataFile.destroy()
-        // process.exit()
+            // process.exit()
     }
     var t = new Date().getTime()
     var timestamp = new Date()

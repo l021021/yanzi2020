@@ -29,9 +29,9 @@ var recordObj = {
     value: ''
 }
 
-var filename = 'C://JLL//783825-10-30-12-31' // 历史记录文件
-const startDate = '2019/10/30/00:00:00'
-const endDate = '2019/12/31/23:59:59'
+var filename = 'C://codebase//log//797296_2019_06_01_00_00_00_2019_07_01_00_00_00_UU' // 历史记录文件
+const startDate = '2019/06/01/00:00:00'
+const endDate = '2019/07/01/00:00:00'
 
 var t1 = new Date()
 var t2 = new Date()
