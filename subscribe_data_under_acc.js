@@ -1,21 +1,21 @@
-/* eslint-disable no-lone-blocks */
-/* eslint-disable no-unused-vars */
-var WebSocketClient = require('websocket').client
-var cirrusAPIendpoint = 'cirrus20.yanzi.se'
+const WebSocketClient = require('websocket').client
+const cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var sessionId
-
 var heartbeatFlag = 0
-    // var username = 'frank.shen@pinyuaninfo.com'
-    // var password = 'Ft@Sugarcube99'
-    // var username = '653498331@qq.com'
-    // var password = '000000'
+
+// var username = 'frank.shen@pinyuaninfo.com'
+// var password = 'Ft@Sugarcube99'
+// var username = '653498331@qq.com'
+// var password = '000000'
 var username = 'de1999@vip.qq.com'
 var password = '23456789'
-    // const typeofSubs = ['battery', 'data', 'lifecircle', 'config', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
-const typeofSubs = ['lifecircle', 'config', 'occupancy']
+const filter = 'Batte' //filter for console
+
+// const typeofSubs =   
+const typeofSubs = ['lifecircle', 'config', 'occupancy', 'battery']
 
 var _logLimit = 50000 // will exit when this number of messages has been logged
-const filter = ''
+
 
 var _Counter = 0 // message counter
 var sensorArray = []
@@ -23,9 +23,7 @@ var motionTimeStamps = []
 var assetTimeStamps1;
 var assetTimeStamps2;
 var assetTimeStamps3 = []
-
 var _Locations = []
-
 var _t1 = new Date()
 var _t2 = new Date()
 var _t3 = new Date()
