@@ -1,28 +1,30 @@
+/*worker 程序,配合main_multithread_runner工作,从命令行传入参数,生成数据,再由main调用converter,生成CSV*/
 var WebSocketClient = require('websocket').client
 const fs = require('fs')
 
+var client = new WebSocketClient()
+var cirrusAPIendpoint = 'cirrus20.yanzi.se'
+var username = 'frank.shen@pinyuaninfo.com'
+var password = 'Ft@Sugarcube99'
+const c = console.log
 
+c('--- Get data Worker working with:')
 process.argv.forEach((val, index) => {
-    console.log(`${index}: ${val}`);
+    c(`${index}: ${val}`);
 });
-
-
-// process.exit()
-const username = 'frank.shen@pinyuaninfo.com'
-const password = 'Ft@Sugarcube99'
 
 const locationId = process.argv[2]
 const startDate = process.argv[3]
 const endDate = process.argv[4]
 const EUorUU = process.argv[5]
 
-
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
 
-var TimeoutId = setTimeout(doReport, 300000)
+const TimeoutId = setTimeout(doReport, 30000) //超时
 const window_limit = 3
-const reportPeriod = 3600000 * 8 * 3
-    // For log use only
+var heartbeatFlag = 0
+const reportPeriod = 3600000 * 8 * 3 //一天
+    // For temp log use only
 var _Counter = 0 // message counter
 var _requestCount = 0
 var _responseCount = 0
@@ -30,10 +32,8 @@ var _windowSize = 0
 var _listCount = 0
 var _Units = []
 
-var cirrusAPIendpoint = 'cirrus11.yanzi.se'
 var messageQueue = new Queue()
 
-var client = new WebSocketClient()
 
 var unitObj = {
     did: '',
@@ -47,7 +47,6 @@ var unitObj = {
     type: ''
 
 }
-var c = console.log
 
 dataFile.on('finish',
     function() { process.exit() })
@@ -125,11 +124,11 @@ client.on('connect', function(connection) {
             switch (json.messageType) {
                 case 'ServiceResponse':
                     sendLoginRequest()
+                    setInterval(sendPeriodicRequest, 60000) // as keepalive
                     break
                 case 'LoginResponse':
                     if (json.responseCode.name == 'success') {
-                        sendPeriodicRequest() // as keepalive
-                            // sendGetLocationsRequest() // not mandatory
+                        // sendGetLocationsRequest() // not mandatory
                         sendGetUnitsRequest(locationId) // get units from location
                             // sendSubscribeRequest(LocationId); //test one location
                             // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
@@ -198,7 +197,7 @@ client.on('connect', function(connection) {
 
                     break
                 case 'PeriodicResponse':
-                    setTimeout(sendPeriodicRequest, 60000)
+                    heartbeatFlag = 0
                         // c(_Counter + '# ' + "periodic response-keepalive");
                     break
                 case 'SubscribeResponse':
@@ -228,7 +227,18 @@ client.on('connect', function(connection) {
             messageType: 'PeriodicRequest',
             timeSent: now
         }
+        if (heartbeatFlag === 3) {
+            c('    periodic request missed (%s), will reconnect', heartbeatFlag)
+
+            connection.close()
+
+            // heartbeatFlag = 0
+            start()
+        }
         sendMessage(request)
+
+        console.log('    periodic request send (%s)', heartbeatFlag)
+        heartbeatFlag++
     }
 
     function sendGetSamplesRequest(deviceID, timeStart_mili, timeEnd_mili) {

@@ -12,11 +12,11 @@ const fs = require('fs')
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-const startDate = '2019/06/01/00:00:00'
-const endDate = '2019/07/01/00:00:00'
-const EUorUU = 'UU' // 何种数据:UU or EU , Motion,Temp
+const startDate = '2020/04/01/00:00:00'
+const endDate = '2020/04/30/00:00:00'
+const EUorUU = 'EU' // 何种数据:UU or EU , Motion,Temp
     // const locationId = '229349' // fangtang
-    // const locationId = '305026' // huace
+const locationId = '305026' // huace
     // var locationId = '503370' //VANKE 上海
 
 // const locationId = '185308' // - As'tra Zeneca P1 Floor 1 - B is online  with 6 active sensors, 29 logical
@@ -32,9 +32,9 @@ const EUorUU = 'UU' // 何种数据:UU or EU , Motion,Temp
 // const locationId = '88252' // - As'tra Zeneca P1 Floor 2 - A is online  with 10 active sensors, 224 logical
 // const locationId = '938433' // - As'tra Zeneca P1 Floor 1 - A is online  with 22 active sensors, 260 logical
 // const locationId = '521209' // wafer shanghai
-const locationId = '797296' // novah
-    // const locationId = '114190' //华为2-2
-    // const locationId = '274189' //圣奥
+// const locationId = '797296' // novah
+// const locationId = '114190' //华为2-2
+// const locationId = '274189' //圣奥
 
 //  const locationId = '996052' // 华为2-3
 // const locationId = '912706' //华为6-3

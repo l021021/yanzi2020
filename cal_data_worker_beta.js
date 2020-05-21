@@ -2,16 +2,26 @@
 
 const FS = require('fs')
 
-var filename = 'C:\\codebase\\log\\305026_2020_05_01_00_00_00_2020_05_20_00_00_00_UU_0' // 历史记录文件
-const startDate = '2020/05/01/00:00:00' // 开始时间
-const endDate = '2020/05/19/23:59:59' // 结束时间
-    // var filename = 'C://codebase//log//797296_2019_06_01_00_00_00_2019_07_01_00_00_00_UU' // 历史记录文件
-    // const startDate = '2019/06/01/00:00:00'
-    // const endDate = '2019/07/01/00:00:00'
 
-
-var grid = 60 // 间隔时间(分)
+const locationId = process.argv[2]
+const startDate = process.argv[3]
+const endDate = process.argv[4]
+const EUorUU = process.argv[5]
+var interval = process.argv[6]
 const c = console.log
+
+const filename = '../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU
+var str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })
+const CSVFile = FS.createWriteStream(filename + '_' + interval + 'M.csv', { encoding: 'utf8' })
+    // var str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })
+    // const CSVFile = FS.createWriteStream(filename + '_' + grid + 'M.csv', { encoding: 'utf8' })
+
+c('--- Cal data worker working with:')
+process.argv.forEach((val, index) => {
+    c(`${index}: ${val}`);
+});
+
+var grid = interval // 间隔时间(分)
 
 var records2D = [] //以DID为组织的二维数组
 var originalRecords = [] //原始记录数组
@@ -47,8 +57,7 @@ var t1toNextgrid, prevgridTot2, diffofGrid
 
 var _lastValue = -1
 
-var str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })
-const CSVFile = FS.createWriteStream(filename + '_' + grid + 'M.csv', { encoding: 'utf8' })
+
 
 // 读取文件发生错误事件
 CSVFile.on('error', (err) => {
@@ -243,7 +252,7 @@ for (let iDID = 0; iDID < unitsArray.length; iDID++) { // 对每一个sensor做�
         prevgridTot2 = t2s.getSeconds() + (t2s.getMinutes() % grid) * 60 // t2前面的格子到t2的秒数 16:44:06, 则 = 846
             // 这样, 10:01:22 in -11:03:44 ot ,应该计算01分的38秒占用,03分的44秒占用 ,02的66秒占用
 
-        c('  --- where 1# = ' + t1m.toLocaleString() + '  ' + diffofGrid + ' grids with ' + t1toNextgrid + ' s in 1st  hole and ' + prevgridTot2 + 's in 2nd hole to 2# ' + t2m.toLocaleString() + ' was ' + recordsofSensor[iRec - 1].value)
+        c('  --- as 1# = ' + t1m.toLocaleString() + '  ' + diffofGrid + ' grids with ' + t1toNextgrid + ' s in 1st  hole and ' + prevgridTot2 + 's in 2nd hole to 2# ' + t2m.toLocaleString() + ' was ' + recordsofSensor[iRec - 1].value)
 
         if (recordsofSensor[iRec - 1].value === 'in') { // 如果前一个是in,那么后面的时间段应该100%占用
             //     c('    before ' + i + ' was a ' + motionTimeStamps[i - 1].value)
