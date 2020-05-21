@@ -60,21 +60,21 @@ var _lastValue = -1
 
 
 // 读取文件发生错误事件
-CSVFile.on('error', (err) => {
-    console.log('发生异常:', err)
-})
+// CSVFile.on('error', (err) => {
+//     console.log('发生异常:', err)
+// })
 
-CSVFile.on('open', (fd) => {
-    console.log('文件已打开:', fd)
-})
+// CSVFile.on('open', (fd) => {
+//     console.log('文件已打开:', fd)
+// })
 
-CSVFile.on('finish', () => {
-    console.log('写入已完成..')
-})
+// CSVFile.on('finish', () => {
+//     console.log('写入已完成..')
+// })
 
-CSVFile.on('close', () => {
-    console.log('文件已关闭！')
-})
+// CSVFile.on('close', () => {
+//     console.log('文件已关闭！')
+// })
 
 str = str.replace(/\]\[/gi, ',') // change ][ to , which was caused by consecutive packets
 
@@ -295,7 +295,7 @@ for (let iDID = 0; iDID < unitsArray.length; iDID++) { // 对每一个sensor做�
             c('   - 准备加入中部记录(in) ' + diffofGrid)
             let j = 1
             while (j <= diffofGrid) {
-                t0.setTime(t1m.getTime() + j * grid * 1000) // 下一格子
+                t0.setTime(t1m.getTime() + j * grid * 1000 * 60) // 下一格子
                 occuRecobj.timeStamp = t0.toLocaleString()
                 occuRecobj.value = 1
 

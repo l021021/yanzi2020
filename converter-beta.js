@@ -2,9 +2,9 @@
 
 const FS = require('fs')
 
-var filename = 'C:\\codebase\\log\\305026_2020_05_01_00_00_00_2020_05_20_00_00_00_UU_0' // 历史记录文件
-const startDate = '2020/05/01/00:00:00' // 开始时间
-const endDate = '2020/05/19/23:59:59' // 结束时间
+var filename = 'C:\\codebase\\log\\305026_2020_04_01_00_00_00_2020_05_01_00_00_00_UU' // 历史记录文件
+const startDate = '2020/04/01/00:00:00' // 开始时间
+const endDate = '2020/04/30/23:59:59' // 结束时间
     // var filename = 'C://codebase//log//797296_2019_06_01_00_00_00_2019_07_01_00_00_00_UU' // 历史记录文件
     // const startDate = '2019/06/01/00:00:00'
     // const endDate = '2019/07/01/00:00:00'
@@ -286,7 +286,7 @@ for (let iDID = 0; iDID < unitsArray.length; iDID++) { // 对每一个sensor做�
             c('   - 准备加入中部记录(in) ' + diffofGrid)
             let j = 1
             while (j <= diffofGrid) {
-                t0.setTime(t1m.getTime() + j * grid * 1000) // 下一格子
+                t0.setTime(t1m.getTime() + j * grid * 1000 * 60) // 下一格子
                 occuRecobj.timeStamp = t0.toLocaleString()
                 occuRecobj.value = 1
 

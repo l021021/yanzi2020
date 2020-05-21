@@ -20,7 +20,7 @@ const EUorUU = process.argv[5]
 
 const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
 
-const TimeoutId = setTimeout(doReport, 30000) //超时
+const TimeoutId = setTimeout(doReport, 30000) //三十秒没有收到数据,则超时重连
 const window_limit = 3
 var heartbeatFlag = 0
 const reportPeriod = 3600000 * 8 * 3 //一天
@@ -124,12 +124,12 @@ client.on('connect', function(connection) {
             switch (json.messageType) {
                 case 'ServiceResponse':
                     sendLoginRequest()
-                    setInterval(sendPeriodicRequest, 60000) // as keepalive
                     break
                 case 'LoginResponse':
                     if (json.responseCode.name == 'success') {
                         // sendGetLocationsRequest() // not mandatory
                         sendGetUnitsRequest(locationId) // get units from location
+                        setInterval(sendPeriodicRequest, 60000) // as keepalive
                             // sendSubscribeRequest(LocationId); //test one location
                             // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
@@ -140,7 +140,6 @@ client.on('connect', function(connection) {
                     }
                     break
                 case 'GetLocationsResponse':
-
                     break
                 case 'GetSamplesResponse':
                     if (json.responseCode.name === 'success' && json.sampleListDto.list) { // json.sampleListDto.dataSourceAddress.did
@@ -237,7 +236,7 @@ client.on('connect', function(connection) {
         }
         sendMessage(request)
 
-        console.log('    periodic request send (%s)', heartbeatFlag)
+        console.log(' ---  periodic request send (%s)', heartbeatFlag)
         heartbeatFlag++
     }
 
@@ -371,8 +370,9 @@ function doReport() {
     dataFile.end()
     c('Reporting：send ' + _requestCount + ' recvd ' + _responseCount + ', covering ' + _listCount + ' lists')
     c(timestamp.toLocaleTimeString() + '')
+    c('  ---  restart')
+    start()
 
-    // process.exit()
 }
 
 start()
