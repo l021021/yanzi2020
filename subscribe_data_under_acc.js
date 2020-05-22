@@ -1,25 +1,29 @@
-/* eslint-disable no-lone-blocks */
-/* eslint-disable no-unused-vars */
-var WebSocketClient = require('websocket').client
-var cirrusAPIendpoint = 'cirrus20.yanzi.se'
+const WebSocketClient = require('websocket').client
+const cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var sessionId
-
 var heartbeatFlag = 0
-    var username = 'frank.shen@pinyuaninfo.com'
-    var password = 'Ft@Sugarcube99'
+
+// var username = 'frank.shen@pinyuaninfo.com'
+// var password = 'Ft@Sugarcube99'
 // var username = '653498331@qq.com'
 // var password = '000000'
-const typeofSubs = ['battery'/*, 'data', 'lifecircle', 'config', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots' */]
-var _logLimit = 5000 // will exit when this number of messages has been logged
-const filter = ''
+var username = 'de1999@vip.qq.com'
+var password = '23456789'
+const filter = 'Batte' //filter for console
+
+// const typeofSubs =   
+const typeofSubs = ['lifecircle', 'config', 'occupancy', 'battery']
+
+var _logLimit = 50000 // will exit when this number of messages has been logged
+
 
 var _Counter = 0 // message counter
 var sensorArray = []
 var motionTimeStamps = []
-var assetTimeStamps1; var assetTimeStamps2; var assetTimeStamps3 = []
-
+var assetTimeStamps1;
+var assetTimeStamps2;
+var assetTimeStamps3 = []
 var _Locations = []
-
 var _t1 = new Date()
 var _t2 = new Date()
 var _t3 = new Date()
@@ -32,12 +36,12 @@ var _recordObj = {
 
 function c(data) {
     if ((data.indexOf(filter) >= 0) && (filter.length !== '')) {
- try {
-        console.log(data)
-    } catch (error) {
-        console.log(error)
+        try {
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
     }
-}
 }
 
 var client = new WebSocketClient()
@@ -101,7 +105,7 @@ client.on('connect', function(connection) {
                             for (var i = 0; i < json.list.length; i++) {
                                 if (_Locations.indexOf(json.list[i].locationAddress.locationId) < 0) {
                                     _Locations[json.list[i].locationAddress.locationId] = json.list[i].name
-                                    // c(json.list[i].locationAddress.locationId)
+                                        // c(json.list[i].locationAddress.locationId)
                                     sendSubscribeRequest(json.list[i].locationAddress.locationId, typeofSubs)
                                 }
                             }
@@ -116,7 +120,7 @@ client.on('connect', function(connection) {
                     // c(_Counter + '# ' + "periodic response-keepalive");
                 case 'PeriodicResponse':
                     heartbeatFlag = 0
-                    // console.log('    periodic response rcvd (%s)', heartbeatFlag)
+                        // console.log('    periodic response rcvd (%s)', heartbeatFlag)
                     break
                 case 'GetSamplesResponse':
                     break
@@ -124,7 +128,7 @@ client.on('connect', function(connection) {
                     break
                 case 'SubscribeResponse':
                     // const expireTime = json.expireTime
-                        // let timeOut=setTimeout(sendGetLocationsRequest, json.expireTime - now - 600000)
+                    // let timeOut=setTimeout(sendGetLocationsRequest, json.expireTime - now - 600000)
 
                     // _t1.setTime(json.expireTime)
                     // console.log(                            'Susbscribe expire in (min)： ' + (json.expireTime - t) / 60000                        ) // 100min
@@ -366,8 +370,12 @@ client.on('connect', function(connection) {
                                         //  c(json.list[0].list[0].locationAddress.serverDid + ' 2  ' + json.list[0].list[0].locationAddress.locationId)
                                         //   eventObj.did = json.list[0].list[0].locationAddress.serverDid
                                         //  eventObj.locationId = json.list[0].list[0].locationAddress.locationId
-                                        c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name + ' in ' + json.locationId)
-                                            // json.list[0].unitAddress.did
+                                        try { c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name + ' in ' + json.locationId) } catch {
+                                            console.log(error)
+                                            console.log(JSON.stringify(json))
+
+                                        }
+                                        // json.list[0].unitAddress.did
                                         break
                                     default:
                                         c(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)

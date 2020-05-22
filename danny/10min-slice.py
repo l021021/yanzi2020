@@ -18,15 +18,20 @@ import csv
 global tag
 global last
 
-with open('C:\\codebase\\log\\60358_2019_12_29_12_00_00_2019_12_31_23_59_59_Motion.json', encoding='utf-8') as f:
-    rawdata = json.load(f)
-    print(len(rawdata))
-    f.close()
+with open('C:\\codebase\\log\\229349_2020_04_20_00_00_00_2020_05_01_00_00_00_UU.json', encoding='utf-8') as f:
+   rawdata = f.readlines()[0]
+   rawdata = rawdata.replace(']', '],')
+   rawdata = '[' + rawdata
+   rawdata = rawdata[:-1] + ']'
+   rawdata = json.loads(rawdata)
+   print(type(rawdata))
+   f.close()
+
 
 dic = {}
 res = {}
 occ = {}
-STARTTIME = '2020-04-26 00:00:00'
+STARTTIME = '2020-04-20 00:00:00'
 start = int(time.mktime(time.strptime(STARTTIME,'%Y-%m-%d %H:%M:%S'))) * 1000
 
 

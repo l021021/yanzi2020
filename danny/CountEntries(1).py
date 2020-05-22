@@ -30,32 +30,32 @@ global tag
 
 # 修改json文件路径
 # 若json文件没按要求处理好，则用此处运行
-with open('C:\\Users\Andyn\Desktop\\test.json', encoding='utf-8') as f:
+with open('C:\\codebase\\log\\274189_2020_05_09_19_00_00_2020_05_09_21_00_00_Motion.json', encoding='utf-8') as f: 
     rawdata = f.readlines()[0]
-    print('1=====================>',type(rawdata))
+    # print('1=====================>',type(rawdata))
     # print(rawdata)
     rawdata = rawdata.replace(']', '],')
     rawdata = '[' + rawdata
     rawdata = rawdata[:-1] + ']'
     rawdata = json.loads(rawdata)
-    print(type(rawdata))
+    # print(type(rawdata))
     f.close()
 
-print(rawdata)
+# print(rawdata)
 
 dic = {}
 res = {}
 
 
 # 修改开始时间
-STARTTIME = '2020-04-26 00:00:00'
+STARTTIME = '2020-04-20 00:00:00'
 start = int(time.mktime(time.strptime(STARTTIME,'%Y-%m-%d %H:%M:%S'))) * 1000
 
 for subdata in rawdata:
     for ele in subdata:
-        remainder = (ele['sampleTime'] - start) // 600000
+        remainder = (ele['sampleTime'] - start) // 600000 # 十分钟偏差
         if ele['DID'] not in dic.keys():
-            dic[ele['DID']] = {}
+            dic[ele['DID']] = {} #建立二维数组
             res[ele['DID']] = {}
             dic[ele['DID']][remainder] = [ele['value']]
         else:
