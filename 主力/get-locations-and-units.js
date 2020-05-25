@@ -1,14 +1,15 @@
-/* eslint-disable no-fallthrough */
-/* eslint-disable eqeqeq */
 // 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
 
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
-var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Ft@Sugarcube99'
+// var username = 'frank.shen@pinyuaninfo.com'
+// var password = 'Ft@Sugarcube99'
 // var username = "653498331@qq.com";
 // var password = "000000";
+var username = 'de1999@vip.qq.com'
+var password = '23456789'
+
 
 // ################################################
 
@@ -17,10 +18,10 @@ var _Counter = 0 // message counter
 var _OnlineUnitsCounter = 0
 var _UnitsCounter = 0
 
-var _Locations = []
+var _Locations = new Set()
 var _Units = []
-var TimeoutId = setTimeout(doReport, 20000)// wait for 1 min before exit
-// Create a web socket client initialized with the options as above
+var TimeoutId = setTimeout(doReport, 20000) // wait for 1 min before exit
+    // Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
 
 // All Objs definition
@@ -35,7 +36,7 @@ var locationObj = {
     Allunits: 0,
     Onlineunits: 0,
     gwOnline: false
-    // "activityLevel": "medium"
+        // "activityLevel": "medium"
 
 }
 
@@ -53,20 +54,20 @@ var unitObj = {
 }
 
 // Program body
-client.on('connectFailed', function (error) {
+client.on('connectFailed', function(error) {
     console.log('Connect Error: reconnect' + error.toString())
     beginPOLL()
 })
 
-client.on('connect', function (connection) {
+client.on('connect', function(connection) {
     // console.log("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function (message) {
+    connection.on('message', function(message) {
         clearTimeout(TimeoutId)
         TimeoutId = setTimeout(doReport, 60000) // exit after 10 seconds idle
-        // console.log('timer reset  ')
+            // console.log('timer reset  ')
 
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
@@ -93,8 +94,8 @@ client.on('connect', function (connection) {
                     if (json.responseCode.name == 'success') {
                         sendPeriodicRequest() // as keepalive
                         sendGetLocationsRequest() // not mandatory
-                        // sendSubscribeRequest(LocationId); //test one location
-                        // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
+                            // sendSubscribeRequest(LocationId); //test one location
+                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
                         console.log(json.responseCode.name)
                         console.log("Couldn't login, check your username and passoword")
@@ -105,27 +106,29 @@ client.on('connect', function (connection) {
                 case 'GetLocationsResponse':
                     if (json.responseCode.name == 'success') {
                         // UPDATE location IDs
-                        if (json.list.length != 0) { // 收到一组新的location
-                            for (var i = 0; i < json.list.length; i++) {
-                                let _locationExist = false
+                        if (json.list.length != 0) {
 
-                                for (const key in _Locations) { // already exits in Array?
-                                    if (_Locations[key].locationID || (_Locations[key].locationID == json.list[i].locationAddress.locationId)) {
-                                        _locationExist = true
-                                    }
-                                }
+                            console.log(`receiving new locations ${json.list.length}`); // 收到一组新的location
+                            for (var i = 0; i < json.list.length; i++) {
+                                // let _locationExist = false
+
+                                // for (const key in _Locations) { // already exits in Array?
+                                //     if (_Locations[key].locationID || (_Locations[key].locationID == json.list[i].locationAddress.locationId)) {
+                                //         _locationExist = true
+                                //     }
+                                // }
 
                                 var _templocationObj
-                                if (!_locationExist) {
-                                    locationObj.locationId = json.list[i].locationAddress.locationId
-                                    locationObj.serverDid = json.list[i].locationAddress.serverDid
-                                    locationObj.accountId = json.list[i].accountId
-                                    locationObj.name = json.list[i].name
-                                    locationObj.gwdid = json.list[i].gwdid
-                                    _templocationObj = JSON.parse(JSON.stringify(locationObj)) // deep copy
-                                    _Locations.push(_templocationObj)
-                                    sendGetUnitsRequest(json.list[i].locationAddress.locationId) // get units under this location
-                                }
+                                    // if (!_locationExist) {
+                                locationObj.locationId = json.list[i].locationAddress.locationId
+                                locationObj.serverDid = json.list[i].locationAddress.serverDid
+                                locationObj.accountId = json.list[i].accountId
+                                locationObj.name = json.list[i].name
+                                locationObj.gwdid = json.list[i].gwdid
+                                _templocationObj = JSON.parse(JSON.stringify(locationObj)) // deep copy
+                                _Locations.add(_templocationObj)
+                                sendGetUnitsRequest(json.list[i].locationAddress.locationId) // get units under this location
+                                    // }
                             }
                         }
                     } else {
@@ -145,10 +148,10 @@ client.on('connect', function (connection) {
 
                         var _tempunitObj
 
-                        console.log('seeing ' + json.list.length + ' in  ' + json.locationAddress.locationId)
+                        console.log(`seeing ${json.list.length} devices in  ${json.locationAddress.locationId}`)
                         for (let index = 0; index < json.list.length; index++) { // process each response packet
                             if (json.list[index].unitTypeFixed.name == 'gateway' || json.list[index].unitAddress.did.indexOf('AP') != -1) { // console.log(json.list[index].unitAddress.did);
-                                console.log('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
+                                // console.log('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
                             } else {
                                 // record all sensors
                                 unitObj.did = json.list[index].unitAddress.did //
@@ -165,7 +168,7 @@ client.on('connect', function (connection) {
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                 _Units.push(_tempunitObj)
                                 _UnitsCounter++
-                                console.log(_UnitsCounter + '# ' + JSON.stringify(_tempunitObj))
+                                // console.log(_UnitsCounter + '# ' + JSON.stringify(_tempunitObj))
                                 if (json.list[index].lifeCycleState.name == 'present') {
                                     _OnlineUnitsCounter++
                                 }
@@ -180,7 +183,7 @@ client.on('connect', function (connection) {
                     break
                 case 'PeriodicResponse':
                     setTimeout(sendPeriodicRequest, 60000)
-                    // console.log(_Counter + '# ' + "periodic response-keepalive");
+                        // console.log(_Counter + '# ' + "periodic response-keepalive");
                     break
                 case 'SubscribeResponse':
 
@@ -188,18 +191,18 @@ client.on('connect', function (connection) {
 
                 default:
                     console.log('!!!! cannot understand')
-                    // connection.close();
+                        // connection.close();
                     break
             }
         }
     })
 
-    connection.on('error', function (error) {
+    connection.on('error', function(error) {
         console.log('Connection Error: reconnect' + error.toString())
         beginPOLL()
     })
 
-    connection.on('close', function () {
+    connection.on('close', function() {
         console.log('Connection closed!')
     })
 
@@ -207,7 +210,7 @@ client.on('connect', function (connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-            //    console.log('sending' + JSON.stringify(json));
+                //    console.log('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             console.log("sendMessage: Couldn't send message, the connection is not open")
@@ -234,7 +237,7 @@ client.on('connect', function (connection) {
 
     function sendGetLocationsRequest() {
         var now = new Date().getTime()
-        // var nowMinusOneHour = now - 60 * 60 * 1000;
+            // var nowMinusOneHour = now - 60 * 60 * 1000;
         var request = {
             messageType: 'GetLocationsRequest',
             timeSent: now
@@ -269,7 +272,7 @@ client.on('connect', function (connection) {
 
 function beginPOLL() {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-    // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
+        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
 function doReport() {
@@ -279,30 +282,30 @@ function doReport() {
     timestamp.setTime(t)
     console.log('Reporting：')
     console.log(timestamp.toLocaleTimeString() + '')
-    // sorting
-    _Locations.sort(function (a, b) {
-        var x = a.locationId
-        var y = b.locationId
-        if (x > y) return 1
-        if (x < y) return -1
-        return 0
-    })
-    _Units.sort(function (a, b) {
-        var x = a.locationId
-        var y = b.locationId
-        if (x > y) return 1
-        if (x < y) return -1
-        return 0
-    })
+        // sorting
+        // _Locations.sort(function(a, b) {
+        //     var x = a.gwOnline
+        //     var y = b.gwOnline
+        //     if (x > y) return 1
+        //     if (x < y) return -1
+        //     return 0
+        // })
+        // _Units.sort(function(a, b) {
+        //     var x = a.locationId
+        //     var y = b.locationId
+        //     if (x > y) return 1
+        //     if (x < y) return -1
+        //     return 0
+        // })
 
     for (let i = 0; i < _Units.length; i++) {
         for (let j = 0; j < _Locations.length; j++) { // update to its locations
             if (_Locations[j].locationId == _Units[i].locationId) { // Location match
                 _Locations[j].Allunits++
-                if (_Units[i].lifeCycleState == 'present') { // mark live gateways
-                    _Locations[j].gwOnline = true // Location Online
-                    _Locations[j].Onlineunits++ // mark online sensors
-                }
+                    if (_Units[i].lifeCycleState == 'present') { // mark live gateways
+                        _Locations[j].gwOnline = true // Location Online
+                        _Locations[j].Onlineunits++ // mark online sensors
+                    }
                 if (_Units[i].isChassis == 'true') {
                     _Locations[j].units++
                 } // mark physical sensors
@@ -312,11 +315,17 @@ function doReport() {
     }
 
     // list each active location with sensors
-    console.table(_Locations)
-    // for (let j = 0; j < _Locations.length; j++) { // TODO：for each
-    //     if (_Locations[j].gwOnline) { console.log('' + _Locations[j].locationId + '-' + _Locations[j].name + ' is online  with ' + _Locations[j].Onlineunits + ' active sensors, ' + _Locations[j].Allunits + ' logical') }
-    // }
+
+    // _Locations = _Locations.filter(item => item.lifeCycleState == "present")
+    let locationArray = Array.from(_Locations)
+
+    console.table(locationArray.filter(item => item.gwOnline == true))
+        // _Locations[0].gwOnline
     console.log('total ' + _Units.length + ' logical sensors live while ' + _OnlineUnitsCounter + ' sensors online') // sum up
+
+    // _Units = _Units.filter(item => item.lifeCycleState == "present") //_Units[0].lifeCycleState
+    console.table(_Units.filter(item => item.lifeCycleState == "present"))
+
 
     // //list all online physical sensors
     // for (let j = 0; j < _Units.length; j++) {

@@ -1,395 +1,399 @@
-const WebSocketClient = require('websocket').client
-const cirrusAPIendpoint = 'cirrus20.yanzi.se'
-var sessionId
-var heartbeatFlag = 0
+// 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
+
+var WebSocketClient = require('websocket').client
+var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
 // var username = 'frank.shen@pinyuaninfo.com'
 // var password = 'Ft@Sugarcube99'
-// var username = '653498331@qq.com'
-// var password = '000000'
-var username = 'de1999@vip.qq.com'
-var password = '23456789'
-const filter = 'Batte' //filter for console
+var username = "653498331@qq.com";
+var password = "000000";
 
-// const typeofSubs =   
-const typeofSubs = ['lifecircle', 'config', 'occupancy', 'battery']
+// ################################################
 
-var _logLimit = 50000 // will exit when this number of messages has been logged
-
-
+// For log use only
 var _Counter = 0 // message counter
-var sensorArray = []
-var motionTimeStamps = []
-var assetTimeStamps1;
-var assetTimeStamps2;
-var assetTimeStamps3 = []
+var _OnlineUnitsCounter = 0
+var _UnitsCounter = 0
+
 var _Locations = []
-var _t1 = new Date()
-var _t2 = new Date()
-var _t3 = new Date()
-var _recordObj = {
-    type: '',
-    Did: '',
-    timeStamp: '',
-    value: ''
-}
-
-function c(data) {
-    if ((data.indexOf(filter) >= 0) && (filter.length !== '')) {
-        try {
-            console.log(data)
-        } catch (error) {
-            console.log(error)
-        }
-    }
-}
-
+var _Units = []
+var TimeoutId = setTimeout(doReport, 20000) // wait for 1 min before exit
+    // Create a web socket client initialized with the options as above
 var client = new WebSocketClient()
 
-// Program body
-function startConnect() {
-    client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
+// All Objs definition
+var locationObj = {
+
+    locationId: '123456',
+    serverDid: 'EUI64-0090DAFFFF0040A9',
+    accountId: '262468578',
+    name: 'Beach House',
+    gwdid: 'EUI64-12411261342',
+    units: 0,
+    Allunits: 0,
+    Onlineunits: 0,
+    gwOnline: false
+        // "activityLevel": "medium"
+
 }
 
-startConnect()
+var unitObj = {
+    did: '',
+    locationId: '',
+    serverDid: '',
+    productType: '',
+    lifeCycleState: '',
+    isChassis: '',
+    chassisDid: '',
+    nameSetByUser: '',
+    type: ''
 
+}
+
+// Program body
 client.on('connectFailed', function(error) {
-    c(' --- Connect Error: reconnect -- ' + error.toString())
-
-    client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
+    console.log('Connect Error: reconnect' + error.toString())
+    beginPOLL()
 })
 
 client.on('connect', function(connection) {
-    c(' --- Connected to cloud --- ')
-    heartbeatFlag = 0
+    // console.log("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
     connection.on('message', function(message) {
+        clearTimeout(TimeoutId)
+        TimeoutId = setTimeout(doReport, 60000) // exit after 10 seconds idle
+            // console.log('timer reset  ')
+
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
             var t = new Date().getTime()
             var timestamp = new Date()
             timestamp.setTime(t)
-            _Counter++ // counter of all received packets
+            _Counter = _Counter + 1 // counter of all received packets
 
-            if (_Counter >= _logLimit) {
-                c('Enough Data!')
-                c(_Locations.length + ' locations : ' + JSON.stringify(_Locations))
-                connection.close()
-                process.exit()
-            }
-            // c(_Counter + '# ' + timestamp.toLocaleTimeString() + ' RCVD_MSG:' + json.messageType)
+            // if (_Counter > _logLimit) {
+            //     console.log("Enough Data!")
+            //     console.log(_Locations.length + " locations : " + JSON.stringify(_Locations));
+            //     connection.close();
+            //     doReport();
+            //     process.exit();
+            // } //for log use only
+
+            // Print all messages with type
+            // console.log(_Counter + '# ' + timestamp.toLocaleTimeString() + ' RCVD_MSG:' + json.messageType)
             switch (json.messageType) {
                 case 'ServiceResponse':
                     sendLoginRequest()
                     break
                 case 'LoginResponse':
-                    if (json.responseCode.name === 'success') { // json.sessionId
-                        sessionId = json.sessionId
-                        setInterval(sendPeriodicRequest, 60000) // as keepalive
+                    if (json.responseCode.name == 'success') {
+                        sendPeriodicRequest() // as keepalive
                         sendGetLocationsRequest() // not mandatory
-                        setInterval(sendGetLocationsRequest, 60000 * 120) // resubscribe every 120 MIn
+                            // sendSubscribeRequest(LocationId); //test one location
+                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
-                        c(json.responseCode.name)
-                        c("Couldn't login, check your username and passoword")
+                        console.log(json.responseCode.name)
+                        console.log("Couldn't login, check your username and passoword")
                         connection.close()
                         process.exit()
                     }
                     break
                 case 'GetLocationsResponse':
-                    if (json.responseCode.name === 'success') {
-                        // setTimeout(sendGetLocationsRequest, 60 * 1000 * 60)
+                    if (json.responseCode.name == 'success') {
                         // UPDATE location IDs
-                        if (json.list.length !== 0) {
+                        if (json.list.length != 0) { // 收到一组新的location
                             for (var i = 0; i < json.list.length; i++) {
-                                if (_Locations.indexOf(json.list[i].locationAddress.locationId) < 0) {
-                                    _Locations[json.list[i].locationAddress.locationId] = json.list[i].name
-                                        // c(json.list[i].locationAddress.locationId)
-                                    sendSubscribeRequest(json.list[i].locationAddress.locationId, typeofSubs)
+                                let _locationExist = false
+
+                                for (const key in _Locations) { // already exits in Array?
+                                    if (_Locations[key].locationID || (_Locations[key].locationID == json.list[i].locationAddress.locationId)) {
+                                        _locationExist = true
+                                    }
+                                }
+
+                                var _templocationObj
+                                if (!_locationExist) {
+                                    locationObj.locationId = json.list[i].locationAddress.locationId
+                                    locationObj.serverDid = json.list[i].locationAddress.serverDid
+                                    locationObj.accountId = json.list[i].accountId
+                                    locationObj.name = json.list[i].name
+                                    locationObj.gwdid = json.list[i].gwdid
+                                    _templocationObj = JSON.parse(JSON.stringify(locationObj)) // deep copy
+                                    _Locations.push(_templocationObj)
+                                    sendGetUnitsRequest(json.list[i].locationAddress.locationId) // get units under this location
                                 }
                             }
                         }
                     } else {
-                        c(json.responseCode.name)
-                        c("Couldn't get location")
+                        console.log(json.responseCode.name)
+                        console.log("Couldn't get location")
                         connection.close()
                         process.exit()
                     };
-                    break
-                    // c(_Counter + '# ' + "periodic response-keepalive");
-                case 'PeriodicResponse':
-                    heartbeatFlag = 0
-                        // console.log('    periodic response rcvd (%s)', heartbeatFlag)
+                    // sendGetUnitsRequest(537931);
                     break
                 case 'GetSamplesResponse':
+                    // json.list[0].lifeCycleState.namejson.list[0].lifeCycleState.name
                     break
                 case 'GetUnitsResponse':
+                    if (json.responseCode.name == 'success') {
+                        // console.log(JSON.stringify(json) + '\n\n');
+
+                        var _tempunitObj
+
+                        console.log('seeing ' + json.list.length + ' in  ' + json.locationAddress.locationId)
+                        for (let index = 0; index < json.list.length; index++) { // process each response packet
+                            if (json.list[index].unitTypeFixed.name == 'gateway' || json.list[index].unitAddress.did.indexOf('AP') != -1) { // console.log(json.list[index].unitAddress.did);
+                                console.log('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
+                            } else {
+                                // record all sensors
+                                unitObj.did = json.list[index].unitAddress.did //
+                                unitObj.locationId = json.locationAddress.locationId
+                                unitObj.chassisDid = json.list[index].chassisDid
+                                unitObj.productType = json.list[index].productType
+                                unitObj.lifeCycleState = json.list[index].lifeCycleState.name
+                                unitObj.isChassis = json.list[index].isChassis
+                                unitObj.nameSetByUser = json.list[index].nameSetByUser
+                                unitObj.serverDid = json.list[index].unitAddress.serverDid
+
+                                unitObj.type = json.list[index].unitTypeFixed.name
+
+                                _tempunitObj = JSON.parse(JSON.stringify(unitObj))
+                                _Units.push(_tempunitObj)
+                                _UnitsCounter++
+                                console.log(_UnitsCounter + '# ' + JSON.stringify(_tempunitObj))
+                                if (json.list[index].lifeCycleState.name == 'present') {
+                                    _OnlineUnitsCounter++
+                                }
+                            };
+                        }
+
+                        // console.log(_UnitsCounter + ' Units in Location:  while ' + _OnlineUnitsCounter + ' online');
+                    } else {
+                        console.log("Couldn't get Units")
+                    }
+                    // json.list[0].lifeCycleState.name
+                    break
+                case 'PeriodicResponse':
+                    setTimeout(sendPeriodicRequest, 60000)
+                        // console.log(_Counter + '# ' + "periodic response-keepalive");
                     break
                 case 'SubscribeResponse':
-                    // const expireTime = json.expireTime
-                    // let timeOut=setTimeout(sendGetLocationsRequest, json.expireTime - now - 600000)
 
-                    // _t1.setTime(json.expireTime)
-                    // console.log(                            'Susbscribe expire in (min)： ' + (json.expireTime - t) / 60000                        ) // 100min
-                    break
                 case 'SubscribeData':
-                    _t2.setTime(json.timeSent)
-                    switch (json.list[0].resourceType) {
-                        case 'SampleList':
-                            switch (json.list[0].list[0].resourceType) {
-                                case 'SampleMotion': // sampleMotion
-                                    {
-                                        _t1.setTime(json.list[0].list[0].sampleTime)
-                                        _t2.setTime(json.list[0].list[0].timeLastMotion) // sensor motion-detected time
-                                        _t3.setTime(json.timeSent) // packet sent
 
-                                        // algorithm based on SampleMotion；
-                                        const temp1 = sensorArray[json.list[0].dataSourceAddress.did] || 0 // json.list[0].dataSourceAddress.did
-                                        var temprecordObj
-                                        var motionFlag = ' ?? ' // update new value
-                                        _recordObj.type = 'samplemotion'
-                                        _recordObj.Did = json.list[0].dataSourceAddress.did // json.list[0].dataSourceAddress.did
-                                        _recordObj.timeStamp = _t1.getTime()
-                                        sensorArray[json.list[0].dataSourceAddress.did] =
-                                        json.list[0].list[0].value // setup sensor array
-                                        if (temp1 === json.list[0].list[0].value - 1) {
-                                            // Value changed!
-                                            motionFlag = ' ++ '
-                                            _recordObj.value = 'in'
-                                            temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                            motionTimeStamps.push(temprecordObj)
-                                        } else if (temp1 === json.list[0].list[0].value) {
-                                            // no change
-                                            motionFlag = ' == '
-                                            _recordObj.value = 'ot'
-                                            temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                            motionTimeStamps.push(temprecordObj)
-                                                // motionTimeStamps.push(json.list[0].dataSourceAddress.did + ',ot,' + _t1.getTime());
-                                        } else {
-                                            //  c("        Sensor first seen, cannot tell");
-                                        }
-
-                                        c(
-                                            '   ' +
-                                            _Counter +
-                                            '# ' +
-                                            _t3.toLocaleTimeString() +
-                                            ' SampleMotion ' +
-                                            json.list[0].dataSourceAddress.did +
-                                            motionFlag +
-                                            // _t1.toLocaleTimeString() +
-                                            // ' # ' +
-                                            // json.list[0].list[0].value +
-                                            // ' Last: ' +
-                                            // _t2.toLocaleTimeString() +
-                                            ' in ' + json.locationId
-                                        )
-                                    }
-                                    break
-                                case 'SampleAsset': // sampleAsset- free occupied ismotion isnomotion
-                                    {
-                                        _t3.setTime(json.list[0].list[0].sampleTime)
-                                        // eslint-disable-next-line no-redeclare
-                                        var motionFlag = ' ? ' // update new value
-                                            // eslint-disable-next-line no-redeclare
-                                        var temprecordObj
-                                            // var motionFlag = ' ?? '; //update new value
-                                        _recordObj.type = 'sampleAsset'
-                                        _recordObj.Did = json.list[0].dataSourceAddress.did
-                                        _recordObj.timeStamp = _t1.getTime()
-                                        c(
-                                            '   ' +
-                                            _Counter +
-                                            '# ' +
-                                            _t3.toLocaleTimeString() + ' ' +
-                                            // ' SampleAsset ' +
-                                            json.list[0].list[0].assetState.name +
-                                            ' ' +
-                                            json.list[0].dataSourceAddress.did +
-                                            // ' @ ' +
-                                            // _t3.toLocaleTimeString() +
-                                            // '  ' +
-                                            // json.list[0].list[0].assetState.name +
-                                            ' in ' + json.locationId
-                                        )
-                                        switch (json.list[0].list[0].assetState.name) {
-                                            case 'isMotion':
-                                                // assetTimeStamps1 += json.list[0].dataSourceAddress.did + ',mo,' + _t3.getTime() + '\n';
-                                                _recordObj.value = 'mo'
-                                                temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                                    // assetTimeStamps1.push(temprecordObj)
-
-                                                break
-                                            case 'isNoMotion':
-                                                // assetTimeStamps1 += json.list[0].dataSourceAddress.did + ',nm,' + _t3.getTime() + '\n';
-                                                _recordObj.value = 'nm'
-                                                temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                                    // assetTimeStamps1.push(temprecordObj)
-                                                break
-                                            case 'free':
-                                                // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',fr,' + _t3.getTime() + '\n';
-                                                _recordObj.value = 'fr'
-                                                temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                                    // assetTimeStamps2.push(temprecordObj)
-                                                break
-                                            case 'occupied':
-                                                // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',oc,' + _t3.getTime() + '\n';
-                                                _recordObj.value = 'oc'
-                                                temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                                    // assetTimeStamps2.push(temprecordObj)
-                                                break
-                                            case 'missingInput':
-                                                // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',mi,' + _t3.getTime() + '\n';
-                                                _recordObj.value = 'mi'
-                                                temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                                    // assetTimeStamps2.push(temprecordObj)
-                                                break
-                                            default:
-                                                c(
-                                                    '!Assetname ' +
-                                                    json.list[0].list[0].assetState.name
-                                                )
-                                                break
-                                        }
-                                    }
-                                    break
-                                case 'SamplePercentage': // SamplePercentage
-                                    {
-                                        _t3.setTime(json.list[0].list[0].sampleTime)
-                                        c(
-                                            '   ' +
-                                            _Counter +
-                                            '# ' +
-                                            _t2.toLocaleTimeString() +
-                                            ' SamplePercentage ' +
-                                            json.list[0].dataSourceAddress.did +
-                                            ' @ ' +
-                                            _t3.toLocaleTimeString() +
-                                            ' Occu%:' +
-                                            json.list[0].list[0].value + ' in ' + json.locationId
-                                        )
-                                    }
-                                    break
-                                case 'SampleUtilization': // SampleUtilization
-                                    {
-                                        _t3.setTime(json.list[0].list[0].sampleTime)
-                                        c(
-                                            '   ' +
-                                            _Counter +
-                                            '# ' +
-                                            _t2.toLocaleTimeString() +
-                                            ' SampleUtilization ' +
-                                            json.list[0].dataSourceAddress.did +
-                                            // ' @ ' +
-                                            // _t3.toLocaleTimeString() +
-                                            ' free:' +
-                                            json.list[0].list[0].free +
-                                            ' occupied:' +
-                                            json.list[0].list[0].occupied + ' in ' + json.locationId
-                                        )
-                                        assetTimeStamps3 +=
-                                        _t2.toLocaleTimeString() +
-                                        ' AsstUT ' +
-                                        json.list[0].dataSourceAddress.did +
-                                        ' free:' +
-                                        json.list[0].list[0].free +
-                                        ' occupied:' +
-                                        json.list[0].list[0].occupied + ' in ' + json.locationId +
-                                        '\n'
-                                    }
-                                    break
-                                case 'SampleUpState':
-                                    {
-                                        c('   ' +
-                                            _Counter +
-                                            '# ' +
-                                            _t2.toLocaleTimeString() +
-                                            ' SampleUpState ' +
-                                            json.list[0].dataSourceAddress.did +
-                                            ' ' +
-                                            json.list[0].list[0].deviceUpState.name + ' in ' + json.locationId
-                                        )
-                                        // c(JSON.stringify(json));
-                                    }
-                                    break
-                                default:
-                                    // 环境参数
-                                    _t2.setTime(json.timeSent)
-                                        // if json.list[0].list[0].resourceType ==
-                                    c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].value + ' in ' + json.locationId)
-                                    break
-                            }
-                            break
-                        case 'EventType':
-                            {
-                                switch (json.list[0].resourceType) {
-                                    case 'SlotDTO':
-                                        {
-                                            c(
-                                                '   ' +
-                                                _Counter + _t2.toLocaleTimeString() +
-                                                '# SlotDTO ' +
-                                                json.list[0].dataSourceAddress.did +
-                                                '=' +
-                                                (json.list[0].list[0].maxValue +
-                                                    json.list[0].list[0].minValue) /
-                                                2
-                                            )
-                                        }
-                                        break
-                                    case 'SampleEndOfSlot':
-                                        {
-                                            c(
-                                                '   ' +
-                                                _Counter + _t2.toLocaleTimeString() +
-                                                '# EndofDTO ' +
-                                                json.list[0].dataSourceAddress.did +
-                                                ' ' +
-                                                json.list[0].list[0].sample.assetState.name
-                                            )
-                                        }
-                                        break
-                                    default:
-                                        c(' !!!!  ' + _Counter + ' Unknown eventtype: ' + json.list[0].eventType.name)
-                                        break
-                                }
-                            }
-                            break
-                        case 'EventDTO':
-                            {
-                                // var _tempeventObj
-                                switch (json.list[0].eventType.name) { // json.list[0]json.list[0].eventType.name
-                                    case 'newUnAcceptedDeviceSeenByDiscovery':
-                                    case 'physicalDeviceIsNowUP':
-                                    case 'physicalDeviceIsNowDOWN':
-                                    case 'remoteLocationGatewayIsNowDOWN':
-                                    case 'remoteLocationGatewayIsNowUP':
-                                    case 'unitConfigurationChanged':
-                                    case 'locationChanged':
-                                        //  c(json.list[0].list[0].locationAddress.serverDid + ' 2  ' + json.list[0].list[0].locationAddress.locationId)
-                                        //   eventObj.did = json.list[0].list[0].locationAddress.serverDid
-                                        //  eventObj.locationId = json.list[0].list[0].locationAddress.locationId
-                                        try { c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name + ' in ' + json.locationId) } catch {
-                                            console.log(error)
-                                            console.log(JSON.stringify(json))
-
-                                        }
-                                        // json.list[0].unitAddress.did
-                                        break
-                                    default:
-                                        c(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)
-                                        break
-                                }
-                            }
-                            break
-                        default:
-                            c(' !!!!  ' + _Counter + 'OTHER DATA?  ' + JSON.stringify(json))
-                            break
-                    }
+                default:
+                    console.log('!!!! cannot understand')
+                        // connection.close();
+                    break
             }
         }
     })
+
+    connection.on('error', function(error) {
+        console.log('Connection Error: reconnect' + error.toString())
+        beginPOLL()
+    })
+
+    connection.on('close', function() {
+        console.log('Connection closed!')
+    })
+
+    function sendMessage(message) {
+        if (connection.connected) {
+            // Create the text to be sent
+            var json = JSON.stringify(message, null, 1)
+                //    console.log('sending' + JSON.stringify(json));
+            connection.sendUTF(json)
+        } else {
+            console.log("sendMessage: Couldn't send message, the connection is not open")
+        }
+    }
+
+    function sendServiceRequest() {
+        var request = {
+            messageType: 'ServiceRequest',
+            clientId: 'client-fangtang'
+
+        }
+        sendMessage(request)
+    }
+
+    function sendLoginRequest() {
+        var request = {
+            messageType: 'LoginRequest',
+            username: username,
+            password: password
+        }
+        sendMessage(request)
+    }
+
+    function sendGetLocationsRequest() {
+        var now = new Date().getTime()
+            // var nowMinusOneHour = now - 60 * 60 * 1000;
+        var request = {
+            messageType: 'GetLocationsRequest',
+            timeSent: now
+        }
+        sendMessage(request)
+    }
+
+    function sendGetUnitsRequest(locationID) {
+        var now = new Date().getTime()
+        var request = {
+
+            messageType: 'GetUnitsRequest',
+            timeSent: now,
+            locationAddress: {
+                resourceType: 'LocationAddress',
+                locationId: locationID
+            }
+        }
+        console.log('sending request for ' + locationID)
+        sendMessage(request)
+    }
+
+    function sendPeriodicRequest() {
+        var now = new Date().getTime()
+        var request = {
+            messageType: 'PeriodicRequest',
+            timeSent: now
+        }
+        sendMessage(request)
+    }
+})
+
+function beginPOLL() {
+    client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
+        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
+}
+
+function doReport() {
+    // var output = ''
+    var t = new Date().getTime()
+    var timestamp = new Date()
+    timestamp.setTime(t)
+    console.log('Reporting：')
+    console.log(timestamp.toLocaleTimeString() + '')
+        // sorting
+    _Locations.sort(function(a, b) {
+        var x = a.gwOnline
+        var y = b.gwOnline
+        if (x > y) return 1
+        if (x < y) return -1
+        return 0
+    })
+    _Units.sort(function(a, b) {
+        var x = a.locationId
+        var y = b.locationId
+        if (x > y) return 1
+        if (x < y) return -1
+        return 0
+    })
+
+    for (let i = 0; i < _Units.length; i++) {
+        for (let j = 0; j < _Locations.length; j++) { // update to its locations
+            if (_Locations[j].locationId == _Units[i].locationId) { // Location match
+                _Locations[j].Allunits++
+                    if (_Units[i].lifeCycleState == 'present') { // mark live gateways
+                        _Locations[j].gwOnline = true // Location Online
+                        _Locations[j].Onlineunits++ // mark online sensors
+                    }
+                if (_Units[i].isChassis == 'true') {
+                    _Locations[j].units++
+                } // mark physical sensors
+                break // 跳出循环
+            }
+        }
+    }
+
+    // list each active location with sensors
+
+    _Locations = _Locations.filter(item => item.gwOnline == 'true')
+    console.table(_Locations)
+
+    console.log('total ' + _Units.length + ' logical sensors live while ' + _OnlineUnitsCounter + ' sensors online') // sum up
+
+    _Units = _Units.filter(item => item.gwOnline == 'true')
+    console.table(_Units)
+
+
+    // //list all online physical sensors
+    // for (let j = 0; j < _Units.length; j++) {
+    //     if (_Units[j].lifeCycleState == 'present')
+    //         console.log(_Units[j].did + ' in ' + _Units[j].locationId);
+    // }
+
+    // //list all online logical  sensors
+    // for (let j = 0; j < _Units.length; j++) {
+    //     if (_Units[j].lifeCycleState == 'subUnit' && _Units[j].isChassis == false)
+    //         console.log(_Units[j].did + ' as a ' + _Units[j].type + ' in ' + _Units[j].locationId);
+    // }
+
+    // _Units.forEach(function (x, i, a) {
+    //     if (a[1].lifeCycleState == 'subUnit' && a[i].isChassis == false) console.log(_Units[key1].did + ' as a ' + _Units[key1].type + ' in ' + _Units[key1].locationId);
+
+    // });
+    // t = new Date().getTime()
+    // timestamp = new Date()
+    // timestamp.setTime(t)
+    // console.log(timestamp.toLocaleTimeString() + 'ok!')
+    // clearTimeout(TimeoutId)
+    process.exit()
+}
+
+beginPOLL() c(
+    '   ' +
+    _Counter + _t2.toLocaleTimeString() +
+    '# EndofDTO ' +
+    json.list[0].dataSourceAddress.did +
+    ' ' +
+    json.list[0].list[0].sample.assetState.name
+)
+}
+break
+default:
+c(' !!!!  ' + _Counter + ' Unknown eventtype: ' + json.list[0].eventType.name)
+break
+}
+}
+break
+case 'EventDTO':
+    {
+        // var _tempeventObj
+        switch (json.list[0].eventType.name) { // json.list[0]json.list[0].eventType.name
+            case 'newUnAcceptedDeviceSeenByDiscovery':
+            case 'physicalDeviceIsNowUP':
+            case 'physicalDeviceIsNowDOWN':
+            case 'remoteLocationGatewayIsNowDOWN':
+            case 'remoteLocationGatewayIsNowUP':
+            case 'unitConfigurationChanged':
+            case 'locationChanged':
+                //  c(json.list[0].list[0].locationAddress.serverDid + ' 2  ' + json.list[0].list[0].locationAddress.locationId)
+                //   eventObj.did = json.list[0].list[0].locationAddress.serverDid
+                //  eventObj.locationId = json.list[0].list[0].locationAddress.locationId
+                try { c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name + ' in ' + json.locationId) } catch {
+                    console.log(error)
+                    console.log(JSON.stringify(json))
+
+                }
+                // json.list[0].unitAddress.did
+                break
+            default:
+                c(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)
+                break
+        }
+    }
+    break
+default:
+    c(' !!!!  ' + _Counter + 'OTHER DATA?  ' + JSON.stringify(json))
+break
+}
+}
+}
+})
 
     connection.on('error', function(error) {
         c(' --- Connection Error: reconnect in 5 sec --' + error.toString())
@@ -481,4 +485,4 @@ client.on('connect', function(connection) {
         // console.log('    periodic request send (%s)', heartbeatFlag)
         heartbeatFlag++
     }
-})
+    })

@@ -87,5 +87,5 @@ for uid in dic.keys():
         res[uid][gap] = count
 
 for i in res.keys():
-    temp = set(res[i].values())
+    temp = list(res[i].values())
     print(temp)
