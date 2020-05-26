@@ -1,41 +1,51 @@
-// 列出所有的Location已经其下的传感器;可能需要几分钟才能收全,适合于单个项目内多个网关数据的收集
-var WebSocketClient = require('websocket').client
+/* 从多个网关获得一段时间的记录:motion\asset\传感器,记录到JSON文件
+目前是单线程
+实现了数据请求队列
+实现了数据请求总数校验
+对网络情况无法继续的,必须重新开始,没有断点续传
+*/
+const WebSocketClient = require('websocket').client;
 const fs = require('fs')
 
-var cirrusAPIendpoint = 'cirrus20.yanzi.se'
-var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Ft@Sugarcube99'
-    // const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
-const locationIds = ['114190', '996052', '912706'] // 华为
+const cirrusAPIendpoint = 'cirrus20.yanzi.se';
+const username = 'frank.shen@pinyuaninfo.com';
+const password = 'Ft@Sugarcube99';
+const dataType = 'Motion'
+
+
+// 要修改项
+
+const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
     // const locationIds = ['185308', '329312', '434888', '447224', '507828', '60358', '608739', '652990', '668617', '83561', '88252', '938433'] // AZ
+    // const locationIds = ['114190', '996052', '912706'] // 华为
+const startDate = '2020/05/24/00:00:00'
+const endDate = '2020/05/25/00:00:00'
 
 const windowLimit = 10 // 大量数据时,建立接收windows
 const reportPeriod = 3600000 * 8 * 3 // 最小的请求数据的长度,单个数据请求不能大于2000,可以根据网络情况优化
     // const _24Hour = 86400000
-const startDate = '2020/05/11/00:00:00'
-const endDate = '2020/05/25/00:00:00'
-var TimeoutId = setTimeout(doReport, 30000) // 数据超时
+let TimeoutId = setTimeout(doReport, 30000); // 数据超时
 
 // for (let lc = 0; lc < locationIds.length; lc++) {}
-const dataFile = fs.createWriteStream('../log/' + locationIds[0] + '_x_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '.json', { encoding: 'utf8' })
+const dataFile = fs.createWriteStream(`../log/${locationIds[0]}_x_${startDate.replace(/[/:]/gi, '_')}_${endDate.replace(/[/:]/gi, '_')}${dataType}.json`, { encoding: 'utf8' })
 
 dataFile.on('finish',
     function() { process.exit() })
 dataFile.on('destroy',
         function() { process.exit() })
     // For log use only
-var _Counter = 0 // message counter
-var _requestCount = 0
-var _responseCount = 0
-var _windowSize = 0
-var _listCount = 0
-var _Units = []
+let _Counter = 0 // message counter
+let _requestCount = 0
+let _responseCount = 0
+let _windowSize = 0
+let _listCount = 0
+let _Units = []
 
-var messageQueue = new Queue()
+let messageQueue = new Queue()
 
-var client = new WebSocketClient()
+let client = new WebSocketClient()
 
-var unitObj = {
+let unitObj = {
     did: '',
     locationId: '',
     serverDid: '',
@@ -47,7 +57,7 @@ var unitObj = {
     type: ''
 
 }
-var c = console.log
+let c = console.log
 
 function Queue() {
     this.dataStore = []
@@ -77,8 +87,8 @@ function tail() {
 }
 
 function toString() {
-    var retStr = ''
-    for (var i = 0; i < this.dataStore.length; ++i) {
+    let retStr = ''
+    for (let i = 0; i < this.dataStore.length; ++i) {
         retStr += this.dataStore[i] + '\n'
     }
     return retStr
@@ -105,13 +115,13 @@ client.on('connect', function(connection) {
     // Handle messages
     connection.on('message', function(message) {
         clearTimeout(TimeoutId)
-            // TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
+        TimeoutId = setTimeout(doReport, 30000) // exit after 10 seconds idle
             // c('timer reset  ')
 
         if (message.type === 'utf8') {
-            var json = JSON.parse(message.utf8Data)
-            var t = new Date().getTime()
-            var timestamp = new Date()
+            let json = JSON.parse(message.utf8Data)
+            let t = new Date().getTime()
+            let timestamp = new Date()
             timestamp.setTime(t)
             _Counter = _Counter + 1 // counter of all received packets
 
@@ -154,7 +164,7 @@ client.on('connect', function(connection) {
                     if (json.responseCode.name === 'success') {
                         // c(JSON.stringify(json) + '\n\n');
 
-                        var _tempunitObj
+                        let _tempunitObj
 
                         c('seeing ' + json.list.length + ' sensors in  ' + json.locationAddress.locationId)
                         for (let index = 0; index < json.list.length; index++) { // process each response packet
@@ -177,7 +187,7 @@ client.on('connect', function(connection) {
                                 _Units.push(_tempunitObj)
                                     // request history record
                                     // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
-                                if (unitObj.did.indexOf('Motion') >= 0) { sendGetSamplesRequest(unitObj.locationId, unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
+                                if (unitObj.did.indexOf(dataType) >= 0) { sendGetSamplesRequest(unitObj.locationId, unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
                                 // UUID or Motion
                             };
                         }
@@ -189,9 +199,6 @@ client.on('connect', function(connection) {
 
                     break
                 case 'PeriodicResponse':
-                    // setTimeout(sendPeriodicRequest, 60000)
-                    // c(_Counter + '# ' + "periodic response-keepalive");
-                    break
                 case 'SubscribeResponse':
                 case 'SubscribeData':
                 default:
@@ -217,7 +224,7 @@ client.on('connect', function(connection) {
             return null
         }
         if (timeEndmili - timeStartmili >= reportPeriod) {
-            var request = {
+            let request = {
                     messageType: 'GetSamplesRequest',
                     dataSourceAddress: {
                         resourceType: 'DataSourceAddress',
@@ -283,7 +290,7 @@ client.on('connect', function(connection) {
     function sendMessage(message) {
         if (connection.connected) {
             // Create the text to be sent
-            var json = JSON.stringify(message, null, 1)
+            let json = JSON.stringify(message, null, 1)
                 //    c('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
@@ -292,7 +299,7 @@ client.on('connect', function(connection) {
     }
 
     function sendServiceRequest() {
-        var request = {
+        let request = {
             messageType: 'ServiceRequest',
             clientId: 'client-fangtang'
 
@@ -301,7 +308,7 @@ client.on('connect', function(connection) {
     }
 
     function sendLoginRequest() {
-        var request = {
+        let request = {
             messageType: 'LoginRequest',
             username: username,
             password: password
@@ -310,8 +317,8 @@ client.on('connect', function(connection) {
     }
 
     function sendGetUnitsRequest(locationID) {
-        var now = new Date().getTime()
-        var request = {
+        let now = new Date().getTime()
+        let request = {
 
             messageType: 'GetUnitsRequest',
             timeSent: now,
@@ -336,8 +343,8 @@ function doReport() {
         dataFile.destroy()
             // process.exit()
     }
-    var t = new Date().getTime()
-    var timestamp = new Date()
+    let t = new Date().getTime()
+    let timestamp = new Date()
     timestamp.setTime(t)
     dataFile.end()
     c('Reporting：send ' + _requestCount + ' recvd ' + _responseCount + ', covering ' + _listCount + ' lists')
