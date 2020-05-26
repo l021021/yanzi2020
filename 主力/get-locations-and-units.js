@@ -3,12 +3,12 @@
 const WebSocketClient = require('websocket').client
 const cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
-// var username = 'frank.shen@pinyuaninfo.com'
-// var password = 'Ft@Sugarcube99'
-// var username = "653498331@qq.com";
-// var password = "000000";
-const username = 'de1999@vip.qq.com'
-const password = '23456789'
+var username = 'frank.shen@pinyuaninfo.com'
+var password = 'Ft@Sugarcube99'
+    // var username = "653498331@qq.com";
+    // var password = "000000";
+    // const username = 'de1999@vip.qq.com'
+    // const password = '23456789'
 
 // ################################################
 
@@ -19,20 +19,20 @@ var _UnitsCounter = 0
 
 const _Locations = new Set()
 const _Units = []
-let TimeoutId = setTimeout(doReport, 10000) // wait for 5 sec before exit
+let TimeoutId = setTimeout(doReport, 30000) // wait for 5 sec before exit
     // Create a web socket client initialized with the options as above
 const client = new WebSocketClient()
 
 // All Objs definition
 const locationObj = {
     locationId: '123456',
-    serverDid: 'EUI64-0090DAFFFF0040A9',
+    // serverDid: 'EUI64-0090DAFFFF0040A9',
     accountId: '262468578',
     name: 'Beach House',
     gwdid: 'EUI64-12411261342',
-    units: 0,
-    Allunits: 0,
-    Onlineunits: 0,
+    // units: 0,
+    // Allunits: 0,
+    // Onlineunits: 0,
     gwOnline: false
         // "activityLevel": "medium"
 }
@@ -40,11 +40,11 @@ const locationObj = {
 const unitObj = {
     did: '',
     locationId: '',
-    serverDid: '',
-    productType: '',
+    // serverDid: '',
+    // productType: '',
     lifeCycleState: '',
     isChassis: '',
-    chassisDid: '',
+    // chassisDid: '',
     nameSetByUser: '',
     type: ''
 }
@@ -62,7 +62,7 @@ client.on('connect', function(connection) {
     // Handle messages
     connection.on('message', function(message) {
         clearTimeout(TimeoutId)
-        TimeoutId = setTimeout(doReport, 10000) // exit after 10 seconds idle
+        TimeoutId = setTimeout(doReport, 30000) // exit after 10 seconds idle
             // console.log('timer reset  ')
 
         if (message.type === 'utf8') {
@@ -117,7 +117,7 @@ client.on('connect', function(connection) {
                                 // if (!_locationExist) {
                                 locationObj.locationId =
                                     json.list[i].locationAddress.locationId
-                                locationObj.serverDid = json.list[i].locationAddress.serverDid
+                                    // locationObj.serverDid = json.list[i].locationAddress.serverDid
                                 locationObj.accountId = json.list[i].accountId
                                 locationObj.name = json.list[i].name
                                 locationObj.gwdid = json.list[i].gwdid
@@ -145,26 +145,26 @@ client.on('connect', function(connection) {
                         console.log(
                             `seeing ${json.list.length} devices in  ${json.locationAddress.locationId}`
                         )
-                        for (let index = 0; index < json.list.length; index++) {
+                        for (let iList = 0; iList < json.list.length; iList++) {
                             // process each response packet
                             if (
-                                json.list[index].unitTypeFixed.name === 'gateway' ||
-                                json.list[index].unitAddress.did.indexOf('AP') !== -1
+                                json.list[iList].unitTypeFixed.name === 'gateway' ||
+                                json.list[iList].unitAddress.did.indexOf('AP') !== -1
                             ) {
                                 // console.log(json.list[index].unitAddress.did);
                                 // console.log('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
                             } else {
                                 // record all sensors
-                                unitObj.did = json.list[index].unitAddress.did //
+                                unitObj.did = json.list[iList].unitAddress.did //
                                 unitObj.locationId = json.locationAddress.locationId
-                                unitObj.chassisDid = json.list[index].chassisDid
-                                unitObj.productType = json.list[index].productType
-                                unitObj.lifeCycleState = json.list[index].lifeCycleState.name
-                                unitObj.isChassis = json.list[index].isChassis
-                                unitObj.nameSetByUser = json.list[index].nameSetByUser
-                                unitObj.serverDid = json.list[index].unitAddress.serverDid
+                                    // unitObj.chassisDid = json.list[index].chassisDid
+                                    // unitObj.productType = json.list[index].productType
+                                unitObj.lifeCycleState = json.list[iList].lifeCycleState.name
+                                unitObj.isChassis = json.list[iList].isChassis
+                                unitObj.nameSetByUser = json.list[iList].nameSetByUser
+                                    // unitObj.serverDid = json.list[index].unitAddress.serverDid
 
-                                unitObj.type = json.list[index].unitTypeFixed.name
+                                unitObj.type = json.list[iList].unitTypeFixed.name
 
                                 if (unitObj.isChassis === true) {
                                     console.log(unitObj.did);
@@ -173,10 +173,9 @@ client.on('connect', function(connection) {
                                     _Units.push(_tempunitObj)
                                     _UnitsCounter++
                                 }
-                                // console.log(_UnitsCounter + '# ' + JSON.stringify(_tempunitObj))
-                                // if (json.list[index].lifeCycleState.name === 'present') {
-                                //     _OnlineUnitsCounter++
-                                // }
+                                if (json.list[iList].lifeCycleState.name === 'present') {
+                                    _OnlineUnitsCounter++
+                                }
                             }
                         }
 
@@ -299,15 +298,9 @@ function doReport() {
 
     // _Locations = _Locations.filter(item => item.lifeCycleState == "present")
 
-    console.table(_Units.filter((item) => item.type === 'remoteGateway'))
+    console.table(locationArray)
         // _Locations[0].gwOnline
-    console.log(
-            'total ' +
-            _Units.length +
-            ' logical sensors live while ' +
-            _OnlineUnitsCounter +
-            ' sensors online'
-        ) // sum up
+    console.log(`total ${_Units.length} sensors configured while ${_OnlineUnitsCounter} sensors online`) // sum up
 
     // _Units = _Units.filter(item => item.lifeCycleState == "present") //_Units[0].lifeCycleState
     console.table(_Units.filter((item) => item.type !== 'remoteGateway'))
