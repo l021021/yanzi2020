@@ -1,26 +1,9 @@
 var GeoJSON = require('geojson')
 var FS = require('fs')
 
-/*
-"features": [{
-        "type": "Feature",
-        "id": "5b3eb346-e2ee-4cf4-a5e5-a0cbdc2030ef",
-        "geometry": {
-            "type": "Polygon",
-            "coordinates": [
-                [
-                    [17.947451327758234, 59.40185741053596],
-                    [17.947451327758234, 59.40186602537953],
-                    [17.947420867314896, 59.40186602537953],
-                    [17.947420867314896, 59.40185741053596],
-                    [17.947451327758234, 59.40185741053596]
-                ]
-            ]
-        },
-        "properties": { "type": "area.room", "name": "061", "grossarea": 2, "netarea": 1.7 }
-    },
+let jsonData = JSON.parse(FS.readFileSync('.//json//geojson.json', 'utf8'))
 
-    */
+console.log(jsonData)
 
 var singleobject = [{
         type: "area.floor",

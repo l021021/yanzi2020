@@ -1,33 +1,33 @@
 const WebSocketClient = require('websocket').client
 const cirrusAPIendpoint = 'cirrus20.yanzi.se'
-var sessionId
-var heartbeatFlag = 0
+let sessionId;
+let heartbeatFlag = 0;
 
-// var username = 'frank.shen@pinyuaninfo.com'
-// var password = 'Ft@Sugarcube99'
-// var username = '653498331@qq.com'
-// var password = '000000'
-var username = 'de1999@vip.qq.com'
-var password = '23456789'
+const username = 'frank.shen@pinyuaninfo.com';
+const password = 'Ft@Sugarcube99';
+// let username = '653498331@qq.com'
+// let password = '000000'
+// let username = 'de1999@vip.qq.com'
+// let password = '23456789'
 const filter = '' //filter for console
 
 // const typeofSubs =   
 const typeofSubs = ['lifecircle', 'config', 'occupancy', 'battery']
 
-var _logLimit = 50000 // will exit when this number of messages has been logged
+let _logLimit = 50000; // will exit when this number of messages has been logged
 
 
-var _Counter = 0 // message counter
-var sensorArray = []
-var motionTimeStamps = []
-var assetTimeStamps1;
-var assetTimeStamps2;
-var assetTimeStamps3 = []
-var _Locations = []
-var _t1 = new Date()
-var _t2 = new Date()
-var _t3 = new Date()
-var _recordObj = {
+let _Counter = 0; // message counter
+let sensorArray = [];
+let motionTimeStamps = [];
+let assetTimeStamps1;
+let assetTimeStamps2;
+let assetTimeStamps3 = []
+let _Locations = []
+let _t1 = new Date()
+let _t2 = new Date()
+let _t3 = new Date()
+let _recordObj = {
     type: '',
     Did: '',
     timeStamp: '',
@@ -44,7 +44,7 @@ function c(data) {
     }
 }
 
-var client = new WebSocketClient()
+let client = new WebSocketClient()
 
 // Program body
 function startConnect() {
@@ -67,9 +67,9 @@ client.on('connect', function(connection) {
     // Handle messages
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            var json = JSON.parse(message.utf8Data)
-            var t = new Date().getTime()
-            var timestamp = new Date()
+            let json = JSON.parse(message.utf8Data)
+            let t = new Date().getTime()
+            let timestamp = new Date()
             timestamp.setTime(t)
             _Counter++ // counter of all received packets
 
@@ -102,7 +102,7 @@ client.on('connect', function(connection) {
                         // setTimeout(sendGetLocationsRequest, 60 * 1000 * 60)
                         // UPDATE location IDs
                         if (json.list.length !== 0) {
-                            for (var i = 0; i < json.list.length; i++) {
+                            for (let i = 0; i < json.list.length; i++) {
                                 if (_Locations.indexOf(json.list[i].locationAddress.locationId) < 0) {
                                     _Locations[json.list[i].locationAddress.locationId] = json.list[i].name
                                         // c(json.list[i].locationAddress.locationId)
@@ -127,11 +127,6 @@ client.on('connect', function(connection) {
                 case 'GetUnitsResponse':
                     break
                 case 'SubscribeResponse':
-                    // const expireTime = json.expireTime
-                    // let timeOut=setTimeout(sendGetLocationsRequest, json.expireTime - now - 600000)
-
-                    // _t1.setTime(json.expireTime)
-                    // console.log(                            'Susbscribe expire in (min)： ' + (json.expireTime - t) / 60000                        ) // 100min
                     break
                 case 'SubscribeData':
                     _t2.setTime(json.timeSent)
@@ -146,8 +141,8 @@ client.on('connect', function(connection) {
 
                                         // algorithm based on SampleMotion；
                                         const temp1 = sensorArray[json.list[0].dataSourceAddress.did] || 0 // json.list[0].dataSourceAddress.did
-                                        var temprecordObj
-                                        var motionFlag = ' ?? ' // update new value
+                                        let temprecordObj
+                                        let motionFlag = ' ?? ' // update new value
                                         _recordObj.type = 'samplemotion'
                                         _recordObj.Did = json.list[0].dataSourceAddress.did // json.list[0].dataSourceAddress.did
                                         _recordObj.timeStamp = _t1.getTime()
@@ -191,10 +186,10 @@ client.on('connect', function(connection) {
                                     {
                                         _t3.setTime(json.list[0].list[0].sampleTime)
                                         // eslint-disable-next-line no-redeclare
-                                        var motionFlag = ' ? ' // update new value
+                                        let motionFlag = ' ? ' // update new value
                                             // eslint-disable-next-line no-redeclare
-                                        var temprecordObj
-                                            // var motionFlag = ' ?? '; //update new value
+                                        let temprecordObj
+                                            // let motionFlag = ' ?? '; //update new value
                                         _recordObj.type = 'sampleAsset'
                                         _recordObj.Did = json.list[0].dataSourceAddress.did
                                         _recordObj.timeStamp = _t1.getTime()
@@ -317,7 +312,7 @@ client.on('connect', function(connection) {
                                     // 环境参数
                                     _t2.setTime(json.timeSent)
                                         // if json.list[0].list[0].resourceType ==
-                                    c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].value + ' in ' + json.locationId)
+                                    c(`   ${_Counter}# ${_t2.toLocaleTimeString()} ${json.list[0].list[0].resourceType} ${json.list[0].dataSourceAddress.did} ${json.list[0].list[0].value} ${json.list[0].list[0].percentFull} in ${json.locationId}`)
                                     break
                             }
                             break
@@ -358,7 +353,7 @@ client.on('connect', function(connection) {
                             break
                         case 'EventDTO':
                             {
-                                // var _tempeventObj
+                                // let _tempeventObj
                                 switch (json.list[0].eventType.name) { // json.list[0]json.list[0].eventType.name
                                     case 'newUnAcceptedDeviceSeenByDiscovery':
                                     case 'physicalDeviceIsNowUP':
@@ -404,7 +399,7 @@ client.on('connect', function(connection) {
 
     function sendMessage(message) {
         if (connection.connected) {
-            var json = JSON.stringify(message, null, 1)
+            let json = JSON.stringify(message, null, 1)
             json.sessionId = sessionId
             connection.sendUTF(json)
         } else {
@@ -413,7 +408,7 @@ client.on('connect', function(connection) {
     }
 
     function sendServiceRequest() {
-        var request = {
+        let request = {
             messageType: 'ServiceRequest',
             clientId: 'client-fangtang'
 
@@ -422,7 +417,7 @@ client.on('connect', function(connection) {
     }
 
     function sendLoginRequest() {
-        var request = {
+        let request = {
             messageType: 'LoginRequest',
             username: username,
             password: password
@@ -431,8 +426,8 @@ client.on('connect', function(connection) {
     }
 
     function sendGetLocationsRequest() {
-        var now = new Date().getTime()
-        var request = {
+        let now = new Date().getTime()
+        let request = {
             messageType: 'GetLocationsRequest',
             timeSent: now
         }
@@ -463,8 +458,8 @@ client.on('connect', function(connection) {
     }
 
     function sendPeriodicRequest() {
-        var now = new Date().getTime()
-        var request = {
+        let now = new Date().getTime()
+        let request = {
             messageType: 'PeriodicRequest',
             timeSent: now
         }
