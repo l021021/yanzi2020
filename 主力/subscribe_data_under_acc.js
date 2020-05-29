@@ -1,33 +1,34 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-lone-blocks */
 const WebSocketClient = require('websocket').client
 const cirrusAPIendpoint = 'cirrus20.yanzi.se'
-let sessionId;
-let heartbeatFlag = 0;
+let sessionId
+let heartbeatFlag = 0
 
-const username = 'frank.shen@pinyuaninfo.com';
-const password = 'Ft@Sugarcube99';
+const username = 'frank.shen@pinyuaninfo.com'
+const password = 'Ft@Sugarcube99'
 // let username = '653498331@qq.com'
 // let password = '000000'
 // let username = 'de1999@vip.qq.com'
 // let password = '23456789'
-const filter = '' //filter for console
+const filter = '' // filter for console
 
-// const typeofSubs =   
+// const typeofSubs =
 const typeofSubs = ['lifecircle', 'config', 'occupancy', 'battery']
 
-let _logLimit = 50000; // will exit when this number of messages has been logged
+const _logLimit = 50000 // will exit when this number of messages has been logged
 
-
-let _Counter = 0; // message counter
-let sensorArray = [];
-let motionTimeStamps = [];
-let assetTimeStamps1;
-let assetTimeStamps2;
-let assetTimeStamps3 = []
-let _Locations = []
-let _t1 = new Date()
-let _t2 = new Date()
-let _t3 = new Date()
-let _recordObj = {
+let _Counter = 0 // message counter
+const sensorArray = []
+const motionTimeStamps = []
+// let assetTimeStamps1
+// let assetTimeStamps2
+const assetTimeStamps3 = []
+const _Locations = []
+const _t1 = new Date()
+const _t2 = new Date()
+const _t3 = new Date()
+const _recordObj = {
     type: '',
     Did: '',
     timeStamp: '',
@@ -44,7 +45,7 @@ function c(data) {
     }
 }
 
-let client = new WebSocketClient()
+const client = new WebSocketClient()
 
 // Program body
 function startConnect() {
@@ -67,9 +68,9 @@ client.on('connect', function(connection) {
     // Handle messages
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            let json = JSON.parse(message.utf8Data)
-            let t = new Date().getTime()
-            let timestamp = new Date()
+            const json = JSON.parse(message.utf8Data)
+            const t = new Date().getTime()
+            const timestamp = new Date()
             timestamp.setTime(t)
             _Counter++ // counter of all received packets
 
@@ -186,7 +187,7 @@ client.on('connect', function(connection) {
                                     {
                                         _t3.setTime(json.list[0].list[0].sampleTime)
                                         // eslint-disable-next-line no-redeclare
-                                        let motionFlag = ' ? ' // update new value
+                                        const motionFlag = ' ? ' // update new value
                                             // eslint-disable-next-line no-redeclare
                                         let temprecordObj
                                             // let motionFlag = ' ?? '; //update new value
@@ -270,40 +271,22 @@ client.on('connect', function(connection) {
                                     {
                                         _t3.setTime(json.list[0].list[0].sampleTime)
                                         c(
-                                            '   ' +
-                                            _Counter +
-                                            '# ' +
-                                            _t2.toLocaleTimeString() +
-                                            ' SampleUtilization ' +
-                                            json.list[0].dataSourceAddress.did +
-                                            // ' @ ' +
-                                            // _t3.toLocaleTimeString() +
-                                            ' free:' +
-                                            json.list[0].list[0].free +
-                                            ' occupied:' +
-                                            json.list[0].list[0].occupied + ' in ' + json.locationId
+                                            `   ${_Counter}# ${_t2.toLocaleTimeString()} SampleUtilization ${json.list[0].dataSourceAddress.did} free:${json.list[0].list[0].free} occupied:${json.list[0].list[0].occupied} in ${json.locationId}`
                                         )
-                                        assetTimeStamps3 +=
-                                        _t2.toLocaleTimeString() +
-                                        ' AsstUT ' +
-                                        json.list[0].dataSourceAddress.did +
-                                        ' free:' +
-                                        json.list[0].list[0].free +
-                                        ' occupied:' +
-                                        json.list[0].list[0].occupied + ' in ' + json.locationId +
-                                        '\n'
+                                        // assetTimeStamps3 +=
+                                        // _t2.toLocaleTimeString() +
+                                        // ' AsstUT ' +
+                                        // json.list[0].dataSourceAddress.did +
+                                        // ' free:' +
+                                        // json.list[0].list[0].free +
+                                        // ' occupied:' +
+                                        // json.list[0].list[0].occupied + ' in ' + json.locationId +
+                                        // '\n'
                                     }
                                     break
                                 case 'SampleUpState':
                                     {
-                                        c('   ' +
-                                            _Counter +
-                                            '# ' +
-                                            _t2.toLocaleTimeString() +
-                                            ' SampleUpState ' +
-                                            json.list[0].dataSourceAddress.did +
-                                            ' ' +
-                                            json.list[0].list[0].deviceUpState.name + ' in ' + json.locationId
+                                        c(`   ${_Counter}# ${_t2.toLocaleTimeString()} SampleUpState ${json.list[0].dataSourceAddress.did} ${json.list[0].list[0].deviceUpState.name} in ${json.locationId}`
                                         )
                                         // c(JSON.stringify(json));
                                     }
@@ -362,16 +345,11 @@ client.on('connect', function(connection) {
                                     case 'remoteLocationGatewayIsNowUP':
                                     case 'unitConfigurationChanged':
                                     case 'locationChanged':
-                                        //  c(json.list[0].list[0].locationAddress.serverDid + ' 2  ' + json.list[0].list[0].locationAddress.locationId)
-                                        //   eventObj.did = json.list[0].list[0].locationAddress.serverDid
-                                        //  eventObj.locationId = json.list[0].list[0].locationAddress.locationId
-                                        try { c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + json.list[0].unitAddress.did + ' ' + json.list[0].eventType.name + ' in ' + json.locationId) } catch {
+                                        try { c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + /* json.list[0].unitAddress.did || '' */ +' ' + json.list[0].eventType.name + ' in ' + json.locationId) } catch (error) {
                                             console.log(error)
                                             console.log(JSON.stringify(json))
-
                                         }
-                                        // json.list[0].unitAddress.did
-                                        break
+                                              break
                                     default:
                                         c(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)
                                         break
@@ -399,7 +377,7 @@ client.on('connect', function(connection) {
 
     function sendMessage(message) {
         if (connection.connected) {
-            let json = JSON.stringify(message, null, 1)
+            const json = JSON.stringify(message, null, 1)
             json.sessionId = sessionId
             connection.sendUTF(json)
         } else {
@@ -408,7 +386,7 @@ client.on('connect', function(connection) {
     }
 
     function sendServiceRequest() {
-        let request = {
+        const request = {
             messageType: 'ServiceRequest',
             clientId: 'client-fangtang'
 
@@ -417,7 +395,7 @@ client.on('connect', function(connection) {
     }
 
     function sendLoginRequest() {
-        let request = {
+        const request = {
             messageType: 'LoginRequest',
             username: username,
             password: password
@@ -426,8 +404,8 @@ client.on('connect', function(connection) {
     }
 
     function sendGetLocationsRequest() {
-        let now = new Date().getTime()
-        let request = {
+        const now = new Date().getTime()
+        const request = {
             messageType: 'GetLocationsRequest',
             timeSent: now
         }
@@ -458,8 +436,8 @@ client.on('connect', function(connection) {
     }
 
     function sendPeriodicRequest() {
-        let now = new Date().getTime()
-        let request = {
+        const now = new Date().getTime()
+        const request = {
             messageType: 'PeriodicRequest',
             timeSent: now
         }
