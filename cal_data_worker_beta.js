@@ -1,6 +1,6 @@
 /* 数据转换通用模块*/
 
-const FS = require("fs");
+import { readFileSync, createWriteStream } from "fs";
 
 const locationId = process.argv[2];
 const startDate = process.argv[3];
@@ -18,10 +18,10 @@ const filename =
     endDate.replace(/[/:]/gi, "_") +
     "_" +
     EUorUU;
-var str = FS.readFileSync(filename + ".json", {
+var str = readFileSync(filename + ".json", {
     encoding: "utf8"
 });
-const CSVFile = FS.createWriteStream(filename + "_" + interval + "M.csv", {
+const CSVFile = createWriteStream(filename + "_" + interval + "M.csv", {
     encoding: "utf8",
 });
 // var str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })

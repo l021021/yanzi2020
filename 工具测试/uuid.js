@@ -1,4 +1,5 @@
-UUID.create(4); // Generate V4 UUID
+const UUID = require('uuid-js')
+console.log(UUID.create(4)); // Generate V4 UUID
 
 UUID.create(1); // Generate V1 TimeUUID
 
