@@ -29,15 +29,15 @@ var recordObj = {
     value: ''
 }
 
-var filename = 'C:\\Users\\bruce\\OneDrive - 上海方糖智能科技有限公司\\FTBI\\AZ\\April\\185308_x_2020_04_01_00_00_00_2020_04_30_20_59_59' // 历史记录文件
-const startDate = '2020/04/01/00:00:00' // 开始时间
-const endDate = '2020/04/30/23:59:59' // 结束时间
+var filename = 'C:\\codebase\\log\\185308_2020_05_20_00_00_00_2020_05_22_00_00_00_Motion' // 历史记录文件
+const startDate = '2020/05/20/00:00:00' // 开始时间
+const endDate = '2020/05/22/23:59:59' // 结束时间
 
 var t1 = new Date()
 var t2 = new Date()
 var t1m = new Date()
 var t2m = new Date()
-var interval = 30 // 间隔时间(分)
+var interval = 10 // 间隔时间(分)
 
 var t0 = new Date()
 var timeArray = []

@@ -6,11 +6,20 @@ var client = new WebSocketClient()
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-const c = console.log
+const filter = 'Reporting' // 过滤不必要日志
 
-c('--- Get data Worker working with:')
+function c(data) {
+    if ((data.indexOf(filter) >= 0) && (filter.length !== '')) {
+        try {
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+}
+console.log('--- Get data Worker working with:')
 process.argv.forEach((val, index) => {
-    c(`${index}: ${val}`);
+    console.log(`${index}: ${val}`);
 });
 
 const locationId = process.argv[2]
@@ -236,7 +245,7 @@ client.on('connect', function(connection) {
         }
         sendMessage(request)
 
-        console.log(' ---  periodic request send (%s)', heartbeatFlag)
+        c(' ---  periodic request send (%s)', heartbeatFlag)
         heartbeatFlag++
     }
 

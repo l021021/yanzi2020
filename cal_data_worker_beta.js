@@ -1,35 +1,42 @@
 /* 数据转换通用模块*/
 
-import { readFileSync, createWriteStream } from "fs";
+const FS = require("fs")
 
-const locationId = process.argv[2];
-const startDate = process.argv[3];
-const endDate = process.argv[4];
-const EUorUU = process.argv[5];
-var interval = process.argv[6];
-const c = console.log;
+// const locationId = process.argv[2]
+// const startDate = process.argv[3];
+// const endDate = process.argv[4];
+// const EUorUU = process.argv[5];
+// var interval = process.argv[6];
+const locationId = '185308'
+const startDate = '2020/05/20/00:00:00'
+const endDate = '2020/05/22/00:00:00'
+const EUorUU = 'Motion'
+var interval = 10
+const filter = ''
 
+function c(data) {
+    if ((data.indexOf(filter) >= 0) && (filter.length !== '')) {
+        try {
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+}
 const filename =
-    "../log/" +
-    locationId +
-    "_" +
-    startDate.replace(/[/:]/gi, "_") +
-    "_" +
-    endDate.replace(/[/:]/gi, "_") +
-    "_" +
-    EUorUU;
-var str = readFileSync(filename + ".json", {
+    `../log/${locationId}_${startDate.replace(/[/:]/gi, "_")}_${endDate.replace(/[/:]/gi, "_")}_${EUorUU}`;
+var str = FS.readFileSync(filename + ".json", {
     encoding: "utf8"
 });
-const CSVFile = createWriteStream(filename + "_" + interval + "M.csv", {
+const CSVFile = FS.createWriteStream(filename + "_" + interval + "M.csv", {
     encoding: "utf8",
 });
 // var str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })
 // const CSVFile = FS.createWriteStream(filename + '_' + grid + 'M.csv', { encoding: 'utf8' })
 
-c("--- Cal data worker working with:");
+console.log("--- Cal data worker working with:");
 process.argv.forEach((val, index) => {
-    c(`${index}: ${val}`);
+    console.log(`${index}: ${val}`);
 });
 
 var grid = interval; // 间隔时间(分)
@@ -61,12 +68,13 @@ var occuRecobj = {
 let _tempMotionObj;
 let _tempOccuobj;
 
-var recordsofSensor = [];
+let recordsofSensor = [];
 
 // var minDiff
-var t1toNextgrid, prevgridTot2, diffofGrid;
+let t1toNextgrid, prevgridTot2 //秒数
+let diffofGrid; // 格子差
 
-var _lastValue = -1;
+let _lastValue = -1;
 
 // 读取文件发生错误事件
 // CSVFile.on('error', (err) => {
@@ -220,14 +228,11 @@ for (let iDID = 0; iDID < unitsArray.length; iDID++) {
                     motionRecordobj.value = "in";
                     let temprecordObj = JSON.parse(JSON.stringify(motionRecordobj));
                     recordsofSensor.push(temprecordObj);
-                } else if (_lastValue === records2D[unitsArray[iDID]][iRec].value) {
+                } else {
                     // Value unchanged!
                     motionRecordobj.value = "ot";
                     let temprecordObj = JSON.parse(JSON.stringify(motionRecordobj));
                     recordsofSensor.push(temprecordObj);
-                } else {
-                    // do not write to recordarray
-                    c("        Sensor first seen, cannot tell");
                 }
             } else {
                 //空缺数据处理
@@ -290,12 +295,13 @@ for (let iDID = 0; iDID < unitsArray.length; iDID++) {
             " -  " +
             t2.toLocaleString()
         );
-
-        diffofGrid = Math.floor((t2m - t1m - 1) / (grid * 60 * 1000)); // 两次数据之间整格子差
+        //TODO
+        // diffofGrid = Math.floor((t2m - t1m - 1) / (grid * 60 * 1000)); // 两次数据之间整格子差
+        diffofGrid = Math.floor((t2m - t1m) / (grid * 60 * 1000)); // 两次数据之间整格子差
         t1toNextgrid =
             60 * grid -
             t1s.getSeconds() -
-            (t1s.getMinutes() % grid === 0 && t1s.getSeconds() === 0 ?
+            (t1s.getMinutes() % grid === 0 && t1s.getSeconds() === 0 ? //判断是否和格子重合
                 grid :
                 t1s.getMinutes() % grid) *
             60; // t1到下一个格子的秒数.例如 16:14:06,格子为30 min,  则 =1800-6-840

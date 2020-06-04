@@ -7,11 +7,11 @@ let heartbeatFlag = 0
 
 const username = 'frank.shen@pinyuaninfo.com'
 const password = 'Ft@Sugarcube99'
-// let username = '653498331@qq.com'
-// let password = '000000'
-// let username = 'de1999@vip.qq.com'
-// let password = '23456789'
-const filter = '' // filter for console
+    // let username = '653498331@qq.com'
+    // let password = '000000'
+    // let username = 'de1999@vip.qq.com'
+    // let password = '23456789'
+const filter = 'writing' // filter for console
 
 // const typeofSubs =
 const typeofSubs = ['lifecircle', 'config', 'occupancy', 'battery']
@@ -21,8 +21,8 @@ const _logLimit = 50000 // will exit when this number of messages has been logge
 let _Counter = 0 // message counter
 const sensorArray = []
 const motionTimeStamps = []
-// let assetTimeStamps1
-// let assetTimeStamps2
+    // let assetTimeStamps1
+    // let assetTimeStamps2
 const assetTimeStamps3 = []
 const _Locations = []
 const _t1 = new Date()
@@ -286,8 +286,7 @@ client.on('connect', function(connection) {
                                     break
                                 case 'SampleUpState':
                                     {
-                                        c(`   ${_Counter}# ${_t2.toLocaleTimeString()} SampleUpState ${json.list[0].dataSourceAddress.did} ${json.list[0].list[0].deviceUpState.name} in ${json.locationId}`
-                                        )
+                                        c(`   ${_Counter}# ${_t2.toLocaleTimeString()} SampleUpState ${json.list[0].dataSourceAddress.did} ${json.list[0].list[0].deviceUpState.name} in ${json.locationId}`)
                                         // c(JSON.stringify(json));
                                     }
                                     break
@@ -349,7 +348,7 @@ client.on('connect', function(connection) {
                                             console.log(error)
                                             console.log(JSON.stringify(json))
                                         }
-                                              break
+                                        break
                                     default:
                                         c(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)
                                         break
