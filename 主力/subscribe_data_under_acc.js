@@ -11,7 +11,7 @@ let username = '653498331@qq.com'
 let password = '000000'
     // let username = 'de1999@vip.qq.com'
     // let password = '23456789'
-const filter = '447223' // filter for console
+const filter = '' // filter for console
 
 // const typeofSubs =
 const typeofSubs = ['lifecircle', 'config', 'battery']
@@ -343,14 +343,14 @@ client.on('connect', function(connection) {
                                     case 'remoteLocationGatewayIsNowDOWN':
                                     case 'remoteLocationGatewayIsNowUP':
                                     case 'unitConfigurationChanged':
-                                    case 'locationChanged':
-                                        try { c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + /* json.list[0].unitAddress.did || '' */ +' ' + json.list[0].eventType.name + ' in ' + json.locationId) } catch (error) {
+                                        try { c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + json.list[0].unitAddress.did + ' in ' + json.locationId) } catch (error) {
                                             console.log(error)
                                             console.log(JSON.stringify(json))
                                         }
                                         break
+                                    case 'locationChanged':
                                     default:
-                                        c(' !!!!  ' + _Counter + ' Unknown events: ' + json.list[0].eventType.name)
+                                        c(' !!!!  ' + _Counter + ' Unknown events or locationchanged ' + json.list[0].eventType.name)
                                         break
                                 }
                             }
