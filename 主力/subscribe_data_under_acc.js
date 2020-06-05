@@ -11,10 +11,10 @@ const password = 'Ft@Sugarcube99'
     // let password = '000000'
     // let username = 'de1999@vip.qq.com'
     // let password = '23456789'
-const filter = 'writing' // filter for console
+const filter = '447223' // filter for console
 
 // const typeofSubs =
-const typeofSubs = ['lifecircle', 'config', 'occupancy', 'battery']
+const typeofSubs = ['lifecircle', 'config', 'battery']
 
 const _logLimit = 50000 // will exit when this number of messages has been logged
 
