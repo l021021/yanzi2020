@@ -13,7 +13,12 @@ const password = 'Ft@Sugarcube99'
 const filter = '' // filter for console
 
 // const typeofSubs =
-const typeofSubs = ['lifecircle', 'occupancy', 'data']
+// const typeofSubs = ['lifecircle', 'occupancy', 'data']
+const typeofSubs = ['lifecircle', 'config', 'battery', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
+
+
+// data   |  lifecircle  |  config | battery|sensorData|assetData|occupancy| occupancySlots|sensorSlots| assetSlots
+
 
 const _logLimit = 50000 // will exit when this number of messages has been logged
 // const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
@@ -318,13 +323,19 @@ client.on('connect', function (connection) {
                                     case 'physicalDeviceIsNowDOWN':
                                     case 'remoteLocationGatewayIsNowDOWN':
                                     case 'remoteLocationGatewayIsNowUP':
-                                    case 'unitConfigurationChanged':
+                                    case 'locationChanged':
                                         try { c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + json.list[0].unitAddress.did + ' in ' + json.locationId) } catch (error) {
                                             console.log(error)
                                             console.log(JSON.stringify(json))
                                         }
                                         break
-                                    case 'locationChanged':
+                                    case 'unitConfigurationChanged':
+                                        try { c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].eventType.name + ' ' + ' in ' + json.locationId) } catch (error) {
+                                            console.log(error)
+                                            console.log(JSON.stringify(json))
+                                        }
+
+                                        break
                                     default:
                                         c(' !!!!  ' + _Counter + ' Unknown events or locationchanged ' + json.list[0].eventType.name)
                                         break
