@@ -3,12 +3,12 @@
 const WebSocketClient = require('websocket').client
 const cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
-var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Ft@Sugarcube99'
-    // var username = "653498331@qq.com";
-    // var password = "000000";
-    // const username = 'de1999@vip.qq.com'
-    // const password = '23456789'
+// var username = 'frank.shen@pinyuaninfo.com'
+// var password = 'Ft@Sugarcube99'
+var username = "653498331@qq.com";
+var password = "000000";
+// const username = 'de1999@vip.qq.com'
+// const password = '23456789'
 
 // ################################################
 
@@ -17,9 +17,9 @@ let _Counter = 0 // message counter
 let _OnlineUnitsCounter = 0
 var _UnitsCounter = 0
 
-const _Locations = new Set()
+const _Locations = new Map()
 const _Units = []
-let TimeoutId = setTimeout(doReport, 30000) // wait for 5 sec before exit
+let TimeoutId = setTimeout(doReport, 30000) // wait for 30 sec before exit
     // Create a web socket client initialized with the options as above
 const client = new WebSocketClient()
 
@@ -37,16 +37,14 @@ const locationObj = {
         // "activityLevel": "medium"
 }
 
+let _onlineLocations = new Set()
 const unitObj = {
     did: '',
     locationId: '',
-    // serverDid: '',
-    // productType: '',
+    locationName: '',
     lifeCycleState: '',
-    isChassis: '',
-    // chassisDid: '',
-    nameSetByUser: '',
-    type: ''
+    // productType: '',
+    nameSetByUser: ''
 }
 
 // Program body
@@ -106,15 +104,6 @@ client.on('connect', function(connection) {
                         if (json.list.length !== 0) {
                             console.log(`receiving new locations ${json.list.length}`) // 收到一组新的location
                             for (let i = 0; i < json.list.length; i++) {
-                                // let _locationExist = false
-
-                                // for (const key in _Locations) { // already exits in Array?
-                                //     if (_Locations[key].locationID || (_Locations[key].locationID == json.list[i].locationAddress.locationId)) {
-                                //         _locationExist = true
-                                //     }
-                                // }
-
-                                // if (!_locationExist) {
                                 locationObj.locationId =
                                     json.list[i].locationAddress.locationId
                                     // locationObj.serverDid = json.list[i].locationAddress.serverDid
@@ -122,7 +111,7 @@ client.on('connect', function(connection) {
                                 locationObj.name = json.list[i].name
                                 locationObj.gwdid = json.list[i].gwdid
                                 _templocationObj = JSON.parse(JSON.stringify(locationObj)) // deep copy
-                                _Locations.add(_templocationObj)
+                                _Locations.set(locationObj.locationId, locationObj.name)
                                 sendGetUnitsRequest(json.list[i].locationAddress.locationId) // get units under this location
                                     // }
                             }
@@ -141,47 +130,51 @@ client.on('connect', function(connection) {
                         // console.log(JSON.stringify(json) + '\n\n');
 
                         var _tempunitObj
-
-                        console.log(
-                            `seeing ${json.list.length} devices in  ${json.locationAddress.locationId}`
-                        )
-                        for (let iList = 0; iList < json.list.length; iList++) {
-                            // process each response packet
-                            if (
-                                json.list[iList].unitTypeFixed.name === 'gateway' ||
-                                json.list[iList].unitAddress.did.indexOf('AP') !== -1
-                            ) {
-                                // console.log(json.list[index].unitAddress.did);
-                                // console.log('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
-                            } else {
-                                // record all sensors
-                                unitObj.did = json.list[iList].unitAddress.did //
-                                unitObj.locationId = json.locationAddress.locationId
+                        if (json.list.length > 1) {
+                            console.log(
+                                `seeing ${json.list.length} logical devices in  ${json.locationAddress.locationId}`
+                            )
+                            for (let iList = 0; iList < json.list.length; iList++) {
+                                // process each response packet while json.list[0].lifeCycleState.name==="shadow"
+                                if (
+                                    json.list[iList].unitTypeFixed.name === 'gateway' ||
+                                    json.list[iList].unitAddress.did.indexOf('AP') !== -1
+                                ) {
+                                    // console.log(json.list[index].unitAddress.did);
+                                    // console.log('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
+                                } else {
+                                    // record all sensors
+                                    unitObj.did = json.list[iList].unitAddress.did //
+                                    unitObj.locationId = json.locationAddress.locationId
+                                    if (_Locations.has(unitObj.locationId)) {
+                                        _onlineLocations.add(_Locations.get(unitObj.locationId))
+                                    }
                                     // unitObj.chassisDid = json.list[index].chassisDid
-                                    // unitObj.productType = json.list[index].productType
-                                unitObj.lifeCycleState = json.list[iList].lifeCycleState.name
-                                unitObj.isChassis = json.list[iList].isChassis
-                                unitObj.nameSetByUser = json.list[iList].nameSetByUser
-                                    // unitObj.serverDid = json.list[index].unitAddress.serverDid
+                                    // unitObj.productType = json.list[iList].productType
+                                    unitObj.lifeCycleState = json.list[iList].lifeCycleState.name
+                                    let isChassis = json.list[iList].isChassis
+                                    unitObj.locationName = _Locations.get(unitObj.locationId)
+                                    unitObj.nameSetByUser = json.list[iList].nameSetByUser
+                                        // unitObj.serverDid = json.list[index].unitAddress.serverDid
 
-                                unitObj.type = json.list[iList].unitTypeFixed.name
+                                    // unitObj.type = json.list[iList].unitTypeFixed.name
 
-                                if (unitObj.isChassis === true) {
-                                    console.log(unitObj.did);
+                                    if (isChassis === true) {
+                                        // console.log(unitObj.did);
 
-                                    _tempunitObj = JSON.parse(JSON.stringify(unitObj))
-                                    _Units.push(_tempunitObj)
-                                    _UnitsCounter++
-                                }
-                                if (json.list[iList].lifeCycleState.name === 'present') {
-                                    _OnlineUnitsCounter++
+                                        _tempunitObj = JSON.parse(JSON.stringify(unitObj))
+                                        _Units.push(_tempunitObj)
+                                        _UnitsCounter++
+                                    }
+                                    if (json.list[iList].lifeCycleState.name === 'present') {
+                                        _OnlineUnitsCounter++
+                                    }
                                 }
                             }
-                        }
 
-                        // console.log(_UnitsCounter + ' Units in Location:  while ' + _OnlineUnitsCounter + ' online');
-                    } else {
-                        console.log("Couldn't get Units")
+
+                            // console.log(_UnitsCounter + ' Units in Location:  while ' + _OnlineUnitsCounter + ' online');
+                        }
                     }
                     // json.list[0].lifeCycleState.name
                     break
@@ -273,59 +266,15 @@ function start() {
 
 function doReport() {
 
-    const locationArray = Array.from(_Locations)
-        // for (let i = 0; i < _Units.length; i++) {
-        //     // for (let j = 0; j < _Locations.length; j++) {
-        //     // update to its locations
-
-    //     const index = locationArray.indexOf(_Units[i].locationId)
-    //     if (index > 0) { // 更新_locations
-    //         // Location match
-    //         locationArray[index].Allunits++
-
-    //             if (_Units[i].lifeCycleState === 'present') {
-    //                 // mark live gateways
-    //                 locationArray[index].gwOnline = true // Location Online
-    //                 locationArray[index].Onlineunits++ // mark online sensors
-    //             }
-    //         if (_Units[i].isChassis === 'true') {
-    //             locationArray[j].units++
-    //         } // mark physical sensors
-    //     }
-    // }
-
-    // list each active location with sensors
-
-    // _Locations = _Locations.filter(item => item.lifeCycleState == "present")
+    const locationArray = Array.from(_onlineLocations)
 
     console.table(locationArray)
-        // _Locations[0].gwOnline
+
     console.log(`total ${_Units.length} sensors configured while ${_OnlineUnitsCounter} sensors online`) // sum up
 
     // _Units = _Units.filter(item => item.lifeCycleState == "present") //_Units[0].lifeCycleState
     console.table(_Units.filter((item) => item.type !== 'remoteGateway'))
 
-    // //list all online physical sensors
-    // for (let j = 0; j < _Units.length; j++) {
-    //     if (_Units[j].lifeCycleState == 'present')
-    //         console.log(_Units[j].did + ' in ' + _Units[j].locationId);
-    // }
-
-    // //list all online logical  sensors
-    // for (let j = 0; j < _Units.length; j++) {
-    //     if (_Units[j].lifeCycleState == 'subUnit' && _Units[j].isChassis == false)
-    //         console.log(_Units[j].did + ' as a ' + _Units[j].type + ' in ' + _Units[j].locationId);
-    // }
-
-    // _Units.forEach(function (x, i, a) {
-    //     if (a[1].lifeCycleState == 'subUnit' && a[i].isChassis == false) console.log(_Units[key1].did + ' as a ' + _Units[key1].type + ' in ' + _Units[key1].locationId);
-
-    // });
-    // t = new Date().getTime()
-    // timestamp = new Date()
-    // timestamp.setTime(t)
-    // console.log(timestamp.toLocaleTimeString() + 'ok!')
-    // clearTimeout(TimeoutId)
     process.exit()
 }
 

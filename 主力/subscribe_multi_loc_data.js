@@ -7,8 +7,8 @@ let heartbeatFlag = 0
 
 const username = 'frank.shen@pinyuaninfo.com'
 const password = 'Ft@Sugarcube99'
-// let username = '653498331@qq.com'
-// let password = '000000'
+    // let username = '653498331@qq.com'
+    // let password = '000000'
 
 const filter = '' // filter for console
 
@@ -16,14 +16,14 @@ const filter = '' // filter for console
 const typeofSubs = ['lifecircle', 'occupancy', 'data']
 
 const _logLimit = 50000 // will exit when this number of messages has been logged
-// const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
+    // const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
 const locationIds = ['447223', '290596', '879448'] //AZ P3
 
 let _Counter = 0 // message counter
 const sensorArray = []
 const motionTimeStamps = []
-// let assetTimeStamps1
-// let assetTimeStamps2
+    // let assetTimeStamps1
+    // let assetTimeStamps2
 const assetTimeStamps3 = []
 const _Locations = []
 const _t1 = new Date()
@@ -55,19 +55,19 @@ function startConnect() {
 
 startConnect()
 
-client.on('connectFailed', function (error) {
+client.on('connectFailed', function(error) {
     c(' --- Connect Error: reconnect -- ' + error.toString())
 
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
 })
 
-client.on('connect', function (connection) {
+client.on('connect', function(connection) {
     c(' --- Connected to cloud --- ')
     heartbeatFlag = 0
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function (message) {
+    connection.on('message', function(message) {
         if (message.type === 'utf8') {
             const json = JSON.parse(message.utf8Data)
             const t = new Date().getTime()
@@ -123,7 +123,7 @@ client.on('connect', function (connection) {
                                         _recordObj.Did = json.list[0].dataSourceAddress.did // json.list[0].dataSourceAddress.did
                                         _recordObj.timeStamp = _t1.getTime()
                                         sensorArray[json.list[0].dataSourceAddress.did] =
-                                            json.list[0].list[0].value // setup sensor array
+                                        json.list[0].list[0].value // setup sensor array
                                         if (temp1 === json.list[0].list[0].value - 1) {
                                             // Value changed!
                                             motionFlag = ' ++ '
@@ -136,7 +136,7 @@ client.on('connect', function (connection) {
                                             _recordObj.value = 'ot'
                                             temprecordObj = JSON.parse(JSON.stringify(_recordObj))
                                             motionTimeStamps.push(temprecordObj)
-                                            // motionTimeStamps.push(json.list[0].dataSourceAddress.did + ',ot,' + _t1.getTime());
+                                                // motionTimeStamps.push(json.list[0].dataSourceAddress.did + ',ot,' + _t1.getTime());
                                         } else {
                                             //  c("        Sensor first seen, cannot tell");
                                         }
@@ -163,9 +163,9 @@ client.on('connect', function (connection) {
                                         _t3.setTime(json.list[0].list[0].sampleTime)
                                         // eslint-disable-next-line no-redeclare
                                         const motionFlag = ' ? ' // update new value
-                                        // eslint-disable-next-line no-redeclare
+                                            // eslint-disable-next-line no-redeclare
                                         let temprecordObj
-                                        // let motionFlag = ' ?? '; //update new value
+                                            // let motionFlag = ' ?? '; //update new value
                                         _recordObj.type = 'sampleAsset'
                                         _recordObj.Did = json.list[0].dataSourceAddress.did
                                         _recordObj.timeStamp = _t1.getTime()
@@ -189,32 +189,32 @@ client.on('connect', function (connection) {
                                                 // assetTimeStamps1 += json.list[0].dataSourceAddress.did + ',mo,' + _t3.getTime() + '\n';
                                                 _recordObj.value = 'mo'
                                                 temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                                // assetTimeStamps1.push(temprecordObj)
+                                                    // assetTimeStamps1.push(temprecordObj)
 
                                                 break
                                             case 'isNoMotion':
                                                 // assetTimeStamps1 += json.list[0].dataSourceAddress.did + ',nm,' + _t3.getTime() + '\n';
                                                 _recordObj.value = 'nm'
                                                 temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                                // assetTimeStamps1.push(temprecordObj)
+                                                    // assetTimeStamps1.push(temprecordObj)
                                                 break
                                             case 'free':
                                                 // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',fr,' + _t3.getTime() + '\n';
                                                 _recordObj.value = 'fr'
                                                 temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                                // assetTimeStamps2.push(temprecordObj)
+                                                    // assetTimeStamps2.push(temprecordObj)
                                                 break
                                             case 'occupied':
                                                 // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',oc,' + _t3.getTime() + '\n';
                                                 _recordObj.value = 'oc'
                                                 temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                                // assetTimeStamps2.push(temprecordObj)
+                                                    // assetTimeStamps2.push(temprecordObj)
                                                 break
                                             case 'missingInput':
                                                 // assetTimeStamps2 += json.list[0].dataSourceAddress.did + ',mi,' + _t3.getTime() + '\n';
                                                 _recordObj.value = 'mi'
                                                 temprecordObj = JSON.parse(JSON.stringify(_recordObj))
-                                                // assetTimeStamps2.push(temprecordObj)
+                                                    // assetTimeStamps2.push(temprecordObj)
                                                 break
                                             default:
                                                 c(
@@ -268,7 +268,7 @@ client.on('connect', function (connection) {
                                 default:
                                     // 环境参数
                                     _t2.setTime(json.timeSent)
-                                    // if json.list[0].list[0].resourceType ==
+                                        // if json.list[0].list[0].resourceType ==
                                     c('   ' + _Counter + '# ' + _t2.toLocaleTimeString() + ' ' + json.list[0].list[0].resourceType + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].value + ' ' + (json.list[0].list[0].percentFull || '') + ' in ' + json.locationId)
 
                                     break
@@ -339,14 +339,14 @@ client.on('connect', function (connection) {
         }
     })
 
-    connection.on('error', function (error) {
+    connection.on('error', function(error) {
         c(' --- Connection Error: reconnect in 5 sec --' + error.toString())
         setTimeout(() => {
             startConnect()
         }, 5000)
     })
 
-    connection.on('close', function (error) {
+    connection.on('close', function(error) {
         c('Connection closed!' + error)
     })
 
@@ -357,6 +357,7 @@ client.on('connect', function (connection) {
             connection.sendUTF(json)
         } else {
             c("sendMessage: Couldn't send message, the connection is not open")
+            client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
         }
     }
 
