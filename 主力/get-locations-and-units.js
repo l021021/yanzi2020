@@ -5,10 +5,10 @@ const cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
 // var username = 'frank.shen@pinyuaninfo.com'
 // var password = 'Ft@Sugarcube99'
-var username = "653498331@qq.com";
-var password = "000000";
-// const username = 'de1999@vip.qq.com'
-// const password = '23456789'
+// var username = "653498331@qq.com";
+// var password = "000000";
+const username = 'de1999@vip.qq.com'
+const password = '23456789'
 
 // ################################################
 
@@ -272,7 +272,19 @@ function doReport() {
 
     console.log(`total ${_Units.length} sensors configured while ${_OnlineUnitsCounter} sensors online`) // sum up
 
-    // _Units = _Units.filter(item => item.lifeCycleState == "present") //_Units[0].lifeCycleState
+    for (const location of locationArray) {
+        let unitsinLocation = 0
+        for (let index = 0; index < _Units.length; index++) {
+            if (_Units[index].locationName === location) {
+                unitsinLocation++
+
+            }
+
+        }
+        console.log(`${location} has ${unitsinLocation} sensors`)
+
+    }
+
     console.table(_Units.filter((item) => item.type !== 'remoteGateway'))
 
     process.exit()
