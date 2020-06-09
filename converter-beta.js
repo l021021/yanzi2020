@@ -10,6 +10,9 @@ const endDate = '2020/05/22/23:59:59' // 结束时间
     // const endDate = '2019/07/01/00:00:00'
 const filter = ['value']
 
+var str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })
+const CSVFile = FS.createWriteStream(filename + '_' + grid + 'M.csv', { encoding: 'utf8' })
+
 function c(data) {
     let match = false
     filter.forEach(element => {
@@ -60,9 +63,6 @@ var recordsofSensor = []
 var t1tofollowingGrid, previousgridtoT2, gridDelta
 
 var _lastValue = -1
-
-var str = FS.readFileSync(filename + '.json', { encoding: 'utf8' })
-const CSVFile = FS.createWriteStream(filename + '_' + grid + 'M.csv', { encoding: 'utf8' })
 
 // 读取文件发生错误事件
 CSVFile.on('error', (err) => {

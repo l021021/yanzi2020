@@ -15,7 +15,7 @@ const password = '23456789'
 // For log use only
 let _Counter = 0 // message counter
 let _OnlineUnitsCounter = 0
-var _UnitsCounter = 0
+let _UnitsCounter
 
 const _Locations = new Map()
 const _Units = []
@@ -24,18 +24,18 @@ let TimeoutId = setTimeout(doReport, 30000) // wait for 30 sec before exit
 const client = new WebSocketClient()
 
 // All Objs definition
-const locationObj = {
-    locationId: '123456',
-    // serverDid: 'EUI64-0090DAFFFF0040A9',
-    accountId: '262468578',
-    name: 'Beach House',
-    gwdid: 'EUI64-12411261342',
-    // units: 0,
-    // Allunits: 0,
-    // Onlineunits: 0,
-    gwOnline: false
-        // "activityLevel": "medium"
-}
+// const locationObj = {
+//     locationId: '123456',
+//     // serverDid: 'EUI64-0090DAFFFF0040A9',
+//     accountId: '262468578',
+//     name: 'Beach House',
+//     gwdid: 'EUI64-12411261342',
+//     // units: 0,
+//     // Allunits: 0,
+//     // Onlineunits: 0,
+//     gwOnline: false
+//         // "activityLevel": "medium"
+// }
 
 let _onlineLocations = new Set()
 const unitObj = {
@@ -69,17 +69,6 @@ client.on('connect', function(connection) {
             var timestamp = new Date()
             timestamp.setTime(t)
             _Counter = _Counter + 1 // counter of all received packets
-
-            // if (_Counter > _logLimit) {
-            //     console.log("Enough Data!")
-            //     console.log(_Locations.length + " locations : " + JSON.stringify(_Locations));
-            //     connection.close();
-            //     doReport();
-            //     process.exit();
-            // } //for log use only
-
-            // Print all messages with type
-            // console.log(_Counter + '# ' + timestamp.toLocaleTimeString() + ' RCVD_MSG:' + json.messageType)
             switch (json.messageType) {
                 case 'ServiceResponse':
                     sendLoginRequest()
@@ -88,8 +77,6 @@ client.on('connect', function(connection) {
                     setInterval(sendPeriodicRequest, 60000)
                     if (json.responseCode.name === 'success') {
                         sendGetLocationsRequest() // not mandatory
-                            // sendSubscribeRequest(LocationId); //test one location
-                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
                         console.log(json.responseCode.name)
                         console.log("Couldn't login, check your username and passoword")
@@ -104,14 +91,14 @@ client.on('connect', function(connection) {
                         if (json.list.length !== 0) {
                             console.log(`receiving new locations ${json.list.length}`) // 收到一组新的location
                             for (let i = 0; i < json.list.length; i++) {
-                                locationObj.locationId =
-                                    json.list[i].locationAddress.locationId
-                                    // locationObj.serverDid = json.list[i].locationAddress.serverDid
-                                locationObj.accountId = json.list[i].accountId
-                                locationObj.name = json.list[i].name
-                                locationObj.gwdid = json.list[i].gwdid
-                                _templocationObj = JSON.parse(JSON.stringify(locationObj)) // deep copy
-                                _Locations.set(locationObj.locationId, locationObj.name)
+                                // locationObj.locationId =
+                                //     json.list[i].locationAddress.locationId
+                                //     // locationObj.serverDid = json.list[i].locationAddress.serverDid
+                                // locationObj.accountId = json.list[i].accountId
+                                // locationObj.name = json.list[i].name
+                                // locationObj.gwdid = json.list[i].gwdid
+                                // _templocationObj = JSON.parse(JSON.stringify(locationObj)) // deep copy
+                                _Locations.set(json.list[i].locationAddress.locationId, json.list[i].name)
                                 sendGetUnitsRequest(json.list[i].locationAddress.locationId) // get units under this location
                                     // }
                             }
@@ -122,9 +109,7 @@ client.on('connect', function(connection) {
                         connection.close()
                         process.exit()
                     }
-                    // sendGetUnitsRequest(537931);
                     break
-                    // json.list[0].lifeCycleState.namejson.list[0].lifeCycleState.name
                 case 'GetUnitsResponse':
                     if (json.responseCode.name === 'success') {
                         // console.log(JSON.stringify(json) + '\n\n');
@@ -285,7 +270,10 @@ function doReport() {
 
     }
 
-    console.table(_Units.filter((item) => item.type !== 'remoteGateway'))
+    console.table(_Units.filter((item) => item.type === 'present'))
+
+    console.table(_Units.filter((item) => item.lifeCycleState === 'shadow'))
+
 
     process.exit()
 }
