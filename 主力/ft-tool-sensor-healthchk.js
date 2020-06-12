@@ -1,68 +1,119 @@
-// 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
+/* 这个是传感器测试工具，测试网关下所有传感器的motion状态是否正常，测试过程如下：
 
-const WebSocketClient = require('websocket').client
-const cirrusAPIendpoint = 'cirrus20.yanzi.se'
+        保持传感器没人状态至少10分钟；
+        启动程序；保持无人状态；
+        30分钟后触发所有传感器；
+        保持无人状态；
+        10分钟后，再次触发传感器；
+        保持无人状态；
+        保持约20分钟的无人；
+        根据传感器数量估计——logLimit取值；
+        大约是传感器数量X70；
+        */
 
-var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Ft@Sugarcube99'
-    // var username = "653498331@qq.com";
-    // var password = "000000";
-    // const username = 'de1999@vip.qq.com'
-    // const password = '23456789'
+// let LocationId = '290596' // 1002
+// let LocationId = '879448' // 1002
+// let LocationId = '447223' // 1002
+// Location ID and Device ID, please change this to your own, can be found in Yanzi Live
+// let LocationId = '229349' //fangtang
+// let LocationId = '188559' //1001
 
-// ################################################
+// let LocationId = '938433' //1001
+// let LocationId = '230381' // JOS_HK
+// let LocationId = '976522' // AZ-p3-6
+let LocationId = '141828' // AZ-p3-4
+let _logLimit = 500 // will exit when this number of messages has been logged
+
+
+let cirrusAPIendpoint = 'cirrus20.yanzi.se'
+let WebSocketClient = require('websocket').client
+let username = 'frank.shen@pinyuaninfo.com'
+let password = 'Ft@Sugarcube99'
 
 // For log use only
 let _Counter = 0 // message counter
-let _OnlineUnitsCounter = 0
-let _UnitsCounter
-
-const _Locations = new Map()
-const _Units = []
-let TimeoutId = setTimeout(doReport, 30000) // wait for 30 sec before exit
-    // Create a web socket client initialized with the options as above
-const client = new WebSocketClient()
-
-let _onlineLocations = new Set()
+let _Counter1 = 0 // sensor counter/
+let _Units = new Set()
 const unitObj = {
-    did: '',
-    locationId: '',
-    locationName: '',
-    lifeCycleState: '',
-    // productType: '',
-    nameSetByUser: ''
-}
+        did: '',
+        locationId: '',
+        // serverDid: '',
+        // productType: '',
+        lifeCycleState: '',
+        isChassis: '',
+        // chassisDid: '',
+        nameSetByUser: '',
+        type: ''
+    }
+    // let _Locations = [];
+let sensorArray = []
+    // 二维数组，0：传感器ID，1：motion计数，2：Nomotion计数;3:当前value
+let motionTimeStamps
 
-// Program body
+let _t1 = new Date()
+for (let
+        i = 1; i < 4; i++) {
+    sensorArray[i] = []
+}
+//分别记录 初次/motion,nomotion记录,以及value值
+sensorArray[0] = new Set()
+    // Create a web socket client initialized with the options as above
+let client = new WebSocketClient()
+
 client.on('connectFailed', function(error) {
-    console.log('Connect Error: reconnect' + error.toString())
-    start()
+    console.log('Connect Error: ' + error.toString())
+    connection.close()
 })
 
 client.on('connect', function(connection) {
     // console.log("Checking API service status with ServiceRequest.");
     sendServiceRequest()
-
-    // Handle messages
+        // Handle messages
     connection.on('message', function(message) {
-        clearTimeout(TimeoutId)
-        TimeoutId = setTimeout(doReport, 30000) // exit after 10 seconds idle
-            // console.log('timer reset  ')
-
         if (message.type === 'utf8') {
-            var json = JSON.parse(message.utf8Data)
-            var t = new Date().getTime()
-            var timestamp = new Date()
+            let
+                json = JSON.parse(message.utf8Data)
+            let
+                t = new Date().getTime()
+            let
+                timestamp = new Date()
             timestamp.setTime(t)
             _Counter = _Counter + 1 // counter of all received packets
+
+            if (_Counter > _logLimit) {
+                console.log('Enough Data, I will quit now!')
+                connection.close()
+
+                // console.log('Total sensors: ' + _Counter1)
+                console.log('传感器列表');
+                // console.log(sensorArray[0].length)
+                console.table(sensorArray[0])
+                console.log(' 传感器检测到的运动(value+1)记录数');
+                console.table(sensorArray[1])
+                console.log(' 传感器发出的静态(value不变)记录数');
+                console.table(sensorArray[2])
+                console.log(' 传感器value');
+                console.table(sensorArray[3])
+
+
+
+                process.exit()
+            } // for log use only
+
+            // Print all messages with DTO type
+            // console.log(_Counter + '# ' + timestamp.toLocaleTimeString() + ' RCVD_MSG:' + json.messageType);
             switch (json.messageType) {
                 case 'ServiceResponse':
                     sendLoginRequest()
                     break
                 case 'LoginResponse':
-                    setInterval(sendPeriodicRequest, 60000)
                     if (json.responseCode.name === 'success') {
-                        sendGetLocationsRequest() // not mandatory
+                        sendPeriodicRequest() // as keepalive
+                        sendSubscribeRequest(LocationId) // test
+                        sendSubscribeRequest_lifecircle(LocationId) // eventDTO
+                        sendSubscribeRequest_battery(LocationId) // eventDTO
+                        sendGetUnitsRequest(LocationId) // get units under this location
+
                     } else {
                         console.log(json.responseCode.name)
                         console.log("Couldn't login, check your username and passoword")
@@ -70,87 +121,86 @@ client.on('connect', function(connection) {
                         process.exit()
                     }
                     break
-                case 'GetLocationsResponse':
-                    if (json.responseCode.name === 'success') {
-                        let _templocationObj
-                            // UPDATE location IDs
-                        if (json.list.length !== 0) {
-                            console.log(`receiving new locations ${json.list.length}`) // 收到一组新的location
-                            for (let i = 0; i < json.list.length; i++) {
-                                // locationObj.locationId =
-                                //     json.list[i].locationAddress.locationId
-                                //     // locationObj.serverDid = json.list[i].locationAddress.serverDid
-                                // locationObj.accountId = json.list[i].accountId
-                                // locationObj.name = json.list[i].name
-                                // locationObj.gwdid = json.list[i].gwdid
-                                // _templocationObj = JSON.parse(JSON.stringify(locationObj)) // deep copy
-                                _Locations.set(json.list[i].locationAddress.locationId, json.list[i].name)
-                                sendGetUnitsRequest(json.list[i].locationAddress.locationId) // get units under this location
-                                    // }
+                case 'SubscribeData':
+                    switch (json.list[0].resourceType) {
+                        case 'SampleList':
+                            // Sensor DATA
+                            switch (json.list[0].dataSourceAddress.variableName.name) {
+                                case 'motion': // sampleMotion
+                                    sensorArray[0].add(json.list[0].dataSourceAddress.did) //sensor名集合
+                                    let temp1 = sensorArray[3][json.list[0].dataSourceAddress.did] || -1 //当前计数
+                                    sensorArray[3][json.list[0].dataSourceAddress.did] = json.list[0].list[0].value // latest value
+                                    if (temp1 < json.list[0].list[0].value && temp1 !== -1) { // Value changed!
+                                        console.log(' ---  value changed in ' + json.list[0].dataSourceAddress.did)
+                                        sensorArray[1][json.list[0].dataSourceAddress.did]++
+
+                                    } else if (temp1 === json.list[0].list[0].value) {
+                                        console.log(' ---  value unchanged in ' + json.list[0].dataSourceAddress.did)
+                                        sensorArray[2][json.list[0].dataSourceAddress.did]++
+                                    } else {
+                                        // sensorArray[0][json.list[0].dataSourceAddress.did] = 1
+                                        sensorArray[1][json.list[0].dataSourceAddress.did] = 0
+                                        sensorArray[2][json.list[0].dataSourceAddress.did] = 0
+
+                                        console.log(' ---  first seen! ' + json.list[0].dataSourceAddress.did)
+                                    };
+
+                                    break
+                                default:
+                                    console.log(_Counter + '# ' + 'sensor data: ' + json.list[0].dataSourceAddress.variableName.name + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].value)
                             }
-                        }
-                    } else {
-                        console.log(json.responseCode.name)
-                        console.log("Couldn't get location")
-                        connection.close()
-                        process.exit()
+                            break
+                        default:
                     }
                     break
                 case 'GetUnitsResponse':
                     if (json.responseCode.name === 'success') {
-                        // console.log(JSON.stringify(json) + '\n\n');
+                        let _tempunitObj;
+                        // let unitObj
+                        let _UnitsCounter
+                        let _OnlineUnitsCounter
 
-                        var _tempunitObj
-                        if (json.list.length > 1) {
-                            console.log(
-                                `seeing ${json.list.length} logical devices in  ${json.locationAddress.locationId}`
-                            )
-                            for (let iList = 0; iList < json.list.length; iList++) {
-                                // process each response packet while json.list[0].lifeCycleState.name==="shadow"
-                                if (
-                                    json.list[iList].unitTypeFixed.name === 'gateway' ||
-                                    json.list[iList].unitAddress.did.indexOf('AP') !== -1
-                                ) {
-                                    // console.log(json.list[index].unitAddress.did);
-                                    // console.log('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
-                                } else {
-                                    // record all sensors
-                                    unitObj.did = json.list[iList].unitAddress.did //
-                                    unitObj.locationId = json.locationAddress.locationId
-                                    if (_Locations.has(unitObj.locationId)) {
-                                        _onlineLocations.add(_Locations.get(unitObj.locationId))
-                                    }
-                                    // unitObj.chassisDid = json.list[index].chassisDid
-                                    // unitObj.productType = json.list[iList].productType
-                                    unitObj.lifeCycleState = json.list[iList].lifeCycleState.name
-                                    let isChassis = json.list[iList].isChassis
-                                    unitObj.locationName = _Locations.get(unitObj.locationId)
-                                    unitObj.nameSetByUser = json.list[iList].nameSetByUser
-                                        // unitObj.serverDid = json.list[index].unitAddress.serverDid
+                        console.log(
+                            `seeing ${json.list.length} devices in  ${json.locationAddress.locationId}`
+                        )
+                        for (let iList = 0; iList < json.list.length; iList++) {
+                            // process each response packet
+                            if (
+                                json.list[iList].unitTypeFixed.name !== 'gateway' &&
+                                json.list[iList].unitAddress.did.indexOf('AP') == -1
+                            ) {
 
-                                    // unitObj.type = json.list[iList].unitTypeFixed.name
+                                // record all sensors
+                                unitObj.did = json.list[iList].unitAddress.did
+                                unitObj.locationId = json.locationAddress.locationId
+                                unitObj.lifeCycleState = json.list[iList].lifeCycleState.name
+                                unitObj.isChassis = json.list[iList].isChassis
+                                unitObj.nameSetByUser = json.list[iList].nameSetByUser
+                                    // unitObj.serverDid = json.list[index].unitAddress.serverDid
 
-                                    if (isChassis === true) {
-                                        // console.log(unitObj.did);
+                                unitObj.type = json.list[iList].unitTypeFixed.name
 
-                                        _tempunitObj = JSON.parse(JSON.stringify(unitObj))
-                                        _Units.push(_tempunitObj)
-                                        _UnitsCounter++
-                                    }
-                                    if (json.list[iList].lifeCycleState.name === 'present') {
-                                        _OnlineUnitsCounter++
-                                    }
+                                if (unitObj.isChassis === true) {
+                                    console.log(unitObj.did);
+
+                                    _tempunitObj = JSON.parse(JSON.stringify(unitObj))
+                                    _Units.add(_tempunitObj)
+                                    _UnitsCounter++
+                                }
+                                if (json.list[iList].lifeCycleState.name === 'present') {
+                                    _OnlineUnitsCounter++
                                 }
                             }
-
-
-                            // console.log(_UnitsCounter + ' Units in Location:  while ' + _OnlineUnitsCounter + ' online');
                         }
+
+                        // console.log(_UnitsCounter + ' Units in Location:  while ' + _OnlineUnitsCounter + ' online');
+                    } else {
+                        console.log("Couldn't get Units")
                     }
                     // json.list[0].lifeCycleState.name
                     break
                 default:
-                    //   console.log('---Other message---')
+                    // console.log('!!!! cannot understand' + json)
                     // connection.close();
                     break
             }
@@ -158,227 +208,177 @@ client.on('connect', function(connection) {
     })
 
     connection.on('error', function(error) {
-        console.log('Connection Error: reconnect' + error.toString())
-        start()
+        console.log('Connection Error: ' + error.toString())
     })
 
-    connection.on('close', function() {
+    connection.on('close', function(error) {
         console.log('Connection closed!')
     })
 
     function sendMessage(message) {
         if (connection.connected) {
             // Create the text to be sent
-            var json = JSON.stringify(message, null, 1)
+            let
+                json = JSON.stringify(message, null, 1)
                 //    console.log('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
-            console.log(
-                "sendMessage: Couldn't send message, the connection is not open"
-            )
+            console.log("sendMessage: Couldn't send message, the connection is not open")
         }
     }
 
     function sendServiceRequest() {
-        var request = {
-            messageType: 'ServiceRequest',
-            clientId: 'client-fangtang'
-        }
+        let
+            request = {
+                messageType: 'ServiceRequest'
+            }
         sendMessage(request)
     }
 
     function sendLoginRequest() {
-        var request = {
-            messageType: 'LoginRequest',
-            username: username,
-            password: password
-        }
+        let
+            request = {
+                messageType: 'LoginRequest',
+                username: username,
+                password: password
+            }
         sendMessage(request)
     }
 
     function sendGetLocationsRequest() {
-        var now = new Date().getTime()
-            // var nowMinusOneHour = now - 60 * 60 * 1000;
-        var request = {
-            messageType: 'GetLocationsRequest',
-            timeSent: now
-        }
+        let
+            now = new Date().getTime()
+            // let
+        nowMinusOneHour = now - 60 * 60 * 1000;
+        let
+            request = {
+                messageType: 'GetLocationsRequest',
+                timeSent: now
+            }
         sendMessage(request)
     }
 
-    function sendGetUnitsRequest(locationID) {
-        var now = new Date().getTime()
-        var request = {
-            messageType: 'GetUnitsRequest',
-            timeSent: now,
-            locationAddress: {
-                resourceType: 'LocationAddress',
-                locationId: locationID
+    function sendGetSamplesRequest() {
+        let
+            now = new Date().getTime()
+        let
+            nowMinusOneHour = now - 60 * 60 * 1000
+        let
+            request = {
+                messageType: 'GetSamplesRequest',
+                dataSourceAddress: {
+                    resourceType: 'DataSourceAddress',
+                    did: deviceID,
+                    locationId: locationId,
+                    variableName: {
+                        resourceType: 'VariableName',
+                        name: 'temperatureC'
+                    }
+                },
+                timeSerieSelection: {
+                    resourceType: 'TimeSerieSelection',
+                    timeStart: nowMinusOneHour,
+                    timeEnd: now
+                }
             }
-        }
-        console.log('sending request for ' + locationID)
+        sendMessage(request)
+    }
+
+    function sendGetUnitsRequest() {
+        let
+            now = new Date().getTime()
+        let
+            nowMinusOneHour = now - 60 * 60 * 1000
+        let
+            request = {
+
+                messageType: 'GetUnitsRequest',
+                timeSent: now,
+                locationAddress: {
+                    resourceType: 'LocationAddress',
+                    locationId: LocationId
+                }
+            }
+
+        sendMessage(request)
+    }
+
+    function sendSubscribeRequest(location_ID) {
+        let
+            now = new Date().getTime()
+            //   let
+        nowMinusOneHour = now - 60 * 60 * 1000;
+        let
+            request = {
+                messageType: 'SubscribeRequest',
+                timeSent: now,
+                unitAddress: {
+                    resourceType: 'UnitAddress',
+                    locationId: location_ID
+                },
+                subscriptionType: {
+                    resourceType: 'SubscriptionType',
+                    name: 'data' // data   |  lifecircle  |  config
+                }
+            }
+
+        sendMessage(request)
+    }
+
+    function sendSubscribeRequest_lifecircle(location_ID) {
+        let
+            now = new Date().getTime()
+            //   let
+        nowMinusOneHour = now - 60 * 60 * 1000;
+        let
+            request = {
+                messageType: 'SubscribeRequest',
+                timeSent: now,
+                unitAddress: {
+                    resourceType: 'UnitAddress',
+                    locationId: location_ID
+                },
+                subscriptionType: {
+                    resourceType: 'SubscriptionType',
+                    name: 'lifecircle' // data   |  lifecircle  |  config
+                }
+            }
+
+        sendMessage(request)
+    }
+
+    function sendSubscribeRequest_battery(location_ID) {
+        let
+            now = new Date().getTime()
+            //   let
+        nowMinusOneHour = now - 60 * 60 * 1000;
+        let
+            request = {
+                messageType: 'SubscribeRequest',
+                timeSent: now,
+                unitAddress: {
+                    resourceType: 'UnitAddress',
+                    locationId: location_ID
+                },
+                subscriptionType: {
+                    resourceType: 'SubscriptionType',
+                    name: 'battery' // data   |  lifecircle  |  config
+                }
+            }
+
         sendMessage(request)
     }
 
     function sendPeriodicRequest() {
-        var now = new Date().getTime()
-        var request = {
-            messageType: 'PeriodicRequest',
-            timeSent: now
-        }
+        let
+            now = new Date().getTime()
+        let
+            request = {
+                messageType: 'PeriodicRequest',
+                timeSent: now
+            }
         sendMessage(request)
     }
-})
-
-function start() {
-    client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
-}
-
-function doReport() {
-
-    const locationArray = Array.from(_onlineLocations)
-
-    console.table(locationArray)
-
-    console.log(`total ${_Units.length} sensors configured while ${_OnlineUnitsCounter} sensors online`) // sum up
-
-    for (const location of locationArray) {
-        let unitsinLocation = 0
-        for (let index = 0; index < _Units.length; index++) {
-            if (_Units[index].locationName === location) {
-                unitsinLocation++
-
-            }
-
-        }
-        console.log(`${location} has ${unitsinLocation} sensors`)
-
-    }
-
-    console.table('在线传感器:')
-    console.table(_Units.filter((item) => item.lifeCycleState === 'present'))
-
-    console.table('不在线传感器:')
-    console.table(_Units.filter((item) => item.lifeCycleState === 'shadow'))
-
-
-    process.exit()
-}
-
-start() dataSourceAddress: {
-        resourceType: 'DataSourceAddress',
-        did: deviceID,
-        locationId: locationId,
-        variableName: {
-            resourceType: 'VariableName',
-            name: 'temperatureC'
-        }
-    },
-    timeSerieSelection: {
-        resourceType: 'TimeSerieSelection',
-        timeStart: nowMinusOneHour,
-        timeEnd: now
-    }
-}
-sendMessage(request)
-}
-
-function sendGetUnitsRequest() {
-    let
-        now = new Date().getTime()
-    let
-        nowMinusOneHour = now - 60 * 60 * 1000
-    let
-        request = {
-
-            messageType: 'GetUnitsRequest',
-            timeSent: now,
-            locationAddress: {
-                resourceType: 'LocationAddress',
-                locationId: LocationId
-            }
-        }
-
-    sendMessage(request)
-}
-
-function sendSubscribeRequest(location_ID) {
-    let
-        now = new Date().getTime()
-        //   let
-    nowMinusOneHour = now - 60 * 60 * 1000;
-    let
-        request = {
-            messageType: 'SubscribeRequest',
-            timeSent: now,
-            unitAddress: {
-                resourceType: 'UnitAddress',
-                locationId: location_ID
-            },
-            subscriptionType: {
-                resourceType: 'SubscriptionType',
-                name: 'data' // data   |  lifecircle  |  config
-            }
-        }
-
-    sendMessage(request)
-}
-
-function sendSubscribeRequest_lifecircle(location_ID) {
-    let
-        now = new Date().getTime()
-        //   let
-    nowMinusOneHour = now - 60 * 60 * 1000;
-    let
-        request = {
-            messageType: 'SubscribeRequest',
-            timeSent: now,
-            unitAddress: {
-                resourceType: 'UnitAddress',
-                locationId: location_ID
-            },
-            subscriptionType: {
-                resourceType: 'SubscriptionType',
-                name: 'lifecircle' // data   |  lifecircle  |  config
-            }
-        }
-
-    sendMessage(request)
-}
-
-function sendSubscribeRequest_battery(location_ID) {
-    let
-        now = new Date().getTime()
-        //   let
-    nowMinusOneHour = now - 60 * 60 * 1000;
-    let
-        request = {
-            messageType: 'SubscribeRequest',
-            timeSent: now,
-            unitAddress: {
-                resourceType: 'UnitAddress',
-                locationId: location_ID
-            },
-            subscriptionType: {
-                resourceType: 'SubscriptionType',
-                name: 'battery' // data   |  lifecircle  |  config
-            }
-        }
-
-    sendMessage(request)
-}
-
-function sendPeriodicRequest() {
-    let
-        now = new Date().getTime()
-    let
-        request = {
-            messageType: 'PeriodicRequest',
-            timeSent: now
-        }
-    sendMessage(request)
-}
 })
 
 function beginPOLL() {

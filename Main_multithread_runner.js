@@ -14,8 +14,8 @@ const locationIds = ['447223', '290596', '879448'] //AZ P3
 
 // const locationIds = ['274189', '229349'] //shenao
 const startDate = '2020/06/08/08:00:00'
-const endDate = '2020/06/12/11:00:00'
-const EUorUU = 'UU'
+const endDate = '2020/06/12/14:00:00'
+const EUorUU = 'Motion'
 const interval = 30 //分钟
 
 for (let lc = 0; lc < locationIds.length; lc++) {

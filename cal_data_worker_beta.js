@@ -48,7 +48,7 @@ process.argv.forEach((val, index) => {
     console.log(`${index}: ${val}`);
 });
 
-var grid = 10 // 间隔时间(分)
+var grid = interval // 间隔时间(分)
 
 var records2D = [] //以DID为组织的二维数组
 var originalRecords = [] //原始记录数组
