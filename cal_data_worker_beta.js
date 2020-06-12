@@ -94,7 +94,7 @@ CSVFile.on('error', (err) => {
 // })
 
 CSVFile.on('close', () => {
-    console.log('文件已关闭！')
+    console.log('计算完成,文件已关闭！')
 })
 
 str = str.replace(/\]\[/gi, ',') // change ][ to , which was caused by consecutive packets

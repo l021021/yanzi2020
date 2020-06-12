@@ -5,10 +5,7 @@ const cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-    // var username = "653498331@qq.com";
-    // var password = "000000";
-    // const username = 'de1999@vip.qq.com'
-    // const password = '23456789'
+let locationsToPrint = ['447223', '290596', '879448']
 
 // ################################################
 
@@ -19,7 +16,7 @@ let _UnitsCounter
 
 const _Locations = new Map()
 const _Units = []
-let TimeoutId = setTimeout(doReport, 30000) // wait for 30 sec before exit
+let TimeoutId = setTimeout(doReport, 60000) // wait for 30 sec before exit
     // Create a web socket client initialized with the options as above
 const client = new WebSocketClient()
 
@@ -46,7 +43,7 @@ client.on('connect', function(connection) {
     // Handle messages
     connection.on('message', function(message) {
         clearTimeout(TimeoutId)
-        TimeoutId = setTimeout(doReport, 30000) // exit after 10 seconds idle
+        TimeoutId = setTimeout(doReport, 60000) // exit after 10 seconds idle
             // console.log('timer reset  ')
 
         if (message.type === 'utf8') {
@@ -130,16 +127,17 @@ client.on('connect', function(connection) {
 
                                     // unitObj.type = json.list[iList].unitTypeFixed.name
 
-                                    if (isChassis === true) {
+                                    if (isChassis === false && unitObj.did.indexOf('UU') >= 0) {
                                         // console.log(unitObj.did);
+                                        // console.log(json.list[iList].nameSetByUser);
 
                                         _tempunitObj = JSON.parse(JSON.stringify(unitObj))
                                         _Units.push(_tempunitObj)
                                         _UnitsCounter++
                                     }
-                                    if (json.list[iList].lifeCycleState.name === 'present') {
-                                        _OnlineUnitsCounter++
-                                    }
+                                    // if (json.list[iList].lifeCycleState.name === 'present') {
+                                    //     _OnlineUnitsCounter++
+                                    // }
                                 }
                             }
 
@@ -256,142 +254,14 @@ function doReport() {
 
     }
 
-    console.table('在线传感器:')
-    console.table(_Units.filter((item) => item.lifeCycleState === 'present'))
+    locationsToPrint.forEach(loc => {
+        console.table('Assets:')
+        console.table(_Units.filter((item) => item.locationId === loc))
 
-    console.table('不在线传感器:')
-    console.table(_Units.filter((item) => item.lifeCycleState === 'shadow'))
+    });
 
 
     process.exit()
 }
 
-start() dataSourceAddress: {
-        resourceType: 'DataSourceAddress',
-        did: deviceID,
-        locationId: locationId,
-        variableName: {
-            resourceType: 'VariableName',
-            name: 'temperatureC'
-        }
-    },
-    timeSerieSelection: {
-        resourceType: 'TimeSerieSelection',
-        timeStart: nowMinusOneHour,
-        timeEnd: now
-    }
-}
-sendMessage(request)
-}
-
-function sendGetUnitsRequest() {
-    let
-        now = new Date().getTime()
-    let
-        nowMinusOneHour = now - 60 * 60 * 1000
-    let
-        request = {
-
-            messageType: 'GetUnitsRequest',
-            timeSent: now,
-            locationAddress: {
-                resourceType: 'LocationAddress',
-                locationId: LocationId
-            }
-        }
-
-    sendMessage(request)
-}
-
-function sendSubscribeRequest(location_ID) {
-    let
-        now = new Date().getTime()
-        //   let
-    nowMinusOneHour = now - 60 * 60 * 1000;
-    let
-        request = {
-            messageType: 'SubscribeRequest',
-            timeSent: now,
-            unitAddress: {
-                resourceType: 'UnitAddress',
-                locationId: location_ID
-            },
-            subscriptionType: {
-                resourceType: 'SubscriptionType',
-                name: 'data' // data   |  lifecircle  |  config
-            }
-        }
-
-    sendMessage(request)
-}
-
-function sendSubscribeRequest_lifecircle(location_ID) {
-    let
-        now = new Date().getTime()
-        //   let
-    nowMinusOneHour = now - 60 * 60 * 1000;
-    let
-        request = {
-            messageType: 'SubscribeRequest',
-            timeSent: now,
-            unitAddress: {
-                resourceType: 'UnitAddress',
-                locationId: location_ID
-            },
-            subscriptionType: {
-                resourceType: 'SubscriptionType',
-                name: 'lifecircle' // data   |  lifecircle  |  config
-            }
-        }
-
-    sendMessage(request)
-}
-
-function sendSubscribeRequest_battery(location_ID) {
-    let
-        now = new Date().getTime()
-        //   let
-    nowMinusOneHour = now - 60 * 60 * 1000;
-    let
-        request = {
-            messageType: 'SubscribeRequest',
-            timeSent: now,
-            unitAddress: {
-                resourceType: 'UnitAddress',
-                locationId: location_ID
-            },
-            subscriptionType: {
-                resourceType: 'SubscriptionType',
-                name: 'battery' // data   |  lifecircle  |  config
-            }
-        }
-
-    sendMessage(request)
-}
-
-function sendPeriodicRequest() {
-    let
-        now = new Date().getTime()
-    let
-        request = {
-            messageType: 'PeriodicRequest',
-            timeSent: now
-        }
-    sendMessage(request)
-}
-})
-
-function beginPOLL() {
-    if (!username) {
-        console.error('The username has to be set')
-        return
-    }
-    if (!password) {
-        console.error('The password has to be set')
-        return
-    }
-    client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
-}
-
-beginPOLL()
+start()

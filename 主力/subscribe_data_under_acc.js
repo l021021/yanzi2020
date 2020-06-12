@@ -5,12 +5,10 @@ const cirrusAPIendpoint = 'cirrus20.yanzi.se'
 let sessionId
 let heartbeatFlag = 0
 
-// const username = 'frank.shen@pinyuaninfo.com'
-// const password = 'Ft@Sugarcube99'
+
 let username = '653498331@qq.com'
 let password = '000000'
-    // let username = 'de1999@vip.qq.com'
-    // let password = '23456789'
+
 const filter = '' // filter for console
 
 // const typeofSubs =
