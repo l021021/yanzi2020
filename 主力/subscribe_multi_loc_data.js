@@ -22,7 +22,11 @@ const typeofSubs = ['lifecircle', 'config', 'battery', 'sensorData', 'assetData'
 
 const _logLimit = 50000 // will exit when this number of messages has been logged
 // const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
-const locationIds = ['447223', '290596', '879448'] //AZ P3
+// const locationIds = ['447223', '290596', '879448'] //AZ P3
+// const locationIds = ['230381'] //JOS HK
+// const locationIds = ['108899'] //横河
+let locationIds = ['141828'] // AZ7-4
+
 
 let _Counter = 0 // message counter
 const sensorArray = []
@@ -368,6 +372,7 @@ client.on('connect', function (connection) {
             connection.sendUTF(json)
         } else {
             c("sendMessage: Couldn't send message, the connection is not open")
+            client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
         }
     }
 

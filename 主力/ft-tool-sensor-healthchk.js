@@ -13,70 +13,63 @@
 
 // let LocationId = '290596' // 1002
 // let LocationId = '879448' // 1002
-let LocationId = '447223' // 1002
-
-
-let _logLimit = 200 // will exit when this number of messages has been logged
-
-// Set up endpoint, you'll probably need to change this
-let cirrusAPIendpoint = 'cirrus20.yanzi.se'
-let WebSocketClient = require('websocket').client
-
-// ##########CHANGE BELOW TO YOUR OWN DATA##########
-
-// Set up credentials. Please DONT have your credentials in your code when running on production
-
-// let username = "653498331@qq.com";
-let username = 'frank.shen@pinyuaninfo.com'
-let password = 'Ft@Sugarcube99'
-
+// let LocationId = '447223' // 1002
 // Location ID and Device ID, please change this to your own, can be found in Yanzi Live
 // let LocationId = '229349' //fangtang
 // let LocationId = '188559' //1001
 
 // let LocationId = '938433' //1001
+// let LocationId = '230381' // JOS_HK
+// let LocationId = '976522' // AZ-p3-6
+let LocationId = '141828' // AZ-p3-4
+let _logLimit = 500 // will exit when this number of messages has been logged
 
-// ################################################
+
+let cirrusAPIendpoint = 'cirrus20.yanzi.se'
+let WebSocketClient = require('websocket').client
+let username = 'frank.shen@pinyuaninfo.com'
+let password = 'Ft@Sugarcube99'
 
 // For log use only
 let _Counter = 0 // message counter
 let _Counter1 = 0 // sensor counter/
 let _Units = new Set()
 const unitObj = {
-    did: '',
-    locationId: '',
-    // serverDid: '',
-    // productType: '',
-    lifeCycleState: '',
-    isChassis: '',
-    // chassisDid: '',
-    nameSetByUser: '',
-    type: ''
-}
-// let _Locations = [];
+        did: '',
+        locationId: '',
+        // serverDid: '',
+        // productType: '',
+        lifeCycleState: '',
+        isChassis: '',
+        // chassisDid: '',
+        nameSetByUser: '',
+        type: ''
+    }
+    // let _Locations = [];
 let sensorArray = []
-// 二维数组，0：传感器ID，1：motion计数，2：Nomotion计数;3:当前value
+    // 二维数组，0：传感器ID，1：motion计数，2：Nomotion计数;3:当前value
 let motionTimeStamps
 
 let _t1 = new Date()
 for (let
-    i = 1; i < 4; i++) {
+        i = 1; i < 4; i++) {
     sensorArray[i] = []
 }
+//分别记录 初次/motion,nomotion记录,以及value值
 sensorArray[0] = new Set()
-// Create a web socket client initialized with the options as above
+    // Create a web socket client initialized with the options as above
 let client = new WebSocketClient()
 
-client.on('connectFailed', function (error) {
+client.on('connectFailed', function(error) {
     console.log('Connect Error: ' + error.toString())
     connection.close()
 })
 
-client.on('connect', function (connection) {
+client.on('connect', function(connection) {
     // console.log("Checking API service status with ServiceRequest.");
     sendServiceRequest()
-    // Handle messages
-    connection.on('message', function (message) {
+        // Handle messages
+    connection.on('message', function(message) {
         if (message.type === 'utf8') {
             let
                 json = JSON.parse(message.utf8Data)
@@ -92,12 +85,16 @@ client.on('connect', function (connection) {
                 connection.close()
 
                 // console.log('Total sensors: ' + _Counter1)
-                console.log(sensorArray[0].length)
+                console.log('传感器列表');
+                // console.log(sensorArray[0].length)
                 console.table(sensorArray[0])
-                console.log(sensorArray[1].length)
+                console.log(' 传感器检测到的运动(value+1)记录数');
                 console.table(sensorArray[1])
-                console.log(sensorArray[2].length)
+                console.log(' 传感器发出的静态(value不变)记录数');
                 console.table(sensorArray[2])
+                console.log(' 传感器value');
+                console.table(sensorArray[3])
+
 
 
                 process.exit()
@@ -114,6 +111,7 @@ client.on('connect', function (connection) {
                         sendPeriodicRequest() // as keepalive
                         sendSubscribeRequest(LocationId) // test
                         sendSubscribeRequest_lifecircle(LocationId) // eventDTO
+                        sendSubscribeRequest_battery(LocationId) // eventDTO
                         sendGetUnitsRequest(LocationId) // get units under this location
 
                     } else {
@@ -129,29 +127,27 @@ client.on('connect', function (connection) {
                             // Sensor DATA
                             switch (json.list[0].dataSourceAddress.variableName.name) {
                                 case 'motion': // sampleMotion
-                                    sensorArray[0].add(json.list[0].dataSourceAddress.did)
-                                    let temp1 = sensorArray[3][json.list[0].dataSourceAddress.did] || 0 //当前计数
+                                    sensorArray[0].add(json.list[0].dataSourceAddress.did) //sensor名集合
+                                    let temp1 = sensorArray[3][json.list[0].dataSourceAddress.did] || -1 //当前计数
                                     sensorArray[3][json.list[0].dataSourceAddress.did] = json.list[0].list[0].value // latest value
-                                    if (temp1 < json.list[0].list[0].value && temp1 !== 0) { // Value changed!
-                                        console.log('motion!')
-                                        sensorArray[1].push(json.list[0].dataSourceAddress.did)
+                                    if (temp1 < json.list[0].list[0].value && temp1 !== -1) { // Value changed!
+                                        console.log(' ---  value changed in ' + json.list[0].dataSourceAddress.did)
+                                        sensorArray[1][json.list[0].dataSourceAddress.did]++
 
                                     } else if (temp1 === json.list[0].list[0].value) {
-                                        console.log('no motion!')
-                                        sensorArray[2].push(json.list[0].dataSourceAddress.did)
+                                        console.log(' ---  value unchanged in ' + json.list[0].dataSourceAddress.did)
+                                        sensorArray[2][json.list[0].dataSourceAddress.did]++
                                     } else {
                                         // sensorArray[0][json.list[0].dataSourceAddress.did] = 1
-                                        sensorArray[1].push(json.list[0].dataSourceAddress.did)
-                                        sensorArray[2].push(json.list[0].dataSourceAddress.did)
+                                        sensorArray[1][json.list[0].dataSourceAddress.did] = 0
+                                        sensorArray[2][json.list[0].dataSourceAddress.did] = 0
 
-                                        console.log('first seen! cannot tell')
+                                        console.log(' ---  first seen! ' + json.list[0].dataSourceAddress.did)
                                     };
 
                                     break
-                                case 'assetUtilization': // SampleUtilization
-                                    break
                                 default:
-                                    console.log(_Counter + '# ' + 'Other ' + json.list[0].dataSourceAddress.variableName.name)
+                                    console.log(_Counter + '# ' + 'sensor data: ' + json.list[0].dataSourceAddress.variableName.name + ' ' + json.list[0].dataSourceAddress.did + ' ' + json.list[0].list[0].value)
                             }
                             break
                         default:
@@ -170,21 +166,17 @@ client.on('connect', function (connection) {
                         for (let iList = 0; iList < json.list.length; iList++) {
                             // process each response packet
                             if (
-                                json.list[iList].unitTypeFixed.name === 'gateway' ||
-                                json.list[iList].unitAddress.did.indexOf('AP') !== -1
+                                json.list[iList].unitTypeFixed.name !== 'gateway' &&
+                                json.list[iList].unitAddress.did.indexOf('AP') == -1
                             ) {
-                                // console.log(json.list[index].unitAddress.did);
-                                // console.log('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
-                            } else {
+
                                 // record all sensors
                                 unitObj.did = json.list[iList].unitAddress.did
                                 unitObj.locationId = json.locationAddress.locationId
-                                // unitObj.chassisDid = json.list[index].chassisDid
-                                // unitObj.productType = json.list[index].productType
                                 unitObj.lifeCycleState = json.list[iList].lifeCycleState.name
                                 unitObj.isChassis = json.list[iList].isChassis
                                 unitObj.nameSetByUser = json.list[iList].nameSetByUser
-                                // unitObj.serverDid = json.list[index].unitAddress.serverDid
+                                    // unitObj.serverDid = json.list[index].unitAddress.serverDid
 
                                 unitObj.type = json.list[iList].unitTypeFixed.name
 
@@ -215,11 +207,11 @@ client.on('connect', function (connection) {
         }
     })
 
-    connection.on('error', function (error) {
+    connection.on('error', function(error) {
         console.log('Connection Error: ' + error.toString())
     })
 
-    connection.on('close', function (error) {
+    connection.on('close', function(error) {
         console.log('Connection closed!')
     })
 
@@ -228,7 +220,7 @@ client.on('connect', function (connection) {
             // Create the text to be sent
             let
                 json = JSON.stringify(message, null, 1)
-            //    console.log('sending' + JSON.stringify(json));
+                //    console.log('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             console.log("sendMessage: Couldn't send message, the connection is not open")
@@ -256,7 +248,7 @@ client.on('connect', function (connection) {
     function sendGetLocationsRequest() {
         let
             now = new Date().getTime()
-        // let
+            // let
         nowMinusOneHour = now - 60 * 60 * 1000;
         let
             request = {
@@ -314,7 +306,7 @@ client.on('connect', function (connection) {
     function sendSubscribeRequest(location_ID) {
         let
             now = new Date().getTime()
-        //   let
+            //   let
         nowMinusOneHour = now - 60 * 60 * 1000;
         let
             request = {
@@ -336,7 +328,7 @@ client.on('connect', function (connection) {
     function sendSubscribeRequest_lifecircle(location_ID) {
         let
             now = new Date().getTime()
-        //   let
+            //   let
         nowMinusOneHour = now - 60 * 60 * 1000;
         let
             request = {
@@ -349,6 +341,28 @@ client.on('connect', function (connection) {
                 subscriptionType: {
                     resourceType: 'SubscriptionType',
                     name: 'lifecircle' // data   |  lifecircle  |  config
+                }
+            }
+
+        sendMessage(request)
+    }
+
+    function sendSubscribeRequest_battery(location_ID) {
+        let
+            now = new Date().getTime()
+            //   let
+        nowMinusOneHour = now - 60 * 60 * 1000;
+        let
+            request = {
+                messageType: 'SubscribeRequest',
+                timeSent: now,
+                unitAddress: {
+                    resourceType: 'UnitAddress',
+                    locationId: location_ID
+                },
+                subscriptionType: {
+                    resourceType: 'SubscriptionType',
+                    name: 'battery' // data   |  lifecircle  |  config
                 }
             }
 
@@ -377,19 +391,7 @@ function beginPOLL() {
         return
     }
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-    // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
-}
-
-function scan_array(arr) {
-    // c('\n Listing Stored Events: \n')
-    for (let key in arr) { // 这个是关键
-        if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
-            scan_array(arr[key])
-        } else {
-            console.log('      ' + key + ' --- ' + arr[key])
-        }
-    }
-    console.log('\n                ------- \n')
+        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
 beginPOLL()
