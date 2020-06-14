@@ -1,11 +1,14 @@
 // 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
+let locationsToPrint = ['447223', '290596', '879448'] // can be [] to get all under account
+let type = 'EU' //'UU'
+let ischasisFlag = true //false
+
 
 const WebSocketClient = require('websocket').client
 const cirrusAPIendpoint = 'cirrus20.yanzi.se'
-
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-let locationsToPrint = ['447223', '290596', '879448']
+
 
 // ################################################
 
@@ -63,7 +66,7 @@ client.on('connect', function (connection) {
                             sendGetLocationsRequest()// fet all locations
                         } // not mandatory
                         else {
-                            locationToPrint.forEach(iLoc => {
+                            locationsToPrint.forEach(iLoc => {
                                 sendGetUnitsRequest(iLoc) // get units under these location
 
                             });
@@ -136,7 +139,7 @@ client.on('connect', function (connection) {
 
                                     // unitObj.type = json.list[iList].unitTypeFixed.name
 
-                                    if (isChassis === false && unitObj.did.indexOf('UU') >= 0) {
+                                    if (isChassis === ischasisFlag && unitObj.did.indexOf(type) >= 0) {
                                         // console.log(unitObj.did);
                                         // console.log(json.list[iList].nameSetByUser);
 
@@ -264,7 +267,7 @@ function doReport() {
     }
 
     locationsToPrint.forEach(loc => {
-        console.table('Assets:')
+        console.table('Assets or Sensors:')
         console.table(_Units.filter((item) => item.locationId === loc))
 
     });

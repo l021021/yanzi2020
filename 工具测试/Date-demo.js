@@ -6,6 +6,7 @@
 // var formatted = a.map(dateTimeFormat.format);
 // console.log(formatted.join('; '));
 // // → "setembro de 2012; dezembro de 2012; abril de 2012"
+let intlOption = Intl.DateTimeFormat('en-US')
 
 var myDate = new Date() // freezed at that moment
 var myDate1 = new Date() // freezed at that moment
@@ -24,8 +25,11 @@ myDate1.setTime(158752140000)
 // myDate.setMinutes(0)
 // myDate.setSeconds(0)
 
-console.log(myDate.toLocaleDateString()) // 2019-11-12
-console.log(myDate.toLocaleTimeString()) // 12:01:11
+console.log('Local Date:' + myDate.toLocaleDateString('en-US')) // 2019-11-12
+console.log('Local time:' + myDate.toLocaleTimeString('en-US')) // 12:01:11
+console.log('ISO : ' + myDate.toISOString()) // 
+console.log(' : ' + myDate.toTimeString()) // 
+console.log(' UTC : ' + myDate.toUTCString()) // 
 console.log(myDate1.toLocaleDateString()) // 2019-11-12
 console.log(myDate1.toLocaleTimeString()) // 12:01:11
 console.log(myDate.toLocaleString()) // 12:01:11
@@ -44,8 +48,8 @@ myDate.setMinutes(10 * (Math.floor(myDate.getMinutes() / 10)))
 
 
 console.log(myDate.toLocaleDateString()) // 2019-11-12
-console.log(myDate.toLocaleTimeString()) // 12:01:11
-console.log(myDate.toLocaleString())
+console.log(myDate.toTimeString()) // 12:01:11
+console.log(myDate.toString())
 
 
 
@@ -60,12 +64,13 @@ console.log(myDate.toLocaleString())
 
 // myDate.setTime(Date.parse('2019/01/01/02:00:00'))
 
-console.log(Date.now())
+// console.log(Date.now())
 
 myDate.setTime(Date.now())
 myDate.setTime(Date.now())
-console.log(myDate.toLocaleString());
-// console.log(Date.parse(Date.now().toLocaleString()))
+console.log(myDate.toLocaleString('en-US'));
+console.log(myDate.toLocaleString('zh-CN', { hour12: false }));
+console.log(Date.parse(Date.now().toLocaleString()))
 
 // console.time('x')
 // for (let i = 0; i < 100; i++) {
