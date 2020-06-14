@@ -17,7 +17,7 @@ var myDate1 = new Date() // freezed at that moment
 
 // myDate.setTime(Date.parse('2019/01/01 01:21:21'))
 
-myDate.setTime(Date.now())
+console.log(myDate.setTime(Date.now()).toLocaleString())
 
 myDate1.setTime(158752140000)
 
@@ -36,10 +36,10 @@ console.log(myDate.getTime()) // 1573531087679
 console.log(Date.now()) // 1573531087679
 console.log(myDate.toDateString()) // Tue Nov 12 2019
 console.log(Date.parse(myDate.getFullYear() + '/' + myDate.getMonth() + '/' + myDate.getDate())) // to Mili
-    // myDate.setTime(1571531647736)
-    // myDate.setMinutes(0)
+// myDate.setTime(1571531647736)
+// myDate.setMinutes(0)
 myDate.setSeconds(0)
-    //myDate.setMilliseconds(0)
+//myDate.setMilliseconds(0)
 myDate.setMinutes(10 * (Math.floor(myDate.getMinutes() / 10)))
 
 
@@ -60,7 +60,12 @@ console.log(myDate.toLocaleString())
 
 // myDate.setTime(Date.parse('2019/01/01/02:00:00'))
 
-// // console.log(Date.now())
+console.log(Date.now())
+
+myDate.setTime(Date.now())
+myDate.setTime(Date.now())
+console.log(myDate.toLocaleString());
+// console.log(Date.parse(Date.now().toLocaleString()))
 
 // console.time('x')
 // for (let i = 0; i < 100; i++) {

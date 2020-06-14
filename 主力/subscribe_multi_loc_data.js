@@ -10,11 +10,11 @@ const password = 'Ft@Sugarcube99'
 // let username = '653498331@qq.com'
 // let password = '000000'
 
-const filter = '' // filter for console
+const filter = '3F14' // filter for console
 
 // const typeofSubs =
-// const typeofSubs = ['lifecircle', 'occupancy', 'data']
-const typeofSubs = ['lifecircle', 'config', 'battery', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
+const typeofSubs = ['occupancy', 'data']
+// const typeofSubs = ['lifecircle', 'config', 'battery', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
 
 
 // data   |  lifecircle  |  config | battery|sensorData|assetData|occupancy| occupancySlots|sensorSlots| assetSlots
@@ -25,7 +25,7 @@ const _logLimit = 50000 // will exit when this number of messages has been logge
 // const locationIds = ['447223', '290596', '879448'] //AZ P3
 // const locationIds = ['230381'] //JOS HK
 // const locationIds = ['108899'] //横河
-let locationIds = ['141828'] // AZ7-4
+let locationIds = ['976522'] // AZ7-4
 
 
 let _Counter = 0 // message counter
