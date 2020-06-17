@@ -10,16 +10,17 @@ const fs = require('fs')
 const cirrusAPIendpoint = 'cirrus20.yanzi.se';
 const username = 'frank.shen@pinyuaninfo.com';
 const password = 'Ft@Sugarcube99';
-const dataType = 'Motion'
+const sensorType = '332F-3-M'
 
 
 // 要修改项
 
-const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
-    // const locationIds = ['185308', '329312', '434888', '447224', '507828', '60358', '608739', '652990', '668617', '83561', '88252', '938433'] // AZ
-    // const locationIds = ['114190', '996052', '912706'] // 华为
-const startDate = '2020/05/24/00:00:00'
-const endDate = '2020/05/25/00:00:00'
+// const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
+// const locationIds = ['185308', '329312', '434888', '447224', '507828', '60358', '608739', '652990', '668617', '83561', '88252', '938433'] // AZ
+// const locationIds = ['114190', '996052', '912706'] // 华为
+const locationIds = ['290596'] // 华为
+const startDate = '2020/06/08/00:00:00'
+const endDate = '2020/06/13/00:00:00'
 
 const windowLimit = 10 // 大量数据时,建立接收windows
 const reportPeriod = 3600000 * 8 * 3 // 最小的请求数据的长度,单个数据请求不能大于2000,可以根据网络情况优化
@@ -27,7 +28,7 @@ const reportPeriod = 3600000 * 8 * 3 // 最小的请求数据的长度,单个数
 let TimeoutId = setTimeout(doReport, 30000); // 数据超时
 
 // for (let lc = 0; lc < locationIds.length; lc++) {}
-const dataFile = fs.createWriteStream(`../log/${locationIds[0]}_x_${startDate.replace(/[/:]/gi, '_')}_${endDate.replace(/[/:]/gi, '_')}${dataType}.json`, { encoding: 'utf8' })
+const dataFile = fs.createWriteStream(`../log/${locationIds[0]}_x_${startDate.replace(/[/:]/gi, '_')}_${endDate.replace(/[/:]/gi, '_')}${sensorType}.json`, { encoding: 'utf8' })
 
 dataFile.on('finish',
     function() { process.exit() })
@@ -187,7 +188,7 @@ client.on('connect', function(connection) {
                                 _Units.push(_tempunitObj)
                                     // request history record
                                     // if (unitObj.type === 'inputMotion' || unitObj.did.indexOf('UUID') >= 0) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
-                                if (unitObj.did.indexOf(dataType) >= 0) { sendGetSamplesRequest(unitObj.locationId, unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
+                                if (unitObj.did.indexOf(sensorType) >= 0) { sendGetSamplesRequest(unitObj.locationId, unitObj.did, Date.parse(startDate), Date.parse(endDate)) }
                                 // UUID or Motion
                             };
                         }

@@ -1,31 +1,28 @@
-// the array to be sorted
-var list = ['Delta', 'alpha', 'CHARLIE', 'bravo']
-
-// temporary array holds objects with position and sort-value
-var mapped = list.map(function (el, i) {
-    return { index: i, value: el.toLowerCase() }
-})
-
-// sorting the mapped array containing the reduced values
-mapped.sort(function (a, b) {
-    if (a.value > b.value) {
-        return 1
+function factorial(n, p = 1) {
+    if (n <= 1) {
+        return 1 * p;
+    } else {
+        let result = n * p;
+        // 被优化
+        return factorial(n - 1, result);
     }
-    if (a.value < b.value) {
-        return -1
-    }
-    return 0
-})
+}
 
-// container for the resulting order
-var result = mapped.map(function (el) {
-    return list[el.index]
-})
+
+function factorial_(n) {
+    if (n <= 1) {
+        return 1;
+    } else {
+        // 未被优化：在返回之后还要执行乘法
+        return n * factorial(n - 1);
+    }
+}
+console.log(factorial_(100));
 
 function scan_array(arr) {
     // c('\n Listing Stored Events: \n')
     for (var key in arr) { // 这个是关键
-        if (typeof (arr[key]) === 'array' || typeof (arr[key]) === 'object') { // 递归调用
+        if (typeof(arr[key]) === 'array' || typeof(arr[key]) === 'object') { // 递归调用
             scan_array(arr[key])
         } else {
             console.log('      ' + key + ' --- ' + arr[key])

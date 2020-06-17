@@ -29,7 +29,7 @@ var recordObj = {
     value: ''
 }
 
-var filename = '..\\log\\114190_2020_04_26_00_00_00_2020_04_27_13_59_59' // 历史记录文件
+var filename = '..\\log\\290596_x_2020_06_08_00_00_00_2020_06_13_00_00_00332F-3-M' // 历史记录文件
     // const startDate = '2019/12/23/00:00:00'
     // const endDate = '2019/12/31/23:59:59'
 
@@ -86,8 +86,8 @@ var t = new Date()
 for (let i1 = 0; i1 < locationJson.length; i1++) {
     // locationJson[i1].sampleTime =
     t.setTime(locationJson[i1].sampleTime)
-    locationJson[i1].sampleTime = t.toLocaleTimeString()
-
+    locationJson[i1].sampleTime = t.toLocaleString('zh-CN', { hour12: false })
+    console.log(locationJson[i1].sampleTime);
     //  json[locationJson[i1].DID] = [] // json:计算报告数组, 建立二维数组框架,准备存入报告数据
     // c(locationJson[i1].DID)
 }

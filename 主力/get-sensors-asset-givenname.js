@@ -1,13 +1,25 @@
 // 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
-let locationsToPrint = ['447223', '290596', '879448'] // can be [] to get all under account
-let type = 'EU' //'UU'
-let ischasisFlag = true //false
+// let locationsToPrint = ['447223', '290596', '879448'] // can be [] to get all under account
+let locationsToPrint = ['229349'] // can be [] to get all under account
+let type = 'UU' //'UU'
+let ischasisFlag = (type === 'UU') ? false : true //false
 
 
 const WebSocketClient = require('websocket').client
 const cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
+
+const filter = 'UU' // filter for console
+function c(data) {
+    if ((data.indexOf(filter) >= 0) || (filter === '')) {
+        try {
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+}
 
 
 // ################################################
@@ -20,7 +32,7 @@ let _UnitsCounter
 const _Locations = new Map()
 const _Units = []
 let TimeoutId = setTimeout(doReport, 60000) // wait for 30 sec before exit
-// Create a web socket client initialized with the options as above
+    // Create a web socket client initialized with the options as above
 const client = new WebSocketClient()
 
 let _onlineLocations = new Set()
@@ -34,20 +46,20 @@ const unitObj = {
 }
 
 // Program body
-client.on('connectFailed', function (error) {
+client.on('connectFailed', function(error) {
     console.log('Connect Error: reconnect' + error.toString())
     start()
 })
 
-client.on('connect', function (connection) {
+client.on('connect', function(connection) {
     // console.log("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function (message) {
+    connection.on('message', function(message) {
         clearTimeout(TimeoutId)
         TimeoutId = setTimeout(doReport, 60000) // exit after 10 seconds idle
-        // console.log('timer reset  ')
+            // console.log('timer reset  ')
 
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
@@ -63,7 +75,7 @@ client.on('connect', function (connection) {
                     setInterval(sendPeriodicRequest, 60000)
                     if (json.responseCode.name === 'success') {
                         if (locationsToPrint.length === 0) {
-                            sendGetLocationsRequest()// fet all locations
+                            sendGetLocationsRequest() // fet all locations
                         } // not mandatory
                         else {
                             locationsToPrint.forEach(iLoc => {
@@ -82,7 +94,7 @@ client.on('connect', function (connection) {
                 case 'GetLocationsResponse':
                     if (json.responseCode.name === 'success') {
                         let _templocationObj
-                        // UPDATE location IDs
+                            // UPDATE location IDs
                         if (json.list.length !== 0) {
                             console.log(`receiving new locations ${json.list.length}`) // 收到一组新的location
                             for (let i = 0; i < json.list.length; i++) {
@@ -95,7 +107,7 @@ client.on('connect', function (connection) {
                                 // _templocationObj = JSON.parse(JSON.stringify(locationObj)) // deep copy
                                 _Locations.set(json.list[i].locationAddress.locationId, json.list[i].name)
                                 sendGetUnitsRequest(json.list[i].locationAddress.locationId) // get units under this location
-                                // }
+                                    // }
                             }
                         }
                     } else {
@@ -107,7 +119,7 @@ client.on('connect', function (connection) {
                     break
                 case 'GetUnitsResponse':
                     if (json.responseCode.name === 'success') {
-                        // console.log(JSON.stringify(json) + '\n\n');
+                        c(JSON.stringify(json) + '\n\n');
 
                         var _tempunitObj
                         if (json.list.length > 1) {
@@ -135,7 +147,7 @@ client.on('connect', function (connection) {
                                     let isChassis = json.list[iList].isChassis
                                     unitObj.locationName = _Locations.get(unitObj.locationId)
                                     unitObj.nameSetByUser = json.list[iList].nameSetByUser
-                                    // unitObj.serverDid = json.list[index].unitAddress.serverDid
+                                        // unitObj.serverDid = json.list[index].unitAddress.serverDid
 
                                     // unitObj.type = json.list[iList].unitTypeFixed.name
 
@@ -167,12 +179,12 @@ client.on('connect', function (connection) {
         }
     })
 
-    connection.on('error', function (error) {
+    connection.on('error', function(error) {
         console.log('Connection Error: reconnect' + error.toString())
         start()
     })
 
-    connection.on('close', function () {
+    connection.on('close', function() {
         console.log('Connection closed!')
     })
 
@@ -180,7 +192,7 @@ client.on('connect', function (connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-            //    console.log('sending' + JSON.stringify(json));
+                //    console.log('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             console.log(
@@ -208,7 +220,7 @@ client.on('connect', function (connection) {
 
     function sendGetLocationsRequest() {
         var now = new Date().getTime()
-        // var nowMinusOneHour = now - 60 * 60 * 1000;
+            // var nowMinusOneHour = now - 60 * 60 * 1000;
         var request = {
             messageType: 'GetLocationsRequest',
             timeSent: now
@@ -242,7 +254,7 @@ client.on('connect', function (connection) {
 
 function start() {
     client.connect('wss://' + cirrusAPIendpoint + '/cirrusAPI')
-    // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
+        // console.log("Connecting to wss://" + cirrusAPIendpoint + "/cirrusAPI using username " + username);
 }
 
 function doReport() {
