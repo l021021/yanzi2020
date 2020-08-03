@@ -119,7 +119,7 @@ client.on('connect', function(connection) {
                     break
                 case 'GetUnitsResponse':
                     if (json.responseCode.name === 'success') {
-                        c(JSON.stringify(json) + '\n\n');
+                        // c(JSON.stringify(json) + '\n\n');
 
                         var _tempunitObj
                         if (json.list.length > 1) {

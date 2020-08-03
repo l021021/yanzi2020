@@ -3,12 +3,12 @@
 const WebSocketClient = require('websocket').client
 const cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
-// var username = 'frank.shen@pinyuaninfo.com'
-// var password = 'Ft@Sugarcube99'
-// var username = "653498331@qq.com";
-// var password = "000000";
-const username = 'de1999@vip.qq.com'
-const password = '23456789'
+var username = 'frank.shen@pinyuaninfo.com'
+var password = 'Ft@Sugarcube99'
+    // var username = "653498331@qq.com";
+    // var password = "000000";
+    // const username = 'de1999@vip.qq.com'
+    // const password = '23456789'
 
 // ################################################
 

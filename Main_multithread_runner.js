@@ -5,17 +5,20 @@ var Converters = []
 
 // const locationIds = ['114190', '996052', '912706'] //hw
 // const locationIds = ['229349'] //fangtan	274189
-// const locationIds = ['305026'] //-CHC 
-// const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
-const locationIds = ['447223', '290596', '879448'] //AZ P3
+const locationIds = ['655623'] //wfbj	274189
+    // const locationIds = ['305026'] //-CHC 
+    // const locationIds = ['230381'] //JOS
+    // const locationIds = ['503370'] //Jvanke
+    // const locationIds = ['952675', '402837', '268429', '732449', '328916'] //拓闻淮安
+    // const locationIds = ['447223', '290596', '879448', '141828', '432812', '976522'] //AZ P3
     // const locationIds = ['185308', '329312', '434888', '447224', '507828', '60358', '608739', '652990', '668617', '83561', '88252', '938433'] // AZ
 
 
 
 // const locationIds = ['274189', '229349'] //shenao
-const startDate = '2020/06/08/08:00:00'
-const endDate = '2020/06/12/21:00:00'
-const EUorUU = 'UU'
+const startDate = '2020/07/27/12:00:00'
+const endDate = '2020/07/28/23:59:59'
+const EUorUU = 'Motion' //Motion|UU
 const interval = 30 //分钟
 
 for (let lc = 0; lc < locationIds.length; lc++) {

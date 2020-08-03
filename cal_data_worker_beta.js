@@ -15,11 +15,11 @@ const interval = process.argv[6];
 // const endDate = '2020/05/22/00:00:00'
 // const EUorUU = 'Motion'
 // var interval = 10
-const filter = ['writing']
+const filter = ['']
 
 function c(data) {
     let match = false
-    filter.forEach(element => {
+    filter.forEach(element => { // filter to screen unneed messages
         if (data.indexOf(element) >= 0) {
             match = true
         }
@@ -34,7 +34,7 @@ function c(data) {
 }
 const filename =
     `../log/${locationId}_${startDate.replace(/[/:]/gi, "_")}_${endDate.replace(/[/:]/gi, "_")}_${EUorUU}`;
-var str = FS.readFileSync(filename + ".json", {
+let str = FS.readFileSync(filename + ".json", {
     encoding: "utf8"
 });
 const CSVFile = FS.createWriteStream(filename + "_" + interval + "M.csv", {
@@ -52,41 +52,41 @@ process.argv.forEach((val, index) => {
     console.log(`${index}: ${val}`);
 });
 
-var grid = interval // 间隔时间(分)
+let grid = interval; // 间隔时间(分)
 
-var records2D = [] //以DID为组织的二维数组
-var originalRecords = [] //原始记录数组
-var unitsSet = new Set() //临时set
-var unitsArray = [] //传感器ID数组
-var t1s = new Date()
-var t2s = new Date()
-var t1m = new Date()
-var t2m = new Date()
-var t1 = new Date()
-var t2 = new Date()
+let records2D = []; //以DID为组织的二维数组
+let originalRecords = []; //原始记录数组
+let unitsSet = new Set(); //临时set
+let unitsArray = []; //传感器ID数组
+let t1s = new Date();
+let t2s = new Date();
+let t1m = new Date();
+let t2m = new Date();
+let t1 = new Date();
+let t2 = new Date();
 
-var t0 = new Date()
-var occuArray = []
-var motionRecordobj = {
+let t0 = new Date();
+let occuArray = [];
+let motionRecordobj = {
     // type: '',
     Did: '',
     timeStamp: '',
     value: ''
-}
-var occuRecobj = {
+};
+let occuRecobj = {
     ID: '',
     timeStamp: '',
     value: ''
-}
+};
 let _tempMotionObj
 let _tempOccuobj
 
-var recordsofSensor = []
+let recordsofSensor = [];
 
 // var minDiff
-var t1tofollowingGrid, previousgridtoT2, gridDelta
+let t1tofollowingGrid, previousgridtoT2, gridDelta;
 
-var _lastValue = -1
+let _lastValue = -1;
 
 // 读取文件发生错误事件
 CSVFile.on('error', (err) => {
@@ -106,7 +106,7 @@ str = str.replace(/\]\[/gi, ',') // change ][ to , which was caused by consecuti
 originalRecords = JSON.parse(str) // 从文件读入的原始记录总表
 c(' ----- 总motion记录数' + originalRecords.length)
 
-// 从原始数据计算出一个sensor set
+// 从原始数据计算出一个sensor set:SET 非重复
 
 for (let i1 = 0; i1 < originalRecords.length; i1++) {
     unitsSet.add(originalRecords[i1].DID)
@@ -119,13 +119,15 @@ unitsSet.forEach(element => {
     records2D[element] = []
 })
 
-c(' ----- 总的传感器数: ' + unitsSet.size)
+console.log(' ----- 总的传感器数: ' + unitsSet.size)
 
-// 将不同传感器的数据分开放入数组
 
 CSVFile.write('ID,Time,Pct\n') // CSV文件头
+    // 将不同传感器的数据分开放入数组
 for (let iDID = 0; iDID < originalRecords.length; iDID++) {
     records2D[originalRecords[iDID].DID].push(JSON.parse(JSON.stringify(originalRecords[iDID])))
+
+    //转变成二维数组
 }
 
 // 计算循环 写入 motionTimeStamps 数组
@@ -134,7 +136,7 @@ unitsArray = Array.from(unitsSet)
 for (let iDID = 0; iDID < unitsArray.length; iDID++) { // 对每一个sensor做循环 iDID:传感器ID循环
     c(' ---- Computing sensor ' + unitsArray[iDID])
     c(' ---- Sorting sensor array ')
-    records2D[unitsArray[iDID]].sort(function (a, b) { // 先按照时间排序
+    records2D[unitsArray[iDID]].sort(function(a, b) { // 先按照时间排序
         if (a.sampleTime > b.sampleTime) {
             return 1
         } else {
@@ -178,11 +180,11 @@ for (let iDID = 0; iDID < unitsArray.length; iDID++) { // 对每一个sensor做�
         // add tail record - always as the last one
 
         motionRecordobj.timeStamp = Date.parse(endDate)
-        // recordObj.value 取原值
+            // recordObj.value 取原值
         _temprecordObj = JSON.parse(JSON.stringify(motionRecordobj))
-        // 将前一个记录延长到时段结束时间
-        recordsofSensor.pop()
-        recordsofSensor.push(_temprecordObj)
+            //增加一个记录,重复上一个值.时间戳是结尾,实际上不会被计算.
+            // recordsofSensor.pop()
+        recordsofSensor.push(_temprecordObj) //未验证
 
     } else if (records2D[unitsArray[iDID]][0].DID.indexOf('EU') >= 0) { // 如果是 samplemotio 记录
         // c('   --- calculating in-ot 记录' + records2D[unitsArray[iDID]].length + ' lists')
@@ -267,7 +269,7 @@ for (let iDID = 0; iDID < unitsArray.length; iDID++) { // 对每一个sensor做�
         */
 
         previousgridtoT2 = t2s.getSeconds() + (t2s.getMinutes() - t2m.getMinutes()) * 60 // t2前面的格子到t2的秒数 16:44:06, 则 = 846
-        // 这样, 10:01:22 in -11:03:44 ot ,应该计算01分的38秒占用,03分的44秒占用 ,02的66秒占用
+            // 这样, 10:01:22 in -11:03:44 ot ,应该计算01分的38秒占用,03分的44秒占用 ,02的66秒占用
 
         c('  --- where 1# = ' + t1m.toLocaleString('zh-CN', { hour12: false }) + '  ' + gridDelta + ' grids with ' + t1tofollowingGrid + ' s in 1st  hole and ' + previousgridtoT2 + 's in 2nd hole to 2# ' + t2m.toLocaleString('zh-CN', { hour12: false }) + ' was ' + recordsofSensor[iRec - 1].value)
 
@@ -324,13 +326,13 @@ for (let iDID = 0; iDID < unitsArray.length; iDID++) { // 对每一个sensor做�
                 // c('   -- 准备加入尾部记录(in)')
                 t0.setTime(t2m.getTime()) // tail
                 let _RecordExist = false
-                // for (const k in timeArray) { // already exits in Array?
-                //       for (let k = timeArray.length - 1; k > 0; k--) {
+                    // for (const k in timeArray) { // already exits in Array?
+                    //       for (let k = timeArray.length - 1; k > 0; k--) {
                 if (occuArray.length >= 1) {
                     for (let iOccu = occuArray.length - 1; iOccu >= Math.max(occuArray.length - 5, 0); iOccu--) { // 检查是否存在这个分钟纪录
                         if (occuArray[iOccu].timeStamp === t0.toLocaleString('zh-CN', { hour12: false })) {
                             _RecordExist = true
-                            //        c(k + '     尾部记录存在！尾部数值增加  ' + JSON.stringify(timeArray[k]) + ' + ' + PrevTot2)
+                                //        c(k + '     尾部记录存在！尾部数值增加  ' + JSON.stringify(timeArray[k]) + ' + ' + PrevTot2)
                             occuArray[iOccu].value += previousgridtoT2 / (60 * grid)
                             c('   --  尾部记录存在！尾部数值增加(in)  ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(occuArray[iOccu]))
                         }
@@ -377,7 +379,7 @@ for (let iDID = 0; iDID < unitsArray.length; iDID++) { // 对每一个sensor做�
 
             // process middle
             let j = 1
-            // c('    --  准备加入中部记录(ot)：' + gridDelta);
+                // c('    --  准备加入中部记录(ot)：' + gridDelta);
             while (j < gridDelta) {
                 t0.setTime(t1m.getTime() + j * 60 * grid * 1000)
                 occuRecobj.timeStamp = t0.toLocaleString('zh-CN', { hour12: false })
@@ -392,14 +394,14 @@ for (let iDID = 0; iDID < unitsArray.length; iDID++) { // 对每一个sensor做�
             // c('    -- 准备加入尾部记录(ot)')
             t0.setTime(t2m) // tail
             _RecordExist = false
-            // for (const k in timeArray) { // already exits in Array?
-            // for (let k = timeArray.length - 1; k > 0; k--) {
+                // for (const k in timeArray) { // already exits in Array?
+                // for (let k = timeArray.length - 1; k > 0; k--) {
             if (occuArray.length >= 1) {
                 for (let iOccu = occuArray.length - 1; iOccu >= Math.max(occuArray.length - 5, 0); iOccu--) { // 检查是否存在这个分钟纪录
                     if (occuArray[iOccu].timeStamp === t0.toLocaleString('zh-CN', { hour12: false })) {
                         c('    -- 尾部记录存在！原值不变(ot) ' + '   ' + JSON.stringify(occuArray[iOccu]))
                         _RecordExist = true
-                        // _ExistValue = timeArray[k].value;
+                            // _ExistValue = timeArray[k].value;
                     }
                 }
             }
@@ -415,7 +417,7 @@ for (let iDID = 0; iDID < unitsArray.length; iDID++) { // 对每一个sensor做�
     }
 
     c('   ---- timearray: sorting ')
-    occuArray.sort(function (a, b) {
+    occuArray.sort(function(a, b) {
         if (Date.parse(a.timeStamp) > Date.parse(b.timeStamp)) {
             return 1
         } else {
