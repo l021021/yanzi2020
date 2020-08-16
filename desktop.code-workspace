@@ -7,5 +7,7 @@
 			"path": "C:\\codebase\\log"
 		}
 	],
-    "settings": {}
+	"settings": {
+		"python.pythonPath": "c:\\Program Files (x86)\\Python38-32\\python.exe"
+	}
 }

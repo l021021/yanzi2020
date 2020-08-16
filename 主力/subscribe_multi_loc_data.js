@@ -10,7 +10,7 @@ const password = 'Ft@Sugarcube99'
     // let username = '653498331@qq.com'
     // let password = '000000'
 
-const filter = '3F14' // filter for console
+const filter = '' // filter for console
 
 // const typeofSubs =
 const typeofSubs = ['occupancy', 'data']

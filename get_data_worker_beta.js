@@ -6,7 +6,7 @@ var client = new WebSocketClient()
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
-const filter = ['writing', 'rec']
+const filter = [''] //['writing', 'rec']
 
 function c(data) {
     let match = false
@@ -43,8 +43,8 @@ const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.r
 const TimeoutId = setTimeout(doReport, 30000) //三十秒没有收到数据,则超时重连
 const window_limit = 3
 var heartbeatFlag = 0
-const reportPeriod = 3600000 * 8 * 3 //一天
-// For temp log use only
+let reportPeriod = (EUorUU === 'Motion') ? 3600000 * 8 * 3 : 3600000 * 8 * 90 //取数据的间隔一天或者十天,满足最多2000的限制
+    // For temp log use only
 var _Counter = 0 // message counter
 var _requestCount = 0
 var _responseCount = 0
@@ -69,9 +69,9 @@ var unitObj = {
 }
 
 dataFile.on('finish',
-    function () { process.exit() })
+    function() { process.exit() })
 dataFile.on('destroy',
-    function () { process.exit() })
+    function() { process.exit() })
 
 function Queue() {
     this.dataStore = []
@@ -117,20 +117,20 @@ function empty() {
 }
 
 // Program body
-client.on('connectFailed', function (error) {
+client.on('connectFailed', function(error) {
     c('Connect Error: reconnect' + error.toString())
     start()
 })
 
-client.on('connect', function (connection) {
+client.on('connect', function(connection) {
     // c("Checking API service status with ServiceRequest.");
     sendServiceRequest()
 
     // Handle messages
-    connection.on('message', function (message) {
+    connection.on('message', function(message) {
         clearTimeout(TimeoutId)
-        // TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
-        // c('timer reset  ')
+            // TimeoutId = setTimeout(doReport, 50000) // exit after 10 seconds idle
+            // c('timer reset  ')
 
         if (message.type === 'utf8') {
             var json = JSON.parse(message.utf8Data)
@@ -150,8 +150,8 @@ client.on('connect', function (connection) {
                         // sendGetLocationsRequest() // not mandatory
                         sendGetUnitsRequest(locationId) // get units from location
                         setInterval(sendPeriodicRequest, 60000) // as keepalive
-                        // sendSubscribeRequest(LocationId); //test one location
-                        // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
+                            // sendSubscribeRequest(LocationId); //test one location
+                            // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
                         c(json.responseCode.name)
                         c("Couldn't login, check your username and passoword")
@@ -166,7 +166,7 @@ client.on('connect', function (connection) {
                         c('receiving ' + json.sampleListDto.list.length + ' lists for ' + json.sampleListDto.dataSourceAddress.did + ' # ' + ++_responseCount)
                         _listCount += json.sampleListDto.list.length
                         dataFile.write(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleTemp/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleUpState/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleAsset/g, json.sampleListDto.dataSourceAddress.did)) // 修改了第一个replace . 插入sample报文的did
-                        // c(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleUpState/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did))
+                            // c(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleUpState/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did))
                     } else {
                         c('empty list # ' + ++_responseCount)
                     }
@@ -198,13 +198,13 @@ client.on('connect', function (connection) {
                                 unitObj.type = json.list[index].unitTypeFixed.name
 
                                 _tempunitObj = JSON.parse(JSON.stringify(unitObj))
-                                // c(unitObj.type)
-                                // c(unitObj.lifeCycleState)
-                                // c(unitObj.did)
-                                // c('\n')
+                                    // c(unitObj.type)
+                                    // c(unitObj.lifeCycleState)
+                                    // c(unitObj.did)
+                                    // c('\n')
 
                                 _Units.push(_tempunitObj)
-                                // request history record
+                                    // request history record
                                 if (((unitObj.type === 'physicalOrChassis') && EUorUU === 'EU') || ((unitObj.type === 'inputMotion') && EUorUU === 'Motion') || ((EUorUU === 'UU') && (unitObj.did.indexOf('UU') >= 0)) || ((EUorUU === 'Temp') && (unitObj.did.indexOf('Temp') >= 0))) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) } // 请求何种数据?
                             };
                         }
@@ -217,7 +217,7 @@ client.on('connect', function (connection) {
                     break
                 case 'PeriodicResponse':
                     heartbeatFlag = 0
-                    // c(_Counter + '# ' + "periodic response-keepalive");
+                    c(_Counter + '# ' + "periodic response-keepalive");
                     break
                 case 'SubscribeResponse':
 
@@ -225,18 +225,18 @@ client.on('connect', function (connection) {
 
                 default:
                     c('!!!! cannot understand')
-                    // connection.close();
+                        // connection.close();
                     break
             }
         }
     })
 
-    connection.on('error', function (error) {
+    connection.on('error', function(error) {
         c('Connection Error: reconnect' + error.toString())
         start()
     })
 
-    connection.on('close', function () {
+    connection.on('close', function() {
         c('Connection closed!')
     })
 
@@ -247,7 +247,7 @@ client.on('connect', function (connection) {
             timeSent: now
         }
         if (heartbeatFlag === 3) {
-            c('    periodic request missed (%s), will reconnect', heartbeatFlag)
+            console.log('    periodic request missed (%s), will reconnect', heartbeatFlag)
 
             connection.close()
 
@@ -256,7 +256,7 @@ client.on('connect', function (connection) {
         }
         sendMessage(request)
 
-        c(' ---  periodic request send (%s)', heartbeatFlag)
+        c(' ---  periodic request send ' + heartbeatFlag)
         heartbeatFlag++
     }
 
@@ -267,19 +267,19 @@ client.on('connect', function (connection) {
         }
         if (timeEnd_mili - timeStart_mili >= reportPeriod) {
             var request = {
-                messageType: 'GetSamplesRequest',
-                dataSourceAddress: {
-                    resourceType: 'DataSourceAddress',
-                    did: deviceID,
-                    locationId: locationId
-                },
-                timeSerieSelection: {
-                    resourceType: 'TimeSerieSelection',
-                    timeStart: timeStart_mili,
-                    timeEnd: timeStart_mili + reportPeriod
+                    messageType: 'GetSamplesRequest',
+                    dataSourceAddress: {
+                        resourceType: 'DataSourceAddress',
+                        did: deviceID,
+                        locationId: locationId
+                    },
+                    timeSerieSelection: {
+                        resourceType: 'TimeSerieSelection',
+                        timeStart: timeStart_mili,
+                        timeEnd: timeStart_mili + reportPeriod
+                    }
                 }
-            }
-            // push message in que
+                // push message in que
             c('  request : ' + request.dataSourceAddress.did + ' ' + request.timeSerieSelection.timeStart + ' #:' + ++_requestCount)
             sendMessagetoQue(request)
             sendGetSamplesRequest( // 递归
@@ -314,14 +314,14 @@ client.on('connect', function (connection) {
 
         if (mes === undefined && messageQueue.dataStore.length > 0) {
             sendMessage(messageQueue.dequeue())
-            // c('sending to queue . leaving ' + messageQueue.dataStore.length)
+                // c('sending to queue . leaving ' + messageQueue.dataStore.length)
             c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
         } else if (mes !== undefined && _windowSize < window_limit) {
             messageQueue.enqueue(mes)
             _windowSize++
             sendMessage(messageQueue.dequeue())
             c('    sending request from queue, still ' + messageQueue.dataStore.length + ' left.')
-            // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
+                // c('sending to queue . leaving  ' + messageQueue.dataStore.length)
         } else if (mes !== undefined && _windowSize >= window_limit) {
             messageQueue.enqueue(mes)
             c('    sending request to queue, still ' + messageQueue.dataStore.length + ' left.')
@@ -332,7 +332,7 @@ client.on('connect', function (connection) {
         if (connection.connected) {
             // Create the text to be sent
             var json = JSON.stringify(message, null, 1)
-            //    c('sending' + JSON.stringify(json));
+                //    c('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
             c("sendMessage: Couldn't send message, the connection is not open")
@@ -380,9 +380,11 @@ function start() {
 
 function doReport() {
     if (_requestCount > _responseCount) {
-        c('Failed')
+        console.log('Failed')
         dataFile.destroy()
-        // process.exit()
+        console.log('  ---  restart')
+        start()
+            // process.exit()
     }
     var t = new Date().getTime()
     var timestamp = new Date()
@@ -390,8 +392,6 @@ function doReport() {
     dataFile.end()
     c('Reporting：send ' + _requestCount + ' recvd ' + _responseCount + ', covering ' + _listCount + ' lists')
     c(timestamp.toLocaleTimeString() + '')
-    c('  ---  restart')
-    start()
 
 }
 

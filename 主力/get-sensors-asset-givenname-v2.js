@@ -1,6 +1,6 @@
 // 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
 // let locationsToPrint = ['447223', '290596', '879448'] // can be [] to get all under account
-let locationsToPrint = ['521209'] // can be [] to get all under account
+let locationsToPrint = ['503370'] // can be [] to get all under account
 let type = 'UU' //'UU'
 let ischasisFlag = (type === 'UU') ? false : true //false
 
@@ -10,7 +10,7 @@ const cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
 
-const filter = 'UU' // filter for console
+const filter = '' // filter for console
 function c(data) {
     if ((data.indexOf(filter) >= 0) || (filter === '')) {
         try {
@@ -62,9 +62,9 @@ client.on('connect', function(connection) {
             // console.log('timer reset  ')
 
         if (message.type === 'utf8') {
-            var json = JSON.parse(message.utf8Data)
-            var t = new Date().getTime()
-            var timestamp = new Date()
+            let json = JSON.parse(message.utf8Data);
+            let t = new Date().getTime();
+            let timestamp = new Date();
             timestamp.setTime(t)
             _Counter = _Counter + 1 // counter of all received packets
             switch (json.messageType) {
@@ -122,60 +122,67 @@ client.on('connect', function(connection) {
 
                         // let
                         let { list: units } = json
-                        let {
-                            list: { unitAddress }
-                        } = json
-                        let symbols = Object.getOwnPropertySymbols(json)
 
-                        console.table(symbols)
+                        let nameList = new Map()
 
-                        console.table(unitAddress);
-                        let _tempunitObj
+                        units.forEach(element => {
+                            nameList.set(element.nameSetByUser, element.unitAddress.did)
+                                // nameList.set(element.chassisDid, element.unitAddress.did)
+
+                        });
+
+                        // let symbols = Object.getOwnPropertySymbols(json)
+
+                        let tempArray = new Array(...nameList)
+                        tempArray.sort((a, b) => (a[0] > b[0] ? 1 : -1))
+
+                        // console.table(...new Array(nameList).sort((a, b) => a.Key - b.Key))
                         console.log(
-                            `seeing ${units.length} logical devices in  ${json.locationAddress.locationId}`
-                        )
-                        for (let iList = 0; iList < units.length; iList++) {
-                            // process each response packet while json.list[0].lifeCycleState.name==="shadow"
-                            if (
-                                units[iList].unitTypeFixed.name === 'gateway' ||
-                                units[iList].unitAddress.did.indexOf('AP') !== -1
-                            ) {
-                                // console.log(json.list[index].unitAddress.did);
-                                // console.log('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
-                            } else {
-                                // record all sensors
-                                unitObj.did = units[iList].unitAddress.did //
-                                unitObj.locationId = json.locationAddress.locationId
-                                if (_Locations.has(unitObj.locationId)) {
-                                    _onlineLocations.add(_Locations.get(unitObj.locationId))
-                                }
-                                // unitObj.chassisDid = json.list[index].chassisDid
-                                // unitObj.productType = json.list[iList].productType
-                                unitObj.lifeCycleState = units[iList].lifeCycleState.name
-                                let isChassis = units[iList].isChassis
-                                unitObj.locationName = _Locations.get(unitObj.locationId)
-                                unitObj.nameSetByUser = units[iList].nameSetByUser
-                                    // unitObj.serverDid = json.list[index].unitAddress.serverDid
+                            `seeing ${units.length} logical devices in  ${json.locationAddress.locationId}`)
+                        console.log(tempArray);
+                        // let _tempunitObj
+                        // for (let iList = 0; iList < units.length; iList++) {
+                        //     // process each response packet while json.list[0].lifeCycleState.name==="shadow"
+                        //     if (
+                        //         units[iList].unitTypeFixed.name === 'gateway' ||
+                        //         units[iList].unitAddress.did.indexOf('AP') !== -1
+                        //     ) {
+                        //         // console.log(json.list[index].unitAddress.did);
+                        //         // console.log('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
+                        //     } else {
+                        //         // record all sensors
+                        //         unitObj.did = units[iList].unitAddress.did //
+                        //         unitObj.locationId = json.locationAddress.locationId
+                        //         if (_Locations.has(unitObj.locationId)) {
+                        //             _onlineLocations.add(_Locations.get(unitObj.locationId))
+                        //         }
+                        //         // unitObj.chassisDid = json.list[index].chassisDid
+                        //         // unitObj.productType = json.list[iList].productType
+                        //         unitObj.lifeCycleState = units[iList].lifeCycleState.name
+                        //         let isChassis = units[iList].isChassis
+                        //         unitObj.locationName = _Locations.get(unitObj.locationId)
+                        //         unitObj.nameSetByUser = units[iList].nameSetByUser
+                        //             // unitObj.serverDid = json.list[index].unitAddress.serverDid
 
-                                // unitObj.type = json.list[iList].unitTypeFixed.name
+                        //         // unitObj.type = json.list[iList].unitTypeFixed.name
 
-                                if (isChassis === ischasisFlag && unitObj.did.indexOf(type) >= 0) {
-                                    // console.log(unitObj.did);
-                                    // console.log(json.list[iList].nameSetByUser);
+                        //         if (isChassis === ischasisFlag && unitObj.did.indexOf(type) >= 0) {
+                        //             // console.log(unitObj.did);
+                        //             // console.log(json.list[iList].nameSetByUser);
 
-                                    _tempunitObj = JSON.parse(JSON.stringify(unitObj))
-                                    _Units.push(_tempunitObj)
-                                    _UnitsCounter++
-                                }
-                                // if (json.list[iList].lifeCycleState.name === 'present') {
-                                //     _OnlineUnitsCounter++
-                                // }
-                            }
+                        //             _tempunitObj = JSON.parse(JSON.stringify(unitObj))
+                        //             _Units.push(_tempunitObj)
+                        //             _UnitsCounter++
+                        //         }
+                        //         // if (json.list[iList].lifeCycleState.name === 'present') {
+                        //         //     _OnlineUnitsCounter++
+                        //         // }
+                        //     }
 
 
 
-                            // console.log(_UnitsCounter + ' Units in Location:  while ' + _OnlineUnitsCounter + ' online');
-                        }
+                        //     // console.log(_UnitsCounter + ' Units in Location:  while ' + _OnlineUnitsCounter + ' online');
+                        // }
                     }
                     // json.list[0].lifeCycleState.name
                     break
