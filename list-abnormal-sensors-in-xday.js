@@ -4,12 +4,12 @@
 // 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
 
 var WebSocketClient = require('websocket').client
-var cirrusAPIendpoint = 'cirrus11.yanzi.se'
+var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
-// var username = 'frank.shen@pinyuaninfo.com'
-// var password = 'Ft@Sugarcube99'
-var username = "653498331@qq.com";
-var password = "000000";
+var username = 'frank.shen@pinyuaninfo.com'
+var password = 'Ft@Sugarcube99'
+    // var username = "653498331@qq.com";
+    // var password = "000000";
 
 // ################################################
 
