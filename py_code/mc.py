@@ -14,8 +14,8 @@ class Mc:
     # """ row and column numering
     def __init__(self):
         self.sides = np.full((6, 3, 3), 0)
-        for i in range(1, 7):
-            self.sides[i - 1] = np.full((3, 3), i)
+        for i in range(6):
+            self.sides[i] = np.full((3, 3), i + 1)
 
     def tilt(self, side, time=1):
         # clockwise
@@ -115,12 +115,13 @@ def pan(self, side, time=1):
             pass
 
         def rotate(array):  # input is 3x3 array
-            li1 = array[0]
-            li2 = array[1]
-            li3 = array[2]
-            array[:, 2] = li1
-            array[:, 1] = li2
-            array[:, 0] = li3
+            # li1 = array[0]
+            # li2 = array[1]
+            # li3 = array[2]
+            # array[:, 2] = li1
+            # array[:, 1] = li2
+            # array[:, 0] = li3
+            array[:, 2], array[:, 1], array[:, 0] = vsplit(array, 3)
             return array
 
 
@@ -131,7 +132,7 @@ mc = Mc()
 # mc.tilt('left', 2)
 # mc.tilt('middle', 3)
 # mc.pan('upper', 1)
-mc.pan('bottom', 2)
+mc.pan('bottom', 1)
 # mc.pan('middle', 3)
 
 # print(mc.sides)
