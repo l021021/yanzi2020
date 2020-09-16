@@ -17,20 +17,24 @@ const interval = process.argv[6];
 // var interval = 10
 const filter = ['']
 
+// function c(data) {
+//     let match = false
+//     filter.forEach(element => { // filter to screen unneed messages
+//         if (data.indexOf(element) >= 0) {
+//             match = true
+//         }
+//     })
+//     if (match === true) {
+//         try {
+//             console.log(data)
+//         } catch (error) {
+//             console.log(error)
+//         }
+//     }
+// }
+
 function c(data) {
-    let match = false
-    filter.forEach(element => { // filter to screen unneed messages
-        if (data.indexOf(element) >= 0) {
-            match = true
-        }
-    })
-    if (match === true) {
-        try {
-            console.log(data)
-        } catch (error) {
-            console.log(error)
-        }
-    }
+    console.log(data)
 }
 const filename =
     `../log/${locationId}_${startDate.replace(/[/:]/gi, "_")}_${endDate.replace(/[/:]/gi, "_")}_${EUorUU}`;

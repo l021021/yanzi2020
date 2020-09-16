@@ -5,7 +5,8 @@ var Converters = []
 
 // const locationIds = ['114190', '996052', '912706'] //hw
 // const locationIds = ['229349'] //fangtan	274189
-const locationIds = ['655623'] //wfbj	274189
+// const locationIds = ['655623'] //wfbj	274189
+const locationIds = ['190773'] //yuanjin
     // const locationIds = ['305026'] //-CHC 
     // const locationIds = ['230381'] //JOS
     // const locationIds = ['503370'] //Jvanke
@@ -16,9 +17,9 @@ const locationIds = ['655623'] //wfbj	274189
 
 
 // const locationIds = ['274189', '229349'] //shenao
-const startDate = '2020/07/27/12:00:00'
-const endDate = '2020/07/28/23:59:59'
-const EUorUU = 'Motion' //Motion|UU
+const startDate = '2020/01/01/00:00:00'
+const endDate = '2020/09/01/11:59:59'
+const EUorUU = 'UU' //Motion|UU
 const interval = 30 //分钟
 
 for (let lc = 0; lc < locationIds.length; lc++) {

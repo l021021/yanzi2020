@@ -14,12 +14,12 @@ def datestr2num(s):
     return datetime.strptime(str(s, encoding="utf-8"), "%Y/%m/%d").date()
 
 
-dates = np.loadtxt('C:\\codebase\\yanzi2020\\py_code\\stock.csv',
-                   delimiter=',',
-                   skiprows=1,
-                   usecols=(0),
-                   dtype='datetime64',
-                   unpack=True)
+# dates = np.loadtxt('C:\\codebase\\yanzi2020\\py_code\\stock.csv',
+#                    delimiter=',',
+#                    skiprows=1,
+#                    usecols=(0),
+#                    dtype='datetime64',
+#                    unpack=True)
 
 dates, pre, open, high, low, close, volume = np.loadtxt(
     'C:\\codebase\\yanzi2020\\py_code\\stock.csv',
