@@ -12,8 +12,7 @@ const password = 'Ft@Sugarcube99'
 
 const filter = '' // filter for console
 
-// const typeofSubs =
-const typeofSubs = ['occupancy', 'config', 'lifecircle']
+const typeofSubs = ['config', 'lifecircle', 'battery']
     // const typeofSubs = ['lifecircle', 'config', 'battery', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
 
 
@@ -26,7 +25,7 @@ const _logLimit = 50000 // will exit when this number of messages has been logge
     // const locationIds = ['230381'] //JOS HK
     // const locationIds = ['108899'] //横河
     // let locationIds = ['976522'] // AZ7-4
-let locationIds = ['305026'] // CHC
+let locationIds = ['797296'] // novaj
 
 let _Counter = 0 // message counter
 const sensorArray = []

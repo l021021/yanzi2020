@@ -34,7 +34,7 @@ const filter = ['']
 // }
 
 function c(data) {
-    console.log(data)
+    // console.log(data) 
 }
 const filename =
     `../log/${locationId}_${startDate.replace(/[/:]/gi, "_")}_${endDate.replace(/[/:]/gi, "_")}_${EUorUU}`;

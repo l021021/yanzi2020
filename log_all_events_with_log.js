@@ -9,15 +9,14 @@
 //
 
 var WebSocketClient = require('websocket').client
-var cirrusAPIendpoint = 'cirrus11.yanzi.se'
+var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 var c = console.log
     // var username = 'frank.shen@pinyuaninfo.com'
     // var password = 'Internetofthing'
 const reportInter = 300000
-var username = "653498331@qq.com";
-var password = "000000";
-
-// ################################################
+var username = 'frank.shen@pinyuaninfo.com'
+var password = 'Ft@Sugarcube99'
+    // ################################################
 
 // For log use only
 var _Counter = 0 // message counter

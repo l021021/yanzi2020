@@ -13,7 +13,7 @@ const password = 'Ft@Sugarcube99'
 const filter = '' // filter for console
 
 // const typeofSubs =
-const typeofSubs = ['occupancy']
+const typeofSubs = ['lifecircle']
     // const typeofSubs = ['lifecircle', 'config', 'battery', 'sensorData', 'assetData', 'occupancy', 'occupancySlots', 'sensorSlots', 'assetSlots']
 
 
@@ -26,7 +26,8 @@ const _logLimit = 50000 // will exit when this number of messages has been logge
     // const locationIds = ['230381'] //JOS HK
     // const locationIds = ['108899'] //横河
     // let locationIds = ['976522'] // AZ7-4
-let locationIds = ['274189'] // AZ7-4
+    // let locationIds = ['803785'] // AZ7-4
+let locationIds = ['797296'] // AZ7-4
 
 
 let _Counter = 0 // message counter
@@ -342,7 +343,7 @@ client.on('connect', function(connection) {
 
                                         break
                                     default:
-                                        c(' !!!!  ' + _Counter + ' Unknown events or locationchanged ' + json.list[0].eventType.name)
+                                        c(' !!!!  ' + _Counter + ' Unknown events:' + json.list[0].eventType.name)
                                         break
                                 }
                             }
