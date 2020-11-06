@@ -1,8 +1,6 @@
 /* eslint-disable no-lone-blocks */
 // 记录实时MOTION数据,形成记录文件,供后续分析
 
-// TODO:transfer mili to time
-
 var WebSocketClient = require('websocket').client
 var cirrusAPIendpoint = 'cirrus20.yanzi.se'
 
@@ -185,7 +183,7 @@ client.on('connect', function(connection) {
                                             _t2.setTime(json.timeSent)
                                             _t3.setTime(json.list[0].list[0].sampleTime)
                                             motionFlag = ' ? ' // update new value
-                                            // temprecordObj
+                                                // temprecordObj
                                             recordObj.type = 'SampleAsset'
                                             recordObj.Did = json.list[0].dataSourceAddress.did
                                             recordObj.timeStamp = _t1.getTime()

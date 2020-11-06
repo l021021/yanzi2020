@@ -1,9 +1,10 @@
 // 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
 // let locationsToPrint = ['447223', '290596', '879448'] // can be [] to get all under account
 // let locationsToPrint = ['503370'] // can be [] to get all under account
-let locationsToPrint = ['797296'] // can be [] to get all under account
-let type = 'EU' //'UU'
-let ischasisFlag = (type === 'UU') ? false : true //false
+let locationsToPrint = ['229349'] // can be [] to get all under account
+    // let locationsToPrint = ['797296'] // can be [] to get all under account
+    // let type = 'EU' //'UU'
+    // let ischasisFlag = (type === 'UU') ? false : true //false
 
 
 const WebSocketClient = require('websocket').client
@@ -27,12 +28,12 @@ function c(data) {
 
 // For log use only
 let _Counter = 0 // message counter
-let _OnlineUnitsCounter = 0
-let _UnitsCounter
+    // let _OnlineUnitsCounter = 0
+    // let _UnitsCounter
 
 const _Locations = new Map()
-const _Units = []
-let TimeoutId = setTimeout(doReport, 30000) // wait for 30 sec before exit
+const units = []
+let TimeoutId = setTimeout(doReport, 10000) // wait for 30 sec before exit
     // Create a web socket client initialized with the options as above
 const client = new WebSocketClient()
 
@@ -124,23 +125,33 @@ client.on('connect', function(connection) {
                         // let
                         let { list: units } = json
 
-                        let nameList = new Map()
+                        let sensorMap = new Map()
+                            // let assetList = new Map()
 
                         units.forEach(element => {
-                            nameList.set(element.nameSetByUser, element.unitAddress.did)
-                                // nameList.set(element.chassisDid, element.unitAddress.did)
-
+                            if (element.nameSetByUser) {
+                                sensorMap.set(element.unitAddress.did, element.nameSetByUser)
+                                    // nameList.set(element.chassisDid, element.unitAddress.did)
+                            } else {
+                                console.log(element)
+                            }
+                            // if (element.nameSetByUser) {
+                            //     sensorList.set(element.nameSetByUser, element.chassisDid)
+                            //         // nameList.set(element.chassisDid, element.unitAddress.did)
+                            // }
                         });
 
                         // let symbols = Object.getOwnPropertySymbols(json)
 
-                        let tempArray = new Array(...nameList)
-                        tempArray.sort((a, b) => (a[0] > b[0] ? 1 : -1))
+                        let SortedArray = new Array(...sensorMap)
+                        SortedArray.sort((a, b) => ((a[1] > b[1]) || ((a[1] == b[1]) & (a[0] > b[0]))) ? 1 : -1)
 
                         // console.table(...new Array(nameList).sort((a, b) => a.Key - b.Key))
                         console.log(
-                            `seeing ${units.length} logical devices in  ${json.locationAddress.locationId}`)
-                        console.log(tempArray);
+                                `seeing ${units.length} logical devices in  ${json.locationAddress.locationId}`)
+                            // console.table(units);
+                        console.table(SortedArray);
+
                         // let _tempunitObj
                         // for (let iList = 0; iList < units.length; iList++) {
                         //     // process each response packet while json.list[0].lifeCycleState.name==="shadow"
@@ -275,30 +286,30 @@ function start() {
 
 function doReport() {
 
-    const locationArray = Array.from(_onlineLocations)
+    // const locationArray = Array.from(_onlineLocations)
 
-    console.table(locationArray)
+    // // console.table(locationArray)
 
-    console.log(`total ${_Units.length} sensors configured while ${_OnlineUnitsCounter} sensors online`) // sum up
+    // console.log(`total ${units.length} sensors configured `) // sum up
 
-    for (const location of locationArray) {
-        let unitsinLocation = 0
-        for (let index = 0; index < _Units.length; index++) {
-            if (_Units[index].locationName === location) {
-                unitsinLocation++
+    // for (const location of locationArray) {
+    //     let unitsinLocation = 0
+    //     for (let index = 0; index < units.length; index++) {
+    //         if (units[index].locationName === location) {
+    //             unitsinLocation++
 
-            }
+    //         }
 
-        }
-        console.log(`${location} has ${unitsinLocation} sensors`)
+    //     }
+    //     console.log(`${location} has ${unitsinLocation} sensors`)
 
-    }
+    // }
 
-    locationsToPrint.forEach(loc => {
-        console.table('Assets or Sensors:')
-        console.table(_Units.filter((item) => item.locationId === loc))
+    // // locationsToPrint.forEach(loc => {
+    // //     console.table('Assets or Sensors:')
+    // //     console.table(_Units.filter((item) => item.locationId === loc))
 
-    });
+    // // });
 
 
     process.exit()

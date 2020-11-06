@@ -271,6 +271,7 @@ function doReport() {
     }
 
     console.table(_Units.filter((item) => item.type === 'present'))
+    console.table(_Units)
 
     console.table(_Units.filter((item) => item.lifeCycleState === 'shadow'))
 

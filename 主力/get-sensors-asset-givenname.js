@@ -1,6 +1,6 @@
 // 列出所有的Location已经其下的传感器;可能需要几分钟才能收全
 // let locationsToPrint = ['447223', '290596', '879448'] // can be [] to get all under account
-let locationsToPrint = ['229349'] // can be [] to get all under account
+let locationsToPrint = ['797296'] // can be [] to get all under account
 let type = 'UU' //'UU'
 let ischasisFlag = (type === 'UU') ? false : true //false
 

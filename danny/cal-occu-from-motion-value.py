@@ -1,26 +1,13 @@
 import time
 import json
-import websocket
-import datetime
-# import pymysql as MySQLdb
-import ssl
-import sys
-import re
-from random import randint
-import pandas as pd
-import sqlite3
-# from sqlalchemy import create_engine
-import smtplib
-from email.mime.text import MIMEText
-from email.utils import formataddr
-import logging
-import csv
+
 global tag
 global last
 
-
 # 读取原始数据
-with open('C:\\codebase\\log\\274189_2020_05_09_19_00_00_2020_05_09_21_00_00_Motion.json', encoding='utf-8') as f:
+with open(
+        'C:\\codebase\\log\\274189_2020_05_09_19_00_00_2020_05_09_21_00_00_Motion.json',
+        encoding='utf-8') as f:
     rawdata = f.readlines()[0]
     rawdata = rawdata.replace(']', '],')
     rawdata = '[' + rawdata
@@ -36,9 +23,9 @@ percentage = {}
 
 # 起始时间的文本形式和毫秒级时间戳形式
 STARTTIME = '2020-05-09 19:00:00'
-start = int(time.mktime(time.strptime(STARTTIME, '%Y-%m-%d %H:%M:%S'))) * 1000
-TIMESTEP = 600000
-
+start = int(time.mktime(time.strptime(STARTTIME,
+                                      '%Y-%m-%d %H:%M:%S'))) * 1000  #
+TIMESTEP = 600000  #计算间隔
 
 # 处理原始数据
 for persensordata in rawdata:
@@ -48,18 +35,19 @@ for persensordata in rawdata:
             countervalue[motionrecord['DID']] = {}
             freeoccupy[motionrecord['DID']] = {}
             percentage[motionrecord['DID']] = {}
-            countervalue[motionrecord['DID']][grid] = [
-                [motionrecord['sampleTime']], [motionrecord['value']]]
+            countervalue[motionrecord['DID']][grid] = [[
+                motionrecord['sampleTime']
+            ], [motionrecord['value']]]
         else:
             if grid not in countervalue[motionrecord['DID']].keys():
-                countervalue[motionrecord['DID']][grid] = [
-                    [motionrecord['sampleTime']], [motionrecord['value']]]
+                countervalue[motionrecord['DID']][grid] = [[
+                    motionrecord['sampleTime']
+                ], [motionrecord['value']]]
             else:
                 countervalue[motionrecord['DID']][grid][0].append(
                     motionrecord['sampleTime'])
                 countervalue[motionrecord['DID']][grid][1].append(
                     motionrecord['value'])
-
 '''建立计数器map
 countervalue = 
 {
@@ -92,7 +80,6 @@ countervalue =
 
 # print(countervalue)
 
-
 for uid in countervalue.keys():
     tag = 'free'
     lastvalue = None
@@ -103,7 +90,8 @@ for uid in countervalue.keys():
         for iValues in range(len(countervalue[uid][timegrid][1])):
             if lastvalue == None:  # 记录前一个value,已进行比较,得出free还是occupy
                 lastvalue = countervalue[uid][timegrid][1][iValues]
-            elif lastvalue != countervalue[uid][timegrid][1][iValues]:  # 说明检测到了移动
+            elif lastvalue != countervalue[uid][timegrid][1][
+                    iValues]:  # 说明检测到了移动
                 # 当从free变为occupied时，记录状态和对应的时间
                 if tag == 'free':
                     tag = 'occupied'
@@ -161,7 +149,7 @@ for uid in freeoccupy.keys():
         last_record = ''
         util = 0.0
         begin = start + timegrid * TIMESTEP
-        end = start + (timegrid+1) * TIMESTEP
+        end = start + (timegrid + 1) * TIMESTEP
 
         # 如果当前数据list长度为0，则代表10分钟内状态没变，直接根据状态名称获取0或100的占用值
         if len(freeoccupy[uid][timegrid][1]) == 0:
@@ -190,18 +178,22 @@ for uid in freeoccupy.keys():
 
             if freeoccupy[uid][timegrid][1][0] == 'free':
                 first_record = 'free'
-                del freeoccupy[uid][timegrid][0][0], freeoccupy[uid][timegrid][1][0]
+                del freeoccupy[uid][timegrid][0][0], freeoccupy[uid][timegrid][
+                    1][0]
 
             if freeoccupy[uid][timegrid][1][-1] == 'occupied':
                 last_record = 'occupied'
-                del freeoccupy[uid][timegrid][0][-1], freeoccupy[uid][timegrid][1][-1]
+                del freeoccupy[uid][timegrid][0][-1], freeoccupy[uid][
+                    timegrid][1][-1]
 
-            indexList = [iValues for iValues in range(
-                len(freeoccupy[uid][timegrid][1])) if freeoccupy[uid][timegrid][1][iValues] == 'occupied']
+            indexList = [
+                iValues for iValues in range(len(freeoccupy[uid][timegrid][1]))
+                if freeoccupy[uid][timegrid][1][iValues] == 'occupied'
+            ]
 
             for j in indexList:
-                occupied_time += ((freeoccupy[uid][timegrid][0]
-                                   [j+1] - freeoccupy[uid][timegrid][0][j]) * 1.0)
+                occupied_time += ((freeoccupy[uid][timegrid][0][j + 1] -
+                                   freeoccupy[uid][timegrid][0][j]) * 1.0)
 
             if first_record:
                 occupied_time += first_gap
@@ -213,13 +205,14 @@ for uid in freeoccupy.keys():
 
         percentage[uid][timegrid] = util
 
-with open('C:\\codebase\\log\\test.csv', 'a+', encoding='utf-8', newline='') as f:
+with open('C:\\codebase\\log\\test.csv', 'a+', encoding='utf-8',
+          newline='') as f:
     writer = csv.writer(f)
     for did in percentage.keys():
         for timegrid in percentage[did].keys():
             epoch_time = (int(timegrid) * TIMESTEP + start) / 1000.0
-            recordTime = time.strftime(
-                "%Y-%m-%d %H:%M:%S", time.localtime(epoch_time))
+            recordTime = time.strftime("%Y-%m-%d %H:%M:%S",
+                                       time.localtime(epoch_time))
             util = percentage[did][timegrid]
             writer.writerow([did, recordTime, util])
     f.close()
