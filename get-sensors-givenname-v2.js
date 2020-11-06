@@ -12,21 +12,8 @@ const cirrusAPIendpoint = 'cirrus11.yanzi.se'
 var username = 'frank.shen@pinyuaninfo.com'
 var password = 'Ft@Sugarcube99'
 
-const filter = '' // filter for console
-function c(data) {
-    if ((data.indexOf(filter) >= 0) || (filter === '')) {
-        try {
-            console.log(data)
-        } catch (error) {
-            console.log(error)
-        }
-    }
-}
-
-
 // ################################################
 
-// For log use only
 let _Counter = 0 // message counter
     // let _OnlineUnitsCounter = 0
     // let _UnitsCounter
