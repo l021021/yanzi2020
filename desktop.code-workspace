@@ -1,13 +1,12 @@
 {
-    "folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "C:\\codebase\\log"
-		}
-	],
-	"settings": {
-		"python.pythonPath": "C:\\Program Files (x86)\\Python38-32\\python.exe"
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [{
+			"name": "Python: 当前文件",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal"
+		}]
 	}
 }
