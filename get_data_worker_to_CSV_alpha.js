@@ -1,12 +1,12 @@
-/*worker 程序,配合main_multithread_runner工作,从命令行传入参数,生成数据,再由main调用converter,生成CSV*/
-var WebSocketClient = require('websocket').client
+/*worker 程序,配合main_multithread_runner工作,从命令行传入参数,直接生成python陈晓旭的输入CSV文件*/
+let WebSocketClient = require('websocket').client
 const fs = require('fs')
 
-var client = new WebSocketClient()
-var cirrusAPIendpoint = 'cirrus20.yanzi.se'
-var username = 'frank.shen@pinyuaninfo.com'
-var password = 'Ft@Sugarcube99'
-const filter = [''] //['writing', 'rec']
+let client = new WebSocketClient();
+let cirrusAPIendpoint = 'cirrus20.yanzi.se';
+let username = 'frank.shen@pinyuaninfo.com';
+let password = 'Ft@Sugarcube99';
+const filter = [''] //['writing', 'rec'] log输出的过滤器
 
 function c(data) {
     let match = false
@@ -33,29 +33,32 @@ process.argv.forEach((val, index) => {
     console.log(`${index}: ${val}`);
 });
 
-const locationId = process.argv[2]
-const startDate = process.argv[3]
-const endDate = process.argv[4]
-const EUorUU = process.argv[5]
 
-const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.json', { encoding: 'utf8' })
+const locationId = process.argv[2] || '503370'
+const startDate = process.argv[3] || '2020/10/09/00:00:00'
+const endDate = process.argv[4] || '2020/10/10/23:59:59'
+const EUorUU = process.argv[5] || 'Motion'
+
+const dataFile = fs.createWriteStream('../log/' + locationId + '_' + startDate.replace(/[/:]/gi, '_') + '_' + endDate.replace(/[/:]/gi, '_') + '_' + EUorUU + '.csv', { encoding: 'utf8' })
 
 const TimeoutId = setTimeout(doReport, 30000) //三十秒没有收到数据,则超时重连
 const window_limit = 3
-var heartbeatFlag = 0
+let heartbeatFlag = 0
 let reportPeriod = (EUorUU === 'Motion') ? 3600000 * 8 * 3 : 3600000 * 8 * 90 //取数据的间隔一天或者十天,满足最多2000的限制
     // For temp log use only
-var _Counter = 0 // message counter
-var _requestCount = 0
-var _responseCount = 0
-var _windowSize = 0
-var _listCount = 0
-var _Units = []
+let _Counter = 0 // message counter
+let _requestCount = 0
+let _responseCount = 0
+let _windowSize = 0
+let _listCount = 0 // 每个传感器的记录总数
+let _Units = []
+let _records = []
 
-var messageQueue = new Queue()
+
+let messageQueue = new Queue()
 
 
-var unitObj = {
+let unitObj = {
     did: '',
     locationId: '',
     serverDid: '',
@@ -101,8 +104,8 @@ function tail() {
 }
 
 function toString() {
-    var retStr = ''
-    for (var i = 0; i < this.dataStore.length; ++i) {
+    let retStr = ''
+    for (let i = 0; i < this.dataStore.length; ++i) {
         retStr += this.dataStore[i] + '\n'
     }
     return retStr
@@ -133,9 +136,9 @@ client.on('connect', function(connection) {
             // c('timer reset  ')
 
         if (message.type === 'utf8') {
-            var json = JSON.parse(message.utf8Data)
-            var t = new Date().getTime()
-            var timestamp = new Date()
+            let json = JSON.parse(message.utf8Data)
+            let t = new Date().getTime()
+            let timestamp = new Date()
             timestamp.setTime(t)
             _Counter = _Counter + 1 // counter of all received packets
 
@@ -153,20 +156,45 @@ client.on('connect', function(connection) {
                             // sendSubscribeRequest(LocationId); //test one location
                             // sendSubscribeRequest_lifecircle(LocationId); //eventDTO
                     } else {
-                        c(json.responseCode.name)
-                        c("Couldn't login, check your username and passoword")
+                        console.log(json.responseCode.name)
+                        console.log("Couldn't login, check your username and passoword")
                         connection.close()
                         process.exit()
                     }
-                    break
-                case 'GetLocationsResponse':
                     break
                 case 'GetSamplesResponse': //写入历史数据
                     if (json.responseCode.name === 'success' && json.sampleListDto.list) { // json.sampleListDto.dataSourceAddress.did
                         c('receiving ' + json.sampleListDto.list.length + ' lists for ' + json.sampleListDto.dataSourceAddress.did + ' # ' + ++_responseCount)
                         _listCount += json.sampleListDto.list.length
+                        _records = json.sampleListDto.list
+                            /*
 
-                        dataFile.write(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleTemp/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleUpState/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleAsset/g, json.sampleListDto.dataSourceAddress.did)) // 修改了第一个replace . 插入sample报文的did
+
+list:
+
+{"resourceType":"SampleMotion","sampleTime":1602172842994,"value":37536,"timeLastMotion":1602141616386}
+
+
+
+
+
+
+
+
+
+
+                            */
+
+
+
+
+
+
+
+
+                        console.log(JSON.stringify(_records[0]))
+                            /* dataFile.write(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleTemp/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleUpState/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleAsset/g, json.sampleListDto.dataSourceAddress.did)) // 修改了第一个replace . 插入sample报文的did
+                             */
                             // c(JSON.stringify(json.sampleListDto.list).replace(/resourceType/g, 'DID').replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleUpState/g, json.sampleListDto.dataSourceAddress.did).replace(/SampleMotion/g, json.sampleListDto.dataSourceAddress.did))
                     } else {
                         c('empty list # ' + ++_responseCount)
@@ -179,9 +207,9 @@ client.on('connect', function(connection) {
                     if (json.responseCode.name == 'success') {
                         // c(JSON.stringify(json) + '\n\n');
 
-                        var _tempunitObj
+                        let _tempunitObj
 
-                        c('Seeing ' + json.list.length + ' (logical or physical) sensors in  ' + json.locationAddress.locationId)
+                        console.log('Seeing ' + json.list.length + ' (logical or physical) sensors in  ' + json.locationAddress.locationId)
                         for (let index = 0; index < json.list.length; index++) { // process each response packet
                             if (json.list[index].unitTypeFixed.name == 'gateway' || json.list[index].unitTypeFixed.name == 'remoteGateway' || json.list[index].unitAddress.did.indexOf('AP') != -1) { // c(json.list[index].unitAddress.did);
                                 // c('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
@@ -220,13 +248,9 @@ client.on('connect', function(connection) {
                     heartbeatFlag = 0
                     c(_Counter + '# ' + "periodic response-keepalive");
                     break
-                case 'SubscribeResponse':
-
-                case 'SubscribeData':
-
                 default:
-                    c('!!!! cannot understand')
-                        // connection.close();
+                    console.log('!!!! cannot understand')
+                    connection.close();
                     break
             }
         }
@@ -242,8 +266,8 @@ client.on('connect', function(connection) {
     })
 
     function sendPeriodicRequest() {
-        var now = new Date().getTime()
-        var request = {
+        let now = new Date().getTime()
+        let request = {
             messageType: 'PeriodicRequest',
             timeSent: now
         }
@@ -267,7 +291,7 @@ client.on('connect', function(connection) {
             return null
         }
         if (timeEnd_mili - timeStart_mili >= reportPeriod) {
-            var request = {
+            let request = {
                     messageType: 'GetSamplesRequest',
                     dataSourceAddress: {
                         resourceType: 'DataSourceAddress',
@@ -289,7 +313,7 @@ client.on('connect', function(connection) {
                 timeEnd_mili
             )
         } else {
-            var request = {
+            let request = {
                 messageType: 'GetSamplesRequest',
                 dataSourceAddress: {
                     resourceType: 'DataSourceAddress',
@@ -332,7 +356,7 @@ client.on('connect', function(connection) {
     function sendMessage(message) {
         if (connection.connected) {
             // Create the text to be sent
-            var json = JSON.stringify(message, null, 1)
+            let json = JSON.stringify(message, null, 1)
                 //    c('sending' + JSON.stringify(json));
             connection.sendUTF(json)
         } else {
@@ -341,7 +365,7 @@ client.on('connect', function(connection) {
     }
 
     function sendServiceRequest() {
-        var request = {
+        let request = {
             messageType: 'ServiceRequest',
             clientId: 'client-fangtang'
 
@@ -350,7 +374,7 @@ client.on('connect', function(connection) {
     }
 
     function sendLoginRequest() {
-        var request = {
+        let request = {
             messageType: 'LoginRequest',
             username: username,
             password: password
@@ -359,8 +383,8 @@ client.on('connect', function(connection) {
     }
 
     function sendGetUnitsRequest(locationID) {
-        var now = new Date().getTime()
-        var request = {
+        let now = new Date().getTime()
+        let request = {
 
             messageType: 'GetUnitsRequest',
             timeSent: now,
@@ -383,12 +407,13 @@ function doReport() {
     if (_requestCount > _responseCount) {
         console.log('Failed')
         dataFile.destroy()
-        console.log('  ---  restart')
+        console.log('  ---  restarting')
+        client.abort()
         start()
             // process.exit()
     }
-    var t = new Date().getTime()
-    var timestamp = new Date()
+    let t = new Date().getTime()
+    let timestamp = new Date()
     timestamp.setTime(t)
     dataFile.end()
     c('Reporting：send ' + _requestCount + ' recvd ' + _responseCount + ', covering ' + _listCount + ' lists')
