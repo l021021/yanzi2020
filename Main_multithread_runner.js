@@ -21,8 +21,8 @@ const locationIds = ['797296'] //-nv
 
 
 // const locationIds = ['274189', '229349'] //shenao
-const startDate = '2020/10/21/00:00:00'
-const endDate = '2020/10/31/23:59:59'
+const startDate = '2020/10/11/00:00:00'
+const endDate = '2020/10/15/23:59:59'
 const EUorUU = 'Motion' //Motion|UU
 const interval = 30 //分钟
 

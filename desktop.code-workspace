@@ -8,5 +8,8 @@
 			"program": "${file}",
 			"console": "integratedTerminal"
 		}]
-	}
+	},
+	"folders": [{
+		"path": "."
+	}]
 }

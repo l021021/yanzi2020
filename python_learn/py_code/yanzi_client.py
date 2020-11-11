@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-#coding=utf-8
+# coding=utf-8
 """
 @author: yunshanan
 """
 
 import time
 import json
+import pprint
 import websocket
 # import datetime
 import ssl
@@ -16,7 +17,7 @@ cirrusHost = "cirrus20.yanzi.se"
 # Change the username and password to the Yanzi credentials:
 username = 'frank.shen@pinyuaninfo.com'
 password = 'Ft@Sugarcube99'
-locationID = "797296"
+locationID = "229349"
 pattern = '%Y-%m-%d %H:%M:%S'
 start = '2020-11-01 00:00:00'
 end = '2020-11-01 23:00:00'
@@ -25,7 +26,7 @@ heartbeatFlag = 0
 
 def onMessage(ws, message):
     response = json.loads(message)
-    print(response)
+    # print(response)
 
     if response["messageType"] == "ServiceResponse":
         print("onMessage: Got ServiceResponse, sending login request")
@@ -44,8 +45,11 @@ def onMessage(ws, message):
         print('  Subscription     :', response)
         # print("onMessage: Got SubscribeData")
     elif response["messageType"] == "GetUnitsResponse":
-        # print(rsponse)
-        unitslist = response
+        # print(response)
+        unitslist = response['list']
+        for unit in unitslist:
+            pprint.pprint(unit['unitAddress']['did'],
+                          unit['unitTypeFixed']['name'])
         # if (json.responseCode.name == 'success') {
         #                 // c(JSON.stringify(json) + '\n\n');
 
@@ -104,16 +108,12 @@ def onOpen(ws):
 
 
 def sendMessage(message):
-    if ws.sock.connected != True:
+    if not ws.sock.connected:
         print("sendMessage: Could not send cirrus message, socket not open")
-        return
-    try:
+    else:
         message['timeSent'] = int(time.time() * 1000)
         msg = json.dumps(message)
         ws.send(msg)
-    except:
-        print("sendMessage: Could not send cirrus message: ", message)
-        return
 
 
 def sendServiceRequest():
@@ -209,7 +209,8 @@ if __name__ == "__main__":
                                 on_message=onMessage,
                                 on_error=onError,
                                 on_close=onClose,
+                                on_open=onOpen,
                                 keep_running=True)
-    ws.on_open = onOpen
+    # ws.on_open = onOpen
 
     ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
