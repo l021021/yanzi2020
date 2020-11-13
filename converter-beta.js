@@ -2,9 +2,9 @@
 
 const FS = require('fs')
 
-var filename = 'C:\\codebase\\log\\797296_2020_09_06_00_00_00_2020_09_10_23_59_59_Motion' // 历史记录文件
-const startDate = '2020/09/06/00:00:00' // 开始时间
-const endDate = '2020/09/10/23:59:59' // 结束时间
+var filename = 'C:\\codebase\\log\\797296_2020_10_26_00_00_00_2020_10_31_23_59_59_Motion - 副本' // 历史记录文件
+const startDate = '2020/10/26/00:00:00' // 开始时间
+const endDate = '2020/10/31/23:59:59' // 结束时间
     // var filename = 'C://codebase//log//797296_2019_06_01_00_00_00_2019_07_01_00_00_00_UU' // 历史记录文件
     // const startDate = '2019/06/01/00:00:00'
     // const endDate = '2019/07/01/00:00:00'

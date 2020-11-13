@@ -4,12 +4,16 @@
 @author: yunshanan
 """
 
+import csv
 import time
 import json
 import pprint
 import websocket
-# import datetime
+import datetime
 import ssl
+import numpy as np
+# import time
+
 
 # The cirrus host to connect to:
 cirrusHost = "cirrus20.yanzi.se"
@@ -21,13 +25,18 @@ locationID = "879448"
 pattern = '%Y-%m-%d %H:%M:%S'
 start = '2020-11-11 00:00:00'
 end = '2020-11-11 23:00:00'
-heartbeatFlag = 0
+# HBFlag = 0
 datalists = []
+csvlist = []
+requestcount = 0
 
 
 def onMessage(ws, message):
+    # eventtime = datetime.datetime.now()
     response = json.loads(message)
-    # print(response)
+    # HBFlag = 0
+    # print('response')
+    global requestcount
 
     if response["messageType"] == "ServiceResponse":
         print("onMessage: Got ServiceResponse, sending login request")
@@ -39,7 +48,7 @@ def onMessage(ws, message):
         # sendSubscribeRequest(locationID, datatype=['occupancy'])
         sendGetUnitsRequest(locationID)
     elif response["messageType"] == "PeriodicResponse":
-        # heartbeatFlag = 0
+        # HBFlag = 0
         # print(_Counter, '# ', "periodic response-keepalive")
         sendPeriodicRequest()
     elif response["messageType"] == "SubscribeData":
@@ -52,67 +61,48 @@ def onMessage(ws, message):
             # print(unit['unitAddress']['did'],unit['unitTypeFixed']['name'])
             if 'Motion' in unit['unitAddress']['did']:
                 print('Motion')
-                sendGetSamplesRequest(
-                    unit['unitAddress']['did'], locationID, start, end)
+                # sendGetSamplesRequest(
+                #     unit['unitAddress']['did'], locationID, start, end)
             elif 'UUID' in unit['unitAddress']['did']:
-                print('Asset')
+                # print('Asset')
+                # nonlocal requestcount
+                # global requestcount
+
                 sendGetSamplesRequest(
                     unit['unitAddress']['did'], locationID, start, end)
-        # if (json.responseCode.name == 'success') {
-        #                 // c(JSON.stringify(json) + '\n\n');
+                requestcount += 1
+                print(requestcount)  # 增加请求计数器
 
-        #                 var _tempunitObj
-
-        #                 c('Seeing ' + json.list.length + ' (logical or physical) sensors in  ' + json.locationAddress.locationId)
-        #                 for (let index = 0; index < json.list.length; index++) { // process each response packet
-        #                     if (json.list[index].unitTypeFixed.name == 'gateway' || json.list[index].unitTypeFixed.name == 'remoteGateway' || json.list[index].unitAddress.did.indexOf('AP') != -1) { // c(json.list[index].unitAddress.did);
-        #                         // c('GW or AP in ' + json.locationAddress.locationId) // GW and AP are not sensor
-        #                     } else {
-        #                         // record all sensors
-        #                         unitObj.did = json.list[index].unitAddress.did //
-        #                         unitObj.locationId = json.locationAddress.locationId
-        #                         unitObj.chassisDid = json.list[index].chassisDid
-        #                         unitObj.productType = json.list[index].productType
-        #                         unitObj.lifeCycleState = json.list[index].lifeCycleState.name
-        #                         unitObj.isChassis = json.list[index].isChassis
-        #                         unitObj.nameSetByUser = json.list[index].nameSetByUser
-        #                         unitObj.serverDid = json.list[index].unitAddress.serverDid
-
-        #                         unitObj.type = json.list[index].unitTypeFixed.name
-
-        #                         _tempunitObj = JSON.parse(JSON.stringify(unitObj))
-        #                             // c(unitObj.type)
-        #                             // c(unitObj.lifeCycleState)
-        #                             // c(unitObj.did)
-        #                             // c('\n')
-
-        #                         _Units.push(_tempunitObj)
-        #                             // request history record
-        #                         if (((unitObj.type === 'physicalOrChassis') && EUorUU === 'EU') || ((unitObj.type === 'inputMotion') && EUorUU === 'Motion') || ((EUorUU === 'UU') && (unitObj.did.indexOf('UU') >= 0)) || ((EUorUU === 'Temp') && (unitObj.did.indexOf('Temp') >= 0))) { sendGetSamplesRequest(unitObj.did, Date.parse(startDate), Date.parse(endDate)) } // 请求何种数据?
-        #                     };
-        #                 }
-
-        #                 // c(_UnitsCounter + ' Units in Location:  while ' + _OnlineUnitsCounter + ' online');
-        #             } else {
-        #                 c("Couldn't get Units")
-        #             }
-    # elif response["messageType"] == "PeriodicResponse":
-    #     print("OnError")
     elif response["messageType"] == "GetSamplesResponse":
+        # global requestcount
+        requestcount = requestcount - 1
         # pprint.pprint(response)
         if response['responseCode']['name'] == "success":
             # pprint.pprint(response)
             datalists = response['sampleListDto']['list']
             for li in datalists:
-                # print(response['sampleListDto']['dataSourceAddress']['did'])
+                # print(eventtime)
+                # print(int(li['sampleTime']))
+                eventtime = datetime.datetime.fromtimestamp(
+                    int(li['sampleTime'])/1000).strftime(pattern)
+                # print(eventtime)
                 if li['resourceType'] == "SampleAsset":
-                    print('      ', li['resourceType'],
-                          li['assetState']['name'], li['sampleTime'])
+                    # print(response['sampleListDto']['dataSourceAddress']['did'],
+                    #       li['assetState']['name'], eventtime)
+                    csvlist.append([response['sampleListDto']['dataSourceAddress']['did'],
+                                    li['assetState']['name'], eventtime])
                 elif li['resourceType'] == 'SampleMotion':
-                    print('      ', li['resourceType'],
-                          li['sampleTime'], li['value'])
+                    print(response['sampleListDto']['dataSourceAddress']['did'],
+                          eventtime, li['value'])
+        if requestcount == 0:
+            with open(r"data.csv", 'a+', encoding='utf-8', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerows(csvlist)
+            f.close()
+        print(requestcount)
     else:
         print(response)
+    # global requestcount
 
 
 def onError(ws, error):
@@ -169,12 +159,12 @@ def sendPeriodicRequest():
         "messageType": "PeriodicRequest",
         "timeSent": int(time.time() * 1000)
     }
-    if heartbeatFlag == 3:
-        print('    periodic request missed (%s), will reconnect',
-              heartbeatFlag)
-    else:
-        print(' ---  periodic request send ' + heartbeatFlag)
-        heartbeatFlag += 1
+    # if HBFlag == 3:
+    #     print('    periodic request missed (%s), will reconnect',
+    #           HBFlag)
+    # else:
+    #     print(' ---  periodic request send ' + HBFlag)
+    #     HBFlag = 1 + HBFlag
 
     sendMessage(request)
 
@@ -232,6 +222,5 @@ if __name__ == "__main__":
                                 on_close=onClose,
                                 on_open=onOpen,
                                 keep_running=True)
-    # ws.on_open = onOpen
 
     ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
