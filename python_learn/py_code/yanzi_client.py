@@ -17,11 +17,12 @@ cirrusHost = "cirrus20.yanzi.se"
 # Change the username and password to the Yanzi credentials:
 username = 'frank.shen@pinyuaninfo.com'
 password = 'Ft@Sugarcube99'
-locationID = "229349"
+locationID = "879448"
 pattern = '%Y-%m-%d %H:%M:%S'
-start = '2020-11-01 00:00:00'
-end = '2020-11-01 23:00:00'
+start = '2020-11-11 00:00:00'
+end = '2020-11-11 23:00:00'
 heartbeatFlag = 0
+datalists = []
 
 
 def onMessage(ws, message):
@@ -48,8 +49,15 @@ def onMessage(ws, message):
         # print(response)
         unitslist = response['list']
         for unit in unitslist:
-            pprint.pprint(unit['unitAddress']['did'],
-                          unit['unitTypeFixed']['name'])
+            # print(unit['unitAddress']['did'],unit['unitTypeFixed']['name'])
+            if 'Motion' in unit['unitAddress']['did']:
+                print('Motion')
+                sendGetSamplesRequest(
+                    unit['unitAddress']['did'], locationID, start, end)
+            elif 'UUID' in unit['unitAddress']['did']:
+                print('Asset')
+                sendGetSamplesRequest(
+                    unit['unitAddress']['did'], locationID, start, end)
         # if (json.responseCode.name == 'success') {
         #                 // c(JSON.stringify(json) + '\n\n');
 
@@ -91,7 +99,20 @@ def onMessage(ws, message):
     # elif response["messageType"] == "PeriodicResponse":
     #     print("OnError")
     elif response["messageType"] == "GetSamplesResponse":
-        print("OnError")
+        # pprint.pprint(response)
+        if response['responseCode']['name'] == "success":
+            # pprint.pprint(response)
+            datalists = response['sampleListDto']['list']
+            for li in datalists:
+                # print(response['sampleListDto']['dataSourceAddress']['did'])
+                if li['resourceType'] == "SampleAsset":
+                    print('      ', li['resourceType'],
+                          li['assetState']['name'], li['sampleTime'])
+                elif li['resourceType'] == 'SampleMotion':
+                    print('      ', li['resourceType'],
+                          li['sampleTime'], li['value'])
+    else:
+        print(response)
 
 
 def onError(ws, error):
@@ -191,7 +212,7 @@ def sendGetSamplesRequest(UnitDid, LocationId, start, end):
         },
         "timeSerieSelection": {
             "resourceType": "TimeSerieSelection",
-            #"numberOfSamplesBeforeStart": 3,
+            # "numberOfSamplesBeforeStart": 3,
             "timeStart": int(
                 (time.mktime(time.strptime(start, pattern))) * 1000),
             # "timeStart" : int((time.time() - (60 * 3600)) * 1000), # 24 hours
