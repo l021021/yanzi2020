@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable eol-last */
 /* eslint-disable no-redeclare */
 /*
@@ -29,10 +30,10 @@ var recordObj = {
     value: ''
 }
 
-var filename = '..//log//797296_2019_04_01_00_00_00_2019_04_30_23_59_59_UU' // 历史记录文件
+var filename = '..\\log\\114190_x_2020_05_11_00_00_00_2020_05_25_00_00_00' // 历史记录文件
 
-const startDate = '2019/04/01/00:00:00'
-const endDate = '2019/04/30/23:59:59'
+const startDate = '2020/05/11/00:00:00'
+const endDate = '2020/05/25/00:00:00'
 
 var t1 = new Date()
 var t2 = new Date()
@@ -271,7 +272,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
             if (timeArray.length >= 1) {
                 for (let k = timeArray.length - 1; k >= Math.max(timeArray.length - 5, 0); k--) { // 检查是否存在这个分钟纪录,回溯9个记录(为了减少无谓计算)
                     if (timeArray[k].timeStamp === t0.toLocaleString()) {
-                        c(k + '        头部记录存在！增加数值' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
+                        // c(k + '        头部记录存在！增加数值' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
                         _RecordExist = true
                         timeArray[k].value += t1ToNext / 600 // 增加新的占用
                     }
@@ -309,7 +310,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
                             _RecordExist = true
                                 //        c(k + '     尾部记录存在！尾部数值增加  ' + JSON.stringify(timeArray[k]) + ' + ' + PrevTot2)
                             timeArray[k].value += PrevTot2 / 600
-                            c(k + '     尾部记录存在！尾部数值增加  ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
+                                // c(k + '     尾部记录存在！尾部数值增加  ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
                         }
                     }
                 }
@@ -337,7 +338,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
             if (timeArray.length >= 1) {
                 for (let k = timeArray.length - 1; k >= Math.max(timeArray.length - 5, 0); k--) { // 检查是否存在这个十分钟纪录,回溯若干个记录
                     if (timeArray[k].timeStamp === t0.toLocaleString()) {
-                        c(k + '      头部记录存在！原值不变 ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
+                        // c(k + '      头部记录存在！原值不变 ' + t0.toLocaleTimeString() + '   ' + JSON.stringify(timeArray[k]))
                         _RecordExist = true
                     }
                 }
@@ -372,7 +373,7 @@ for (let i1 = 0; i1 < unitsArray.length; i1++) { // 对每一个sensor做循环 
             if (timeArray.length >= 1) {
                 for (let k = timeArray.length - 1; k >= Math.max(timeArray.length - 5, 0); k--) { // 检查是否存在这个分钟纪录
                     if (timeArray[k].timeStamp === t0.toLocaleString()) {
-                        c(k + '                  尾部记录存在！原值不变 ' + '   ' + JSON.stringify(timeArray[k]))
+                        // c(k + '                  尾部记录存在！原值不变 ' + '   ' + JSON.stringify(timeArray[k]))
                         _RecordExist = true
                             // _ExistValue = timeArray[k].value;
                     }

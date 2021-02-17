@@ -5,6 +5,8 @@
   "main": "Date-test.js",
   "dependencies": {
     "async": "^3.1.0",
+    "geojson": "^0.5.0",
+    "uuid-js": "^0.7.5",
     "websocket": "^1.0.30"
   },
   "devDependencies": {},
